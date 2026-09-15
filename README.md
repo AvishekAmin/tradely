@@ -1,1 +1,1 @@
-# Tradely — Stock Trading Platform
+# Tradely — AI Powered Stock Trading Platform
