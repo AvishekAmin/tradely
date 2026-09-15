@@ -1,0 +1,1 @@
+# Tradely — Stock Trading Platform
