@@ -1,12 +1,11 @@
 import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
-import bodyParser from "body-parser";
 import cors from "cors";
 
 import { HoldingsModel } from "./models/HoldingsModel.js";
 import { PositionsModel } from "./models/PositionsModel.js";
-import { OrdersModel } from "./model/OrdersModel.js";
+import { OrdersModel } from "./models/OrdersModel.js";
 
 const PORT = process.env.PORT || 8000;
 const URI = process.env.MONGO_URI;
@@ -216,7 +215,7 @@ const startServer = async () => {
       console.log(`Server is listening to PORT ${PORT}`);
     });
   } catch (err) {
-    console.error("Database connection failed: ", error);
+    console.error("Database connection failed:", err);
   }
 };
 
