@@ -27,6 +27,12 @@ const UserSchema = new Schema(
       default: 100000,
       min: [0, "Balance cannot be negative"],
     },
+    reservedBalance: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: [0, "Reserved balance cannot be negative"],
+    },
     initialBalance: {
       type: Number,
       required: true,

@@ -19,6 +19,12 @@ const HoldingsSchema = new Schema(
       required: true,
       min: 0,
     },
+    reservedQty: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
     avg: {
       type: Number,
       required: true,

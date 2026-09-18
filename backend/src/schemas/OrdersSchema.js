@@ -21,8 +21,15 @@ const OrdersSchema = new Schema(
     },
     price: {
       type: Number,
-      required: true,
-      min: 0.01,
+      default: null,
+    },
+    limitPrice: {
+      type: Number,
+      default: null,
+    },
+    executionPrice: {
+      type: Number,
+      default: null,
     },
     mode: {
       type: String,
@@ -32,12 +39,13 @@ const OrdersSchema = new Schema(
     orderType: {
       type: String,
       enum: ["MARKET", "LIMIT"],
+      required: true,
       default: "MARKET",
     },
     status: {
       type: String,
-      enum: ["EXECUTED", "REJECTED"],
-      default: "EXECUTED",
+      enum: ["PENDING", "EXECUTED", "CANCELLED", "REJECTED"],
+      required: true,
     },
     totalValue: {
       type: Number,
@@ -50,12 +58,17 @@ const OrdersSchema = new Schema(
     },
     executedAt: {
       type: Date,
-      default: Date.now,
+      default: null,
+    },
+    cancelledAt: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }
 );
 
 OrdersSchema.index({ userId: 1, createdAt: -1 });
+OrdersSchema.index({ status: 1, name: 1 });
 
 export { OrdersSchema };
