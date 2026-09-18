@@ -1,8 +1,8 @@
 /**
- * Validator middleware for incoming order placement requests
+ * Validator middleware for incoming order placement requests (MARKET and LIMIT)
  */
 export const validateOrder = (req, res, next) => {
-  const { name, qty, price, mode, orderType } = req.body || {};
+  const { name, qty, limitPrice, mode, orderType } = req.body || {};
 
   // 1. Symbol Validation
   if (!name || typeof name !== "string" || !name.trim()) {
@@ -25,17 +25,38 @@ export const validateOrder = (req, res, next) => {
     });
   }
 
-  // 3. Price Validation
-  const parsedPrice = Number(price);
-  if (isNaN(parsedPrice) || parsedPrice <= 0) {
+  // 3. Order Type Validation
+  const normalizedOrderType = (orderType || "MARKET").toUpperCase();
+  if (normalizedOrderType !== "MARKET" && normalizedOrderType !== "LIMIT") {
     return res.status(400).json({
       success: false,
-      code: "INVALID_PRICE",
-      message: "Price must be a positive number greater than zero.",
+      code: "INVALID_ORDER_TYPE",
+      message: "Order type must be either MARKET or LIMIT.",
     });
   }
 
-  // 4. Mode Validation
+  // 4. Limit Price Validation
+  let parsedLimitPrice = null;
+  if (normalizedOrderType === "LIMIT") {
+    if (limitPrice === undefined || limitPrice === null || limitPrice === "") {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_LIMIT_PRICE",
+        message: "Limit price is required for LIMIT orders.",
+      });
+    }
+    parsedLimitPrice = Number(limitPrice);
+    if (isNaN(parsedLimitPrice) || parsedLimitPrice <= 0) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_LIMIT_PRICE",
+        message: "Limit price must be a positive number greater than zero.",
+      });
+    }
+    parsedLimitPrice = Math.round(parsedLimitPrice * 100) / 100;
+  }
+
+  // 5. Mode Validation
   const normalizedMode = (mode || "").toUpperCase();
   if (normalizedMode !== "BUY" && normalizedMode !== "SELL") {
     return res.status(400).json({
@@ -49,9 +70,9 @@ export const validateOrder = (req, res, next) => {
   req.validatedOrder = {
     name: cleanSymbol,
     qty: parsedQty,
-    price: parsedPrice,
+    limitPrice: parsedLimitPrice,
     mode: normalizedMode,
-    orderType: orderType || "MARKET",
+    orderType: normalizedOrderType,
   };
 
   next();
