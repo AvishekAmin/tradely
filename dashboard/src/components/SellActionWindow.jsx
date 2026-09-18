@@ -1,17 +1,19 @@
 import React, { useState, useContext, useEffect } from "react";
 import apiClient from "../config/api";
 import GeneralContext from "./GeneralContext";
-import { watchlist } from "../data/data";
+import { useMarketData } from "../context/MarketDataContext";
 import "../index.css";
 
 const SellActionWindow = ({ uid }) => {
   const { closeSellWindow, triggerRefresh } = useContext(GeneralContext);
+  const { getQuote } = useMarketData();
 
-  const initialStock = watchlist.find((item) => item.name === uid);
-  const defaultPrice = initialStock ? initialStock.price : 100.0;
+  const liveQuote = getQuote(uid);
+  const livePrice = liveQuote?.price ?? null;
 
+  const [orderType, setOrderType] = useState("MARKET");
   const [stockQuantity, setStockQuantity] = useState(1);
-  const [stockPrice, setStockPrice] = useState(defaultPrice);
+  const [limitPrice, setLimitPrice] = useState(() => (livePrice ? livePrice.toFixed(2) : ""));
   const [holdingData, setHoldingData] = useState(null);
   const [loadingHolding, setLoadingHolding] = useState(true);
   const [availableBalance, setAvailableBalance] = useState(null);
@@ -29,11 +31,8 @@ const SellActionWindow = ({ uid }) => {
         );
         if (found) {
           setHoldingData(found);
-          // Set default sell quantity to 1 or max owned
-          setStockQuantity(Math.min(1, found.qty));
-          if (found.price) {
-            setStockPrice(found.price);
-          }
+          const available = Math.max(0, found.qty - (found.reservedQty || 0));
+          setStockQuantity(Math.min(1, available));
         } else {
           setHoldingData(null);
         }
@@ -50,20 +49,27 @@ const SellActionWindow = ({ uid }) => {
   }, [uid]);
 
   const ownedQty = holdingData ? holdingData.qty : 0;
+  const reservedQty = holdingData ? (holdingData.reservedQty || 0) : 0;
+  const availableShares = Math.max(0, ownedQty - reservedQty);
   const avgBuyPrice = holdingData ? holdingData.avg : 0;
 
   const parsedQty = parseInt(stockQuantity, 10) || 0;
-  const parsedPrice = parseFloat(stockPrice) || 0;
-  const totalProceeds = Math.round(parsedQty * parsedPrice * 100) / 100;
+  const parsedLimit = parseFloat(limitPrice) || 0;
+  const executionPrice = orderType === "MARKET" ? (livePrice ?? 0) : parsedLimit;
+  const isMarketPriceUnavailable =
+    orderType === "MARKET" && (livePrice === null || livePrice <= 0);
+  const isLimitInvalid = orderType === "LIMIT" && parsedLimit <= 0;
+
+  const totalProceeds = Math.round(parsedQty * executionPrice * 100) / 100;
   const estimatedPnL =
-    holdingData && parsedQty > 0
-      ? Math.round((parsedPrice - avgBuyPrice) * parsedQty * 100) / 100
+    holdingData && parsedQty > 0 && executionPrice > 0
+      ? Math.round((executionPrice - avgBuyPrice) * parsedQty * 100) / 100
       : 0;
   const isProfit = estimatedPnL >= 0;
 
   const handleSetMaxQty = () => {
-    if (ownedQty > 0) {
-      setStockQuantity(ownedQty);
+    if (availableShares > 0) {
+      setStockQuantity(availableShares);
     }
   };
 
@@ -73,9 +79,17 @@ const SellActionWindow = ({ uid }) => {
     setSuccessMessage("");
 
     // Client-side validations
-    if (ownedQty <= 0) {
+    if (isMarketPriceUnavailable) {
+      setErrorMessage("Live market price is currently unavailable for this instrument.");
+      return;
+    }
+    if (isLimitInvalid) {
+      setErrorMessage("Limit price must be greater than zero.");
+      return;
+    }
+    if (availableShares <= 0) {
       setErrorMessage(
-        `Cannot sell ${uid}: you do not own any shares of this instrument.`
+        `Cannot sell ${uid}: you do not have any unreserved shares of this instrument available to sell.`
       );
       return;
     }
@@ -83,45 +97,45 @@ const SellActionWindow = ({ uid }) => {
       setErrorMessage("Quantity must be a positive whole number.");
       return;
     }
-    if (parsedQty > ownedQty) {
+    if (parsedQty > availableShares) {
       setErrorMessage(
-        `Cannot sell ${parsedQty} shares. You only own ${ownedQty} share(s).`
+        `Cannot sell ${parsedQty} shares. You only have ${availableShares} available share(s) (${reservedQty} reserved in pending orders).`
       );
-      return;
-    }
-    if (!parsedPrice || parsedPrice <= 0) {
-      setErrorMessage("Price must be greater than zero.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const res = await apiClient.post("/newOrder", {
+      const payload = {
         name: uid,
         qty: parsedQty,
-        price: parsedPrice,
         mode: "SELL",
-        orderType: "MARKET",
-      });
+        orderType,
+      };
+
+      if (orderType === "LIMIT") {
+        payload.limitPrice = parsedLimit;
+      }
+
+      const res = await apiClient.post("/newOrder", payload);
 
       if (res.data?.success) {
         setSuccessMessage(
-          res.data.message || `Successfully sold ${parsedQty} shares of ${uid}!`
+          res.data.message || `Successfully placed ${orderType} SELL order for ${parsedQty} share(s) of ${uid}!`
         );
         triggerRefresh();
 
-        // Brief delay so user sees confirmation before window closes
         setTimeout(() => {
           closeSellWindow();
-        }, 700);
+        }, 800);
       } else {
         setErrorMessage(res.data?.message || "Order failed to execute.");
         setIsSubmitting(false);
       }
     } catch (err) {
       const serverMessage =
-        err.response?.data?.message || "Failed to execute sell order. Please try again.";
+        err.response?.data?.message || "Failed to place sell order. Please try again.";
       setErrorMessage(serverMessage);
       setIsSubmitting(false);
     }
@@ -137,10 +151,49 @@ const SellActionWindow = ({ uid }) => {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h3 style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ color: "var(--loss, #ef4444)" }}>SELL</span> {uid}
-            <span style={{ fontSize: "0.85rem", opacity: 0.7 }}>MARKET</span>
-          </h3>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <h3 style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ color: "var(--loss, #ef4444)" }}>SELL</span> {uid}
+            </h3>
+            {livePrice !== null ? (
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                  backgroundColor: "rgba(16, 185, 129, 0.15)",
+                  color: "var(--profit, #10b981)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    backgroundColor: "var(--profit, #10b981)",
+                  }}
+                />
+                ₹{livePrice.toFixed(2)} LIVE
+              </span>
+            ) : (
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 500,
+                  padding: "2px 8px",
+                  borderRadius: "4px",
+                  backgroundColor: "rgba(239, 68, 68, 0.15)",
+                  color: "var(--loss, #ef4444)",
+                }}
+              >
+                Price unavailable
+              </span>
+            )}
+          </div>
           <button
             type="button"
             onClick={closeSellWindow}
@@ -154,6 +207,47 @@ const SellActionWindow = ({ uid }) => {
             }}
           >
             ×
+          </button>
+        </div>
+
+        {/* Order Type Tabs */}
+        <div style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
+          <button
+            type="button"
+            onClick={() => setOrderType("MARKET")}
+            style={{
+              padding: "4px 12px",
+              fontSize: "0.78rem",
+              fontWeight: 600,
+              borderRadius: "4px",
+              border: "1px solid",
+              borderColor: orderType === "MARKET" ? "var(--loss, #ef4444)" : "rgba(255,255,255,0.1)",
+              backgroundColor: orderType === "MARKET" ? "rgba(239, 68, 68, 0.2)" : "transparent",
+              color: orderType === "MARKET" ? "#ffffff" : "var(--text-muted)",
+              cursor: "pointer",
+            }}
+          >
+            MARKET
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setOrderType("LIMIT");
+              if (!limitPrice && livePrice) setLimitPrice(livePrice.toFixed(2));
+            }}
+            style={{
+              padding: "4px 12px",
+              fontSize: "0.78rem",
+              fontWeight: 600,
+              borderRadius: "4px",
+              border: "1px solid",
+              borderColor: orderType === "LIMIT" ? "var(--loss, #ef4444)" : "rgba(255,255,255,0.1)",
+              backgroundColor: orderType === "LIMIT" ? "rgba(239, 68, 68, 0.2)" : "transparent",
+              color: orderType === "LIMIT" ? "#ffffff" : "var(--text-muted)",
+              cursor: "pointer",
+            }}
+          >
+            LIMIT
           </button>
         </div>
       </div>
@@ -193,7 +287,7 @@ const SellActionWindow = ({ uid }) => {
         )}
 
         {/* Owned Status Banner */}
-        {!loadingHolding && ownedQty === 0 && (
+        {!loadingHolding && availableShares === 0 && (
           <div
             style={{
               backgroundColor: "rgba(245, 158, 11, 0.15)",
@@ -205,7 +299,7 @@ const SellActionWindow = ({ uid }) => {
               marginBottom: "12px",
             }}
           >
-            ⚠️ You do not own any shares of {uid}. You must buy shares before you can sell them.
+            ⚠️ No shares available to sell. {reservedQty > 0 ? `(${reservedQty} share(s) reserved in pending orders).` : `You do not own ${uid}.`}
           </div>
         )}
 
@@ -214,7 +308,7 @@ const SellActionWindow = ({ uid }) => {
           <fieldset>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <legend>Qty.</legend>
-              {ownedQty > 0 && (
+              {availableShares > 0 && (
                 <button
                   type="button"
                   onClick={handleSetMaxQty}
@@ -228,7 +322,7 @@ const SellActionWindow = ({ uid }) => {
                     fontWeight: 600,
                   }}
                 >
-                  MAX ({ownedQty})
+                  MAX ({availableShares})
                 </button>
               )}
             </div>
@@ -237,27 +331,68 @@ const SellActionWindow = ({ uid }) => {
               name="qty"
               id="sell-qty"
               min="1"
-              max={ownedQty || 1}
+              max={availableShares || 1}
               step="1"
-              disabled={isSubmitting || ownedQty === 0}
+              disabled={isSubmitting || availableShares === 0}
               onChange={(e) => setStockQuantity(e.target.value)}
               value={stockQuantity}
             />
           </fieldset>
-          <fieldset>
-            <legend>Price (₹)</legend>
-            <input
-              type="number"
-              name="price"
-              id="sell-price"
-              step="0.05"
-              min="0.05"
-              disabled={isSubmitting || ownedQty === 0}
-              onChange={(e) => setStockPrice(e.target.value)}
-              value={stockPrice}
-            />
-          </fieldset>
+
+          {orderType === "MARKET" ? (
+            <fieldset>
+              <legend>Live Price (₹)</legend>
+              <input
+                type="text"
+                name="price"
+                id="sell-price"
+                readOnly
+                disabled
+                value={livePrice !== null ? `₹${livePrice.toFixed(2)} (Live)` : "Price unavailable"}
+                style={{
+                  cursor: "not-allowed",
+                  color: livePrice !== null ? "var(--loss, #ef4444)" : "var(--loss, #ef4444)",
+                  fontWeight: 600,
+                }}
+              />
+            </fieldset>
+          ) : (
+            <fieldset>
+              <legend>Limit Price (₹)</legend>
+              <input
+                type="number"
+                name="limitPrice"
+                id="sell-limit-price"
+                step="0.05"
+                min="0.01"
+                disabled={isSubmitting || availableShares === 0}
+                onChange={(e) => setLimitPrice(e.target.value)}
+                value={limitPrice}
+                placeholder="e.g. 3600.00"
+                style={{ fontWeight: 600 }}
+              />
+            </fieldset>
+          )}
         </div>
+
+        {/* Condition details for LIMIT orders */}
+        {orderType === "LIMIT" && (
+          <div
+            style={{
+              backgroundColor: "rgba(239, 68, 68, 0.1)",
+              border: "1px solid rgba(239, 68, 68, 0.25)",
+              borderRadius: "6px",
+              padding: "8px 12px",
+              fontSize: "0.78rem",
+              color: "var(--text-muted)",
+              marginTop: "8px",
+            }}
+          >
+            💡 <strong>Condition:</strong> Executes when market price reaches{" "}
+            <span style={{ color: "#ffffff", fontWeight: 600 }}>₹{parsedLimit ? parsedLimit.toFixed(2) : "..."}</span> or above.
+            Shares ({parsedQty}) will be reserved until executed or cancelled.
+          </div>
+        )}
 
         {/* Financial Details */}
         <div
@@ -273,9 +408,9 @@ const SellActionWindow = ({ uid }) => {
           }}
         >
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ color: "var(--text-muted)" }}>Owned Shares:</span>
+            <span style={{ color: "var(--text-muted)" }}>Available Shares:</span>
             <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-              {loadingHolding ? "Checking..." : `${ownedQty} shares`}
+              {loadingHolding ? "Checking..." : `${availableShares} shares ${reservedQty > 0 ? `(${reservedQty} reserved)` : ""}`}
             </span>
           </div>
 
@@ -291,11 +426,11 @@ const SellActionWindow = ({ uid }) => {
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span style={{ color: "var(--text-muted)" }}>Estimated Proceeds:</span>
             <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-              ₹{totalProceeds.toFixed(2)}
+              {executionPrice > 0 ? `₹${totalProceeds.toFixed(2)}` : "—"}
             </span>
           </div>
 
-          {ownedQty > 0 && (
+          {ownedQty > 0 && executionPrice > 0 && (
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ color: "var(--text-muted)" }}>Est. Realized P&L:</span>
               <span
@@ -309,7 +444,7 @@ const SellActionWindow = ({ uid }) => {
             </div>
           )}
 
-          {availableBalance !== null && (
+          {availableBalance !== null && executionPrice > 0 && (
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ color: "var(--text-muted)" }}>Est. Cash After Sale:</span>
               <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
@@ -322,25 +457,42 @@ const SellActionWindow = ({ uid }) => {
 
       <div className="buttons">
         <span style={{ fontSize: "0.82rem" }}>
-          Credit: <strong>+₹{totalProceeds.toFixed(2)}</strong>
+          Credit: <strong>{executionPrice > 0 ? `+₹${totalProceeds.toFixed(2)}` : "—"}</strong>
         </span>
         <div style={{ display: "flex", gap: "8px" }}>
           <button
             type="button"
             className="btn"
             onClick={handleSellClick}
-            disabled={isSubmitting || ownedQty === 0 || parsedQty > ownedQty}
+            disabled={
+              isSubmitting ||
+              availableShares === 0 ||
+              parsedQty > availableShares ||
+              isMarketPriceUnavailable ||
+              isLimitInvalid
+            }
             style={{
               backgroundColor: "var(--loss, #ef4444)",
               color: "#ffffff",
-              opacity: isSubmitting || ownedQty === 0 || parsedQty > ownedQty ? 0.6 : 1,
+              opacity:
+                isSubmitting ||
+                availableShares === 0 ||
+                parsedQty > availableShares ||
+                isMarketPriceUnavailable ||
+                isLimitInvalid
+                  ? 0.6
+                  : 1,
               cursor:
-                isSubmitting || ownedQty === 0 || parsedQty > ownedQty
+                isSubmitting ||
+                availableShares === 0 ||
+                parsedQty > availableShares ||
+                isMarketPriceUnavailable ||
+                isLimitInvalid
                   ? "not-allowed"
                   : "pointer",
             }}
           >
-            {isSubmitting ? "Selling..." : "Sell"}
+            {isSubmitting ? "Placing..." : orderType === "LIMIT" ? "Place Limit Sell" : "Sell"}
           </button>
           <button
             type="button"

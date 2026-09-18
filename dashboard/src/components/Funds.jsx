@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useContext } from "react";
 import apiClient from "../config/api";
 import GeneralContext from "./GeneralContext";
+import { useMarketData } from "../context/MarketDataContext";
 
 const Funds = () => {
   const { refreshKey } = useContext(GeneralContext);
+  const { lastOrderUpdate } = useMarketData();
   const [funds, setFunds] = useState({
     balance: 0,
+    reservedBalance: 0,
+    totalBalance: 100000,
     initialBalance: 100000,
     availableMargin: 0,
     usedMargin: 0,
@@ -25,9 +29,19 @@ const Funds = () => {
         console.error("Error loading account funds:", err);
         setLoading(false);
       });
-  }, [refreshKey]);
+  }, [refreshKey, lastOrderUpdate]);
 
   const formattedBalance = (funds.balance || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  const formattedReserved = (funds.reservedBalance || 0).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  const formattedTotal = (funds.totalBalance || (funds.balance || 0) + (funds.reservedBalance || 0)).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -37,8 +51,7 @@ const Funds = () => {
     maximumFractionDigits: 2,
   });
 
-  const usedMargin = Math.max(0, (funds.initialBalance || 100000) - (funds.balance || 0));
-  const formattedUsedMargin = usedMargin.toLocaleString("en-IN", {
+  const formattedUsedMargin = (funds.usedMargin || 0).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -75,16 +88,22 @@ const Funds = () => {
 
           <div className="table">
             <div className="data">
-              <p>Available margin</p>
+              <p>Available cash (trading)</p>
               <p className="imp colored">₹{loading ? "..." : formattedBalance}</p>
             </div>
             <div className="data">
-              <p>Used margin</p>
-              <p className="imp">₹{loading ? "..." : formattedUsedMargin}</p>
+              <p>Reserved cash (pending orders)</p>
+              <p className="imp" style={{ color: "var(--warning, #f59e0b)" }}>
+                ₹{loading ? "..." : formattedReserved}
+              </p>
             </div>
             <div className="data">
-              <p>Available cash</p>
-              <p className="imp">₹{loading ? "..." : formattedBalance}</p>
+              <p>Total cash ledger</p>
+              <p className="imp">₹{loading ? "..." : formattedTotal}</p>
+            </div>
+            <div className="data">
+              <p>Used margin (invested in holdings)</p>
+              <p className="imp">₹{loading ? "..." : formattedUsedMargin}</p>
             </div>
             <hr />
             <div className="data">

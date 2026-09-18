@@ -1,13 +1,32 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import { Link } from "react-router-dom";
 import apiClient from "../config/api";
 import GeneralContext from "./GeneralContext";
+import { useMarketData } from "../context/MarketDataContext";
 
 const Orders = () => {
-  const { refreshKey } = useContext(GeneralContext);
+  const { refreshKey, triggerRefresh } = useContext(GeneralContext);
+  const { lastOrderUpdate } = useMarketData();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
+
+  const fetchOrders = useCallback(() => {
+    return apiClient
+      .get("/allOrders")
+      .then((res) => {
+        setOrders(res.data || []);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error("Error fetching orders:", err);
+        setError("Failed to load orders from trading engine.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
     let ignore = false;
@@ -16,20 +35,78 @@ const Orders = () => {
       .then((res) => {
         if (!ignore) {
           setOrders(res.data || []);
-          setLoading(false);
+          setError(null);
         }
       })
       .catch((err) => {
         if (!ignore) {
           console.error("Error fetching orders:", err);
           setError("Failed to load orders from trading engine.");
+        }
+      })
+      .finally(() => {
+        if (!ignore) {
           setLoading(false);
         }
       });
+
     return () => {
       ignore = true;
     };
-  }, [refreshKey]);
+  }, [refreshKey, lastOrderUpdate]);
+
+  const handleCancelOrder = async (orderId) => {
+    if (!orderId || cancellingId) return;
+    setCancellingId(orderId);
+    try {
+      const res = await apiClient.post(`/orders/${orderId}/cancel`);
+      if (res.data?.success) {
+        triggerRefresh();
+        await fetchOrders();
+      }
+    } catch (err) {
+      console.error("Error cancelling order:", err);
+      alert(err.response?.data?.message || "Failed to cancel order.");
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const s = (status || "EXECUTED").toUpperCase();
+    let bg = "rgba(59, 130, 246, 0.15)";
+    let color = "var(--accent-blue, #3b82f6)";
+
+    if (s === "PENDING") {
+      bg = "rgba(245, 158, 11, 0.15)";
+      color = "var(--warning, #f59e0b)";
+    } else if (s === "EXECUTED") {
+      bg = "rgba(16, 185, 129, 0.15)";
+      color = "var(--profit, #10b981)";
+    } else if (s === "CANCELLED") {
+      bg = "rgba(156, 163, 175, 0.15)";
+      color = "#9ca3af";
+    } else if (s === "REJECTED") {
+      bg = "rgba(239, 68, 68, 0.15)";
+      color = "var(--loss, #ef4444)";
+    }
+
+    return (
+      <span
+        style={{
+          padding: "2px 8px",
+          borderRadius: "4px",
+          fontSize: "0.75rem",
+          fontWeight: 600,
+          backgroundColor: bg,
+          color,
+          display: "inline-block",
+        }}
+      >
+        {s}
+      </span>
+    );
+  };
 
   if (loading && orders.length === 0) {
     return (
@@ -59,7 +136,7 @@ const Orders = () => {
           <button
             type="button"
             className="btn btn-blue"
-            onClick={() => window.location.reload()}
+            onClick={fetchOrders}
           >
             Retry
           </button>
@@ -90,20 +167,24 @@ const Orders = () => {
             <tr>
               <th>Time</th>
               <th>Instrument</th>
+              <th>Side</th>
               <th>Type</th>
               <th>Qty.</th>
-              <th>Price</th>
+              <th>Limit Price</th>
+              <th>Executed Price</th>
               <th>Total Value</th>
               <th>Realized P&L</th>
               <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {orders.map((order, index) => {
               const isBuy = order.mode === "BUY";
-              const isExecuted = (order.status || "EXECUTED") === "EXECUTED";
+              const isPending = order.status === "PENDING";
               const totalVal =
-                order.totalValue ?? (order.qty || 0) * (order.price || 0);
+                order.totalValue ??
+                (order.qty || 0) * (order.executionPrice || order.limitPrice || order.price || 0);
 
               const formattedTime = order.createdAt
                 ? new Date(order.createdAt).toLocaleTimeString("en-IN", {
@@ -112,6 +193,18 @@ const Orders = () => {
                     second: "2-digit",
                   })
                 : "—";
+
+              const limitPriceDisplay =
+                order.limitPrice !== null && order.limitPrice !== undefined
+                  ? `₹${Number(order.limitPrice).toFixed(2)}`
+                  : "—";
+
+              const execPriceDisplay =
+                order.executionPrice !== null && order.executionPrice !== undefined
+                  ? `₹${Number(order.executionPrice).toFixed(2)}`
+                  : order.price !== null && order.price !== undefined
+                  ? `₹${Number(order.price).toFixed(2)}`
+                  : "—";
 
               return (
                 <tr key={order._id || index}>
@@ -137,11 +230,25 @@ const Orders = () => {
                       {order.mode}
                     </span>
                   </td>
+                  <td>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 500,
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      {order.orderType || "MARKET"}
+                    </span>
+                  </td>
                   <td>{order.qty}</td>
-                  <td>₹{(order.price || 0).toFixed(2)}</td>
+                  <td>{limitPriceDisplay}</td>
+                  <td style={{ fontWeight: execPriceDisplay !== "—" ? 600 : 400 }}>
+                    {execPriceDisplay}
+                  </td>
                   <td>₹{totalVal.toFixed(2)}</td>
                   <td>
-                    {!isBuy && order.realizedPnL !== undefined ? (
+                    {!isBuy && order.realizedPnL !== undefined && order.status === "EXECUTED" ? (
                       <span
                         style={{
                           fontWeight: 600,
@@ -158,23 +265,29 @@ const Orders = () => {
                       "—"
                     )}
                   </td>
+                  <td>{getStatusBadge(order.status)}</td>
                   <td>
-                    <span
-                      style={{
-                        padding: "2px 8px",
-                        borderRadius: "4px",
-                        fontSize: "0.75rem",
-                        fontWeight: 500,
-                        backgroundColor: isExecuted
-                          ? "rgba(59, 130, 246, 0.15)"
-                          : "rgba(239, 68, 68, 0.15)",
-                        color: isExecuted
-                          ? "var(--accent-blue, #3b82f6)"
-                          : "var(--loss, #ef4444)",
-                      }}
-                    >
-                      {order.status || "EXECUTED"}
-                    </span>
+                    {isPending ? (
+                      <button
+                        type="button"
+                        onClick={() => handleCancelOrder(order._id)}
+                        disabled={cancellingId === order._id}
+                        style={{
+                          padding: "3px 10px",
+                          fontSize: "0.75rem",
+                          borderRadius: "4px",
+                          border: "1px solid rgba(239, 68, 68, 0.4)",
+                          backgroundColor: "rgba(239, 68, 68, 0.15)",
+                          color: "var(--loss, #ef4444)",
+                          cursor: cancellingId === order._id ? "not-allowed" : "pointer",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {cancellingId === order._id ? "Cancelling..." : "Cancel"}
+                      </button>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                 </tr>
               );

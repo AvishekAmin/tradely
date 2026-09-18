@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import apiClient from "../config/api";
 import GeneralContext from "./GeneralContext";
+import { useAuth } from "../context/AuthContext";
+import { useMarketData } from "../context/MarketDataContext";
 
 const Summary = () => {
   const { refreshKey } = useContext(GeneralContext);
+  const { user } = useAuth();
+  const { getQuote, lastOrderUpdate } = useMarketData();
   const [balance, setBalance] = useState(0);
   const [initialBalance, setInitialBalance] = useState(100000);
   const [holdings, setHoldings] = useState([]);
@@ -23,17 +27,17 @@ const Summary = () => {
         console.error("Error loading summary metrics:", err);
         setLoading(false);
       });
-  }, [refreshKey]);
+  }, [refreshKey, lastOrderUpdate]);
 
-  // Derived metrics
+  // Derived metrics with real-time market data
   const totalInvestment = holdings.reduce(
     (acc, stock) => acc + (stock.avg || 0) * (stock.qty || 0),
     0
   );
-  const totalCurrentValue = holdings.reduce(
-    (acc, stock) => acc + (stock.price || 0) * (stock.qty || 0),
-    0
-  );
+  const totalCurrentValue = holdings.reduce((acc, stock) => {
+    const quote = getQuote(stock.name);
+    return acc + (quote?.price ?? 0) * (stock.qty || 0);
+  }, 0);
   const totalPnl = totalCurrentValue - totalInvestment;
   const totalPnlPercent =
     totalInvestment > 0 ? (totalPnl / totalInvestment) * 100 : 0;
@@ -53,7 +57,7 @@ const Summary = () => {
   return (
     <>
       <div className="username">
-        <h6>Hi, Trader!</h6>
+        <h6>Hi, {user?.username || "Trader"}!</h6>
         <hr className="divider" />
       </div>
 

@@ -2,9 +2,11 @@ import React, { useState, useEffect, useContext } from "react";
 import apiClient from "../config/api";
 import { VerticalGraph } from "./VerticalGraph";
 import GeneralContext from "./GeneralContext";
+import { useMarketData } from "../context/MarketDataContext";
 
 const Holdings = () => {
   const { refreshKey, openBuyWindow, openSellWindow } = useContext(GeneralContext);
+  const { getQuote, lastOrderUpdate } = useMarketData();
   const [allHoldings, setAllHoldings] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,7 +21,7 @@ const Holdings = () => {
         console.error("Error fetching holdings:", err);
         setLoading(false);
       });
-  }, [refreshKey]);
+  }, [refreshKey, lastOrderUpdate]);
 
   const labels = allHoldings.map((stock) => stock.name);
 
@@ -27,8 +29,11 @@ const Holdings = () => {
     labels,
     datasets: [
       {
-        label: "Stock Price",
-        data: allHoldings.map((stock) => stock.price),
+        label: "Live Stock Price",
+        data: allHoldings.map((stock) => {
+          const q = getQuote(stock.name);
+          return q?.price ?? 0;
+        }),
         backgroundColor: "rgba(59, 130, 246, 0.6)",
         borderColor: "rgba(59, 130, 246, 1)",
         borderWidth: 1,
@@ -40,10 +45,10 @@ const Holdings = () => {
     (acc, stock) => acc + (stock.avg || 0) * (stock.qty || 0),
     0
   );
-  const totalCurrentValue = allHoldings.reduce(
-    (acc, stock) => acc + (stock.price || 0) * (stock.qty || 0),
-    0
-  );
+  const totalCurrentValue = allHoldings.reduce((acc, stock) => {
+    const q = getQuote(stock.name);
+    return acc + (q?.price ?? 0) * (stock.qty || 0);
+  }, 0);
   const totalPnl = totalCurrentValue - totalInvestment;
   const totalPnlPercent =
     totalInvestment > 0 ? (totalPnl / totalInvestment) * 100 : 0;
@@ -84,22 +89,61 @@ const Holdings = () => {
               </tr>
             ) : (
               allHoldings.map((stock, index) => {
-                const curValue = (stock.price || 0) * (stock.qty || 0);
-                const pnl = curValue - (stock.avg || 0) * (stock.qty || 0);
-                const isProfit = pnl >= 0.0;
+                const quote = getQuote(stock.name);
+                const currentPrice = quote?.price ?? null;
+
+                const curValue =
+                  currentPrice !== null ? currentPrice * (stock.qty || 0) : null;
+                const pnl =
+                  curValue !== null
+                    ? curValue - (stock.avg || 0) * (stock.qty || 0)
+                    : null;
+                const isProfit = pnl !== null ? pnl >= 0.0 : true;
                 const profClass = isProfit ? "profit" : "loss";
+                const pnlPercent =
+                  stock.avg && stock.qty && pnl !== null
+                    ? (pnl / (stock.avg * stock.qty)) * 100
+                    : null;
+
+                const reservedQty = stock.reservedQty || 0;
 
                 return (
                   <tr key={stock._id || index}>
                     <td style={{ fontWeight: 600 }}>{stock.name}</td>
-                    <td>{stock.qty}</td>
-                    <td>₹{(stock.avg || 0).toFixed(2)}</td>
-                    <td>₹{(stock.price || 0).toFixed(2)}</td>
-                    <td>₹{curValue.toFixed(2)}</td>
-                    <td className={profClass}>
-                      {isProfit ? "+" : ""}₹{pnl.toFixed(2)}
+                    <td>
+                      {stock.qty}
+                      {reservedQty > 0 && (
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: "0.68rem",
+                            color: "var(--warning, #f59e0b)",
+                          }}
+                          title={`${reservedQty} share(s) reserved in pending limit sell orders`}
+                        >
+                          ({reservedQty} reserved)
+                        </span>
+                      )}
                     </td>
-                    <td className={profClass}>{stock.net || "+0.00%"}</td>
+                    <td>₹{(stock.avg || 0).toFixed(2)}</td>
+                    <td>
+                      {currentPrice !== null
+                        ? `₹${currentPrice.toFixed(2)}`
+                        : "—"}
+                    </td>
+                    <td>
+                      {curValue !== null ? `₹${curValue.toFixed(2)}` : "—"}
+                    </td>
+                    <td className={profClass}>
+                      {pnl !== null
+                        ? `${isProfit ? "+" : ""}₹${pnl.toFixed(2)}`
+                        : "—"}
+                    </td>
+                    <td className={profClass}>
+                      {pnlPercent !== null
+                        ? `${pnlPercent >= 0 ? "+" : ""}${pnlPercent.toFixed(2)}%`
+                        : "—"}
+                    </td>
                     <td>
                       <div style={{ display: "flex", gap: "6px" }}>
                         <button
