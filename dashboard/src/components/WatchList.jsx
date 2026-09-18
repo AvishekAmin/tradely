@@ -1,5 +1,6 @@
 import React, { useState, useContext } from "react";
 import GeneralContext from "./GeneralContext";
+import { useMarketData } from "../context/MarketDataContext";
 import { Tooltip, Grow } from "@mui/material";
 import {
   BarChartOutlined,
@@ -10,21 +11,25 @@ import {
 import { watchlist } from "../data/data";
 import { DoughnutChart } from "./DoughnoutChart";
 
-const labels = watchlist.map((subArray) => subArray["name"]);
-
 const WatchList = () => {
   const [search, setSearch] = useState("");
+  const { getQuote, connectionStatus } = useMarketData();
 
   const filteredStocks = watchlist.filter((stock) =>
     stock.name.toLowerCase().includes(search.toLowerCase().trim())
   );
+
+  const labels = filteredStocks.map((stock) => stock.name);
 
   const data = {
     labels,
     datasets: [
       {
         label: "Price",
-        data: watchlist.map((stock) => stock.price),
+        data: filteredStocks.map((stock) => {
+          const q = getQuote(stock.name);
+          return q ? q.price : 0;
+        }),
         backgroundColor: [
           "rgba(255, 99, 132, 0.6)",
           "rgba(54, 162, 235, 0.6)",
@@ -35,17 +40,12 @@ const WatchList = () => {
           "rgba(16, 185, 129, 0.6)",
           "rgba(239, 68, 68, 0.6)",
           "rgba(59, 130, 246, 0.6)",
-        ],
-        borderColor: [
-          "rgba(255, 99, 132, 1)",
-          "rgba(54, 162, 235, 1)",
-          "rgba(255, 206, 86, 1)",
-          "rgba(75, 192, 192, 1)",
-          "rgba(153, 102, 255, 1)",
-          "rgba(255, 159, 64, 1)",
-          "rgba(16, 185, 129, 1)",
-          "rgba(239, 68, 68, 1)",
-          "rgba(59, 130, 246, 1)",
+          "rgba(147, 51, 234, 0.6)",
+          "rgba(236, 72, 153, 0.6)",
+          "rgba(14, 165, 233, 0.6)",
+          "rgba(249, 115, 22, 0.6)",
+          "rgba(168, 85, 247, 0.6)",
+          "rgba(34, 197, 94, 0.6)",
         ],
         borderWidth: 1,
       },
@@ -64,7 +64,62 @@ const WatchList = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <span className="counts"> {filteredStocks.length} / {watchlist.length}</span>
+        <div
+          style={{
+            position: "absolute",
+            right: "14px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "0.68rem",
+              fontWeight: 600,
+              padding: "2px 6px",
+              borderRadius: "4px",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              backgroundColor:
+                connectionStatus === "connected"
+                  ? "rgba(16, 185, 129, 0.15)"
+                  : connectionStatus === "connecting"
+                  ? "rgba(245, 158, 11, 0.15)"
+                  : "rgba(239, 68, 68, 0.15)",
+              color:
+                connectionStatus === "connected"
+                  ? "var(--profit, #10b981)"
+                  : connectionStatus === "connecting"
+                  ? "var(--warning, #f59e0b)"
+                  : "var(--loss, #ef4444)",
+            }}
+            title={`Market Stream: ${connectionStatus}`}
+          >
+            <span
+              style={{
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                backgroundColor:
+                  connectionStatus === "connected"
+                    ? "var(--profit, #10b981)"
+                    : connectionStatus === "connecting"
+                    ? "var(--warning, #f59e0b)"
+                    : "var(--loss, #ef4444)",
+              }}
+            />
+            {connectionStatus === "connected"
+              ? "LIVE"
+              : connectionStatus === "connecting"
+              ? "SYNC"
+              : "OFFLINE"}
+          </span>
+          <span className="counts">
+            {filteredStocks.length} / {watchlist.length}
+          </span>
+        </div>
       </div>
 
       <ul className="list">
@@ -82,6 +137,16 @@ export default WatchList;
 
 const WatchListItem = ({ stock }) => {
   const [showWatchlistActions, setShowWatchlistActions] = useState(false);
+  const { getQuote } = useMarketData();
+  const quote = getQuote(stock.name);
+
+  const price = quote?.price ?? null;
+  const changePercent = quote?.changePercent;
+  const isDown = quote ? quote.change < 0 : false;
+  const percentText =
+    changePercent !== undefined && changePercent !== null
+      ? `${changePercent >= 0 ? "+" : ""}${changePercent.toFixed(2)}%`
+      : "—";
 
   const handleMouseEnter = () => {
     setShowWatchlistActions(true);
@@ -94,15 +159,19 @@ const WatchListItem = ({ stock }) => {
   return (
     <li onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="item">
-        <p className={stock.isDown ? "down" : "up"}>{stock.name}</p>
+        <p className={isDown ? "down" : "up"}>{stock.name}</p>
         <div className="item-info">
-          <span className="percent">{stock.percent}</span>
-          {stock.isDown ? (
-            <KeyboardArrowDown className="down" />
-          ) : (
-            <KeyboardArrowUp className="up" />
+          <span className="percent">{percentText}</span>
+          {price !== null && (
+            isDown ? (
+              <KeyboardArrowDown className="down" />
+            ) : (
+              <KeyboardArrowUp className="up" />
+            )
           )}
-          <span className="price">{stock.price}</span>
+          <span className="price">
+            {price !== null ? price.toFixed(2) : "—"}
+          </span>
         </div>
       </div>
       {showWatchlistActions && <WatchListActions uid={stock.name} />}

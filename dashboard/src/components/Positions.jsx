@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import apiClient from "../config/api";
+import { useMarketData } from "../context/MarketDataContext";
 
 const Positions = () => {
+  const { getQuote } = useMarketData();
   const [allPositions, setAllPositions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,23 +52,42 @@ const Positions = () => {
               </tr>
             ) : (
               allPositions.map((stock, index) => {
-                const curValue = (stock.price || 0) * (stock.qty || 0);
-                const isProfit =
-                  curValue - (stock.avg || 0) * (stock.qty || 0) >= 0.0;
+                const quote = getQuote(stock.name);
+                const livePrice = quote?.price ?? null;
+                const curValue =
+                  livePrice !== null ? livePrice * (stock.qty || 0) : null;
+                const pnl =
+                  curValue !== null
+                    ? curValue - (stock.avg || 0) * (stock.qty || 0)
+                    : null;
+                const isProfit = pnl !== null ? pnl >= 0.0 : true;
                 const profClass = isProfit ? "profit" : "loss";
-                const dayClass = stock.isLoss ? "loss" : "profit";
+                const dayChange =
+                  quote && quote.changePercent !== undefined
+                    ? `${quote.changePercent >= 0 ? "+" : ""}${quote.changePercent.toFixed(2)}%`
+                    : "—";
+                const dayClass =
+                  quote && quote.change !== undefined
+                    ? quote.change < 0
+                      ? "loss"
+                      : "profit"
+                    : "";
 
                 return (
                   <tr key={index}>
                     <td>{stock.product}</td>
-                    <td>{stock.name}</td>
+                    <td style={{ fontWeight: 600 }}>{stock.name}</td>
                     <td>{stock.qty}</td>
-                    <td>{(stock.avg || 0).toFixed(2)}</td>
-                    <td>{(stock.price || 0).toFixed(2)}</td>
-                    <td className={profClass}>
-                      {(curValue - (stock.avg || 0) * (stock.qty || 0)).toFixed(2)}
+                    <td>₹{(stock.avg || 0).toFixed(2)}</td>
+                    <td>
+                      {livePrice !== null ? `₹${livePrice.toFixed(2)}` : "—"}
                     </td>
-                    <td className={dayClass}>{stock.day}</td>
+                    <td className={profClass}>
+                      {pnl !== null
+                        ? `${isProfit ? "+" : ""}₹${pnl.toFixed(2)}`
+                        : "—"}
+                    </td>
+                    <td className={dayClass}>{dayChange}</td>
                   </tr>
                 );
               })
