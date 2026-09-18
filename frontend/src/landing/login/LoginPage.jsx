@@ -3,13 +3,11 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { DASHBOARD_URL } from "../../config/api";
 
-function SignUp() {
-  const { signup } = useAuth();
+function LoginPage() {
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
-    username: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,32 +22,20 @@ function SignUp() {
     e.preventDefault();
     setError("");
 
-    // 1. Client-side validation
-    if (!formData.username.trim() || formData.username.trim().length < 3) {
-      setError("Username must be at least 3 characters long.");
-      return;
-    }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim() || !emailRegex.test(formData.email.trim())) {
       setError("Please provide a valid email address.");
       return;
     }
 
-    if (!formData.password || formData.password.length < 6) {
-      setError("Password must be at least 6 characters long.");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+    if (!formData.password) {
+      setError("Password is required.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await signup({
-        username: formData.username,
+      await login({
         email: formData.email,
         password: formData.password,
       });
@@ -57,7 +43,7 @@ function SignUp() {
       // Navigate to trading dashboard (cookie is already set via HttpOnly)
       window.location.href = DASHBOARD_URL;
     } catch (err) {
-      setError(err.message || "Registration failed. Please try again.");
+      setError(err.message || "Invalid email or password.");
       setIsSubmitting(false);
     }
   };
@@ -70,7 +56,7 @@ function SignUp() {
       <div
         className="card p-4 p-md-5"
         style={{
-          maxWidth: "460px",
+          maxWidth: "440px",
           width: "100%",
           backgroundColor: "var(--bg-surface, #2f2f2f)",
           border: "1px solid var(--border-subtle, rgba(255, 255, 255, 0.09))",
@@ -85,9 +71,9 @@ function SignUp() {
             alt="Tradely"
             style={{ maxHeight: "40px", marginBottom: "16px" }}
           />
-          <h3 style={{ fontWeight: 700, letterSpacing: "-0.5px" }}>Create your account</h3>
+          <h3 style={{ fontWeight: 700, letterSpacing: "-0.5px" }}>Welcome back</h3>
           <p style={{ color: "var(--text-secondary, #b4b4b4)", fontSize: "0.95rem" }}>
-            Start trading with ₹100,000 in simulated capital
+            Sign in to access your trading portfolio
           </p>
         </div>
 
@@ -108,34 +94,6 @@ function SignUp() {
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label
-              htmlFor="username"
-              className="form-label"
-              style={{ fontSize: "0.88rem", fontWeight: 500 }}
-            >
-              Username
-            </label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              className="form-control"
-              placeholder="e.g. alex_trader"
-              value={formData.username}
-              onChange={handleChange}
-              disabled={isSubmitting}
-              required
-              style={{
-                backgroundColor: "var(--bg-main, #212121)",
-                borderColor: "var(--border-subtle, rgba(255, 255, 255, 0.15))",
-                color: "var(--text-primary, #ececec)",
-                borderRadius: "8px",
-                padding: "10px 14px",
-              }}
-            />
-          </div>
-
           <div className="mb-3">
             <label
               htmlFor="email"
@@ -164,13 +122,13 @@ function SignUp() {
             />
           </div>
 
-          <div className="mb-3">
+          <div className="mb-4">
             <label
               htmlFor="password"
               className="form-label"
               style={{ fontSize: "0.88rem", fontWeight: 500 }}
             >
-              Password (min. 6 characters)
+              Password
             </label>
             <input
               type="password"
@@ -179,34 +137,6 @@ function SignUp() {
               className="form-control"
               placeholder="••••••••"
               value={formData.password}
-              onChange={handleChange}
-              disabled={isSubmitting}
-              required
-              style={{
-                backgroundColor: "var(--bg-main, #212121)",
-                borderColor: "var(--border-subtle, rgba(255, 255, 255, 0.15))",
-                color: "var(--text-primary, #ececec)",
-                borderRadius: "8px",
-                padding: "10px 14px",
-              }}
-            />
-          </div>
-
-          <div className="mb-4">
-            <label
-              htmlFor="confirmPassword"
-              className="form-label"
-              style={{ fontSize: "0.88rem", fontWeight: 500 }}
-            >
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              className="form-control"
-              placeholder="••••••••"
-              value={formData.confirmPassword}
               onChange={handleChange}
               disabled={isSubmitting}
               required
@@ -239,27 +169,27 @@ function SignUp() {
                   role="status"
                   aria-hidden="true"
                 ></span>
-                Creating account...
+                Signing in...
               </span>
             ) : (
-              "Sign Up"
+              "Sign In"
             )}
           </button>
         </form>
 
         <div className="text-center mt-3" style={{ fontSize: "0.9rem" }}>
           <span style={{ color: "var(--text-secondary, #b4b4b4)" }}>
-            Already have an account?{" "}
+            Don't have an account?{" "}
           </span>
           <Link
-            to="/login"
+            to="/signup"
             style={{
               color: "var(--accent-blue, #3b82f6)",
               textDecoration: "none",
               fontWeight: 600,
             }}
           >
-            Sign in
+            Sign up
           </Link>
         </div>
       </div>
@@ -267,4 +197,4 @@ function SignUp() {
   );
 }
 
-export default SignUp;
+export default LoginPage;
