@@ -1,3 +1,4 @@
+import http from "http";
 import app from "./app.js";
 import { PORT } from "./config/env.js";
 import { connectDB, disconnectDB } from "./config/db.js";
@@ -5,6 +6,11 @@ import { HoldingsModel } from "./models/HoldingsModel.js";
 import { OrdersModel } from "./models/OrdersModel.js";
 import { PositionsModel } from "./models/PositionsModel.js";
 import { AccountModel } from "./models/AccountModel.js";
+import { initSocket } from "./socket.js";
+import {
+  startMarketSimulation,
+  stopMarketSimulation,
+} from "./services/marketDataService.js";
 
 let server;
 
@@ -32,7 +38,9 @@ const cleanupLegacyOrphanData = async () => {
  * Starts the application:
  * 1. Connects to MongoDB
  * 2. Purges legacy orphan records
- * 3. Starts listening for HTTP requests
+ * 3. Initializes Socket.IO on HTTP server
+ * 4. Starts Market Data Simulation loop
+ * 5. Starts listening for HTTP requests
  */
 const startServer = async () => {
   try {
@@ -42,8 +50,15 @@ const startServer = async () => {
     // 2. Perform Phase 3 legacy data reset
     await cleanupLegacyOrphanData();
 
-    // 3. Start HTTP Server
-    server = app.listen(PORT, () => {
+    // 3. Create HTTP Server & initialize Socket.IO
+    server = http.createServer(app);
+    initSocket(server);
+
+    // 4. Start Market Data Simulation
+    startMarketSimulation(1500);
+
+    // 5. Start listening
+    server.listen(PORT, () => {
       console.log(`Tradely Backend server listening on PORT ${PORT}`);
     });
   } catch (err) {
@@ -57,6 +72,9 @@ const startServer = async () => {
  */
 const gracefulShutdown = async (signal) => {
   console.log(`\nReceived ${signal}. Initiating graceful shutdown...`);
+
+  // Stop simulation loop
+  stopMarketSimulation();
 
   if (server) {
     server.close(async () => {
@@ -79,3 +97,4 @@ process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 
 startServer();
+
