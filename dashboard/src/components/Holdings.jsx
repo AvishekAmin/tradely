@@ -76,15 +76,17 @@ const Holdings = () => {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan="8" style={{ textAlign: "center", padding: "24px" }}>
-                  Loading holdings...
-                </td>
-              </tr>
+              Array.from({ length: 3 }).map((_, i) => (
+                <tr key={`skeleton-${i}`}>
+                  <td colSpan="8" style={{ padding: "12px 14px" }}>
+                    <div className="skeleton" style={{ height: "20px", width: "100%" }}></div>
+                  </td>
+                </tr>
+              ))
             ) : allHoldings.length === 0 ? (
               <tr>
-                <td colSpan="8" style={{ textAlign: "center", padding: "24px" }}>
-                  No holdings found. Use the watchlist on the left to buy stocks.
+                <td colSpan="8" style={{ textAlign: "center", padding: "32px", color: "var(--text-muted)", fontSize: "0.95rem" }}>
+                  Your portfolio is empty. Explore your watchlist and place your first simulated trade.
                 </td>
               </tr>
             ) : (
@@ -110,7 +112,7 @@ const Holdings = () => {
                 return (
                   <tr key={stock._id || index}>
                     <td style={{ fontWeight: 600 }}>{stock.name}</td>
-                    <td>
+                    <td className="tabular-nums">
                       {stock.qty}
                       {reservedQty > 0 && (
                         <span
@@ -125,21 +127,21 @@ const Holdings = () => {
                         </span>
                       )}
                     </td>
-                    <td>₹{(stock.avg || 0).toFixed(2)}</td>
-                    <td>
+                    <td className="tabular-nums">₹{(stock.avg || 0).toFixed(2)}</td>
+                    <td className="tabular-nums">
                       {currentPrice !== null
                         ? `₹${currentPrice.toFixed(2)}`
                         : "—"}
                     </td>
-                    <td>
+                    <td className="tabular-nums">
                       {curValue !== null ? `₹${curValue.toFixed(2)}` : "—"}
                     </td>
-                    <td className={profClass}>
+                    <td className={`tabular-nums ${profClass}`}>
                       {pnl !== null
                         ? `${isProfit ? "+" : ""}₹${pnl.toFixed(2)}`
                         : "—"}
                     </td>
-                    <td className={profClass}>
+                    <td className={`tabular-nums ${profClass}`}>
                       {pnlPercent !== null
                         ? `${pnlPercent >= 0 ? "+" : ""}${pnlPercent.toFixed(2)}%`
                         : "—"}

@@ -9,6 +9,7 @@ import {
   Logout,
   OpenInNew,
 } from "@mui/icons-material";
+import TradelyLogo from "./TradelyLogo";
 
 const Menu = () => {
   const location = useLocation();
@@ -36,8 +37,8 @@ const Menu = () => {
 
   return (
     <div className="menu-container">
-      <Link to="/" style={{ display: "flex", alignItems: "center" }}>
-        <img src="/logo.png" alt="Tradely" style={{ width: "38px" }} />
+      <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }} aria-label="Tradely Dashboard Home">
+        <TradelyLogo size="small" />
       </Link>
       <div className="menus">
         <ul>

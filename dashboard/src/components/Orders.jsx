@@ -243,7 +243,7 @@ const Orders = () => {
                   <td style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
                     {formattedTime}
                   </td>
-                  <td>
+                  <td className="tabular-nums">
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                       <span style={{ fontWeight: 600 }}>{order.name}</span>
                       {order.ocoGroupId && (
@@ -264,7 +264,7 @@ const Orders = () => {
                       )}
                     </div>
                   </td>
-                  <td>
+                  <td className="tabular-nums">
                     <span
                       style={{
                         padding: "2px 8px",
@@ -282,7 +282,7 @@ const Orders = () => {
                       {order.mode}
                     </span>
                   </td>
-                  <td>
+                  <td className="tabular-nums">
                     <span
                       style={{
                         fontSize: "0.75rem",
@@ -293,14 +293,14 @@ const Orders = () => {
                       {order.orderType || "MARKET"}
                     </span>
                   </td>
-                  <td>{order.qty}</td>
-                  <td>{stopPriceDisplay}</td>
-                  <td>{limitPriceDisplay}</td>
+                  <td className="tabular-nums">{order.qty}</td>
+                  <td className="tabular-nums">{stopPriceDisplay}</td>
+                  <td className="tabular-nums">{limitPriceDisplay}</td>
                   <td style={{ fontWeight: execPriceDisplay !== "—" ? 600 : 400 }}>
                     {execPriceDisplay}
                   </td>
-                  <td>₹{totalVal.toFixed(2)}</td>
-                  <td>
+                  <td className="tabular-nums">₹{totalVal.toFixed(2)}</td>
+                  <td className="tabular-nums">
                     {!isBuy && order.realizedPnL !== undefined && order.status === "EXECUTED" ? (
                       <span
                         style={{
@@ -318,8 +318,8 @@ const Orders = () => {
                       "—"
                     )}
                   </td>
-                  <td>{getStatusBadge(order.status)}</td>
-                  <td>
+                  <td className="tabular-nums">{getStatusBadge(order.status)}</td>
+                  <td className="tabular-nums">
                     {isCancellable ? (
                       <button
                         type="button"

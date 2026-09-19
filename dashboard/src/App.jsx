@@ -5,24 +5,27 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import { MarketDataProvider } from "./context/MarketDataContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { ToastProvider } from "./components/ui/ToastContainer";
 
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <MarketDataProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route
-                path="/*"
-                element={
-                  <ProtectedRoute>
-                    <Home />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </BrowserRouter>
+          <ToastProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route
+                  path="/*"
+                  element={
+                    <ProtectedRoute>
+                      <Home />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </BrowserRouter>
+          </ToastProvider>
         </MarketDataProvider>
       </AuthProvider>
     </ThemeProvider>

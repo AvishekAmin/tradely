@@ -386,16 +386,16 @@ const WatchListItem = ({
       onMouseLeave={() => setShowWatchlistActions(false)}
     >
       <div className="item">
-        <p className={isDown ? "down" : "up"}>{symbol}</p>
+        <p className={isDown ? "down" : "up"} style={{ fontWeight: "600" }}>{symbol}</p>
         <div className="item-info">
-          <span className="percent">{percentText}</span>
+          <span className="percent tabular-nums">{percentText}</span>
           {price !== null &&
             (isDown ? (
-              <KeyboardArrowDown className="down" />
+              <KeyboardArrowDown className="down" fontSize="small" />
             ) : (
-              <KeyboardArrowUp className="up" />
+              <KeyboardArrowUp className="up" fontSize="small" />
             ))}
-          <span className="price">
+          <span className="price tabular-nums" style={{ fontWeight: "500" }}>
             {price !== null ? price.toFixed(2) : "—"}
           </span>
         </div>
@@ -453,13 +453,13 @@ const WatchListActions = ({
     <span className="actions">
       <span>
         <Tooltip title="Buy (B)" placement="top" arrow TransitionComponent={Grow}>
-          <button type="button" className="buy" onClick={handleBuyClick}>
+          <button type="button" className="buy" onClick={handleBuyClick} aria-label={`Buy ${uid}`}>
             Buy
           </button>
         </Tooltip>
 
         <Tooltip title="Sell (S)" placement="top" arrow TransitionComponent={Grow}>
-          <button type="button" className="sell" onClick={handleSellClick}>
+          <button type="button" className="sell" onClick={handleSellClick} aria-label={`Sell ${uid}`}>
             Sell
           </button>
         </Tooltip>
@@ -470,6 +470,7 @@ const WatchListActions = ({
               type="button"
               className="action"
               onClick={handleMoveUpClick}
+              aria-label={`Move ${uid} up`}
               style={{ padding: "4px" }}
             >
               <ArrowUpward style={{ fontSize: "0.95rem" }} />
@@ -483,6 +484,7 @@ const WatchListActions = ({
               type="button"
               className="action"
               onClick={handleMoveDownClick}
+              aria-label={`Move ${uid} down`}
               style={{ padding: "4px" }}
             >
               <ArrowDownward style={{ fontSize: "0.95rem" }} />
@@ -495,6 +497,7 @@ const WatchListActions = ({
             type="button"
             className="action"
             onClick={handleRemoveClick}
+            aria-label={`Remove ${uid} from Watchlist`}
             style={{ padding: "4px", color: "var(--loss, #ef4444)" }}
           >
             <Delete style={{ fontSize: "0.95rem" }} />

@@ -75,11 +75,11 @@ const Positions = () => {
 
                 return (
                   <tr key={index}>
-                    <td>{stock.product}</td>
+                    <td className="tabular-nums">{stock.product}</td>
                     <td style={{ fontWeight: 600 }}>{stock.name}</td>
-                    <td>{stock.qty}</td>
-                    <td>₹{(stock.avg || 0).toFixed(2)}</td>
-                    <td>
+                    <td className="tabular-nums">{stock.qty}</td>
+                    <td className="tabular-nums">₹{(stock.avg || 0).toFixed(2)}</td>
+                    <td className="tabular-nums">
                       {livePrice !== null ? `₹${livePrice.toFixed(2)}` : "—"}
                     </td>
                     <td className={profClass}>
