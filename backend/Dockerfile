@@ -24,7 +24,7 @@ EXPOSE 8000
 
 # Container readiness probe (verifies both HTTP server and MongoDB availability)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD wget -qO- http://localhost:8000/ready | grep -q '"status":"ok"' || exit 1
+  CMD wget -qO- http://localhost:8000/ready | grep -q '"status":"ready"' || exit 1
 
 # Start production server
 CMD ["node", "src/server.js"]

@@ -37,11 +37,23 @@ export const runInTransaction = async (workFn, maxRetries = 3) => {
         return result;
       } catch (err) {
         // If transactions are not supported on this MongoDB topology, fallback
+        const combinedErrorStr = [
+          err?.message,
+          err?.errmsg,
+          err?.errorResponse?.message,
+          err?.errorResponse?.errmsg,
+          err?.originalError?.message,
+          err?.originalError?.errmsg,
+        ]
+          .filter(Boolean)
+          .join(" ");
+
         if (
-          err.message &&
-          (err.message.includes("replica set member") ||
-            err.message.includes("standalone") ||
-            err.message.includes("Transaction numbers are only allowed"))
+          combinedErrorStr.includes("replica set member") ||
+          combinedErrorStr.includes("standalone") ||
+          combinedErrorStr.includes("Transaction numbers are only allowed") ||
+          combinedErrorStr.includes("does not support retryable writes") ||
+          combinedErrorStr.includes("retryWrites=false")
         ) {
           console.warn("MongoDB transactions not supported on this topology, executing without session.");
           return workFn(null);

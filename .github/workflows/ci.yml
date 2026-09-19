@@ -26,7 +26,7 @@ jobs:
     env:
       NODE_ENV: test
       PORT: 8000
-      MONGO_URI: mongodb://localhost:27017/tradely_test
+      MONGO_URI: mongodb://127.0.0.1:27017/tradely_test?directConnection=true
       JWT_SECRET: tradely_ci_test_secret_must_be_at_least_32_chars_long
       JWT_EXPIRES_IN: 7d
       FRONTEND_URL: http://localhost:5173
