@@ -1,10 +1,27 @@
 import axios from "axios";
 
+/**
+ * Production-hardened API, Socket, and Landing URL configuration
+ * Supports build-time Vite environment variables with intelligent fallbacks.
+ */
 export const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:8000";
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD && typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.hostname}:8000`
+    : "http://localhost:8000");
+
+export const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL ||
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD && typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.hostname}:8000`
+    : "http://localhost:8000");
 
 export const LANDING_URL =
-  import.meta.env.VITE_LANDING_URL || "http://localhost:5173";
+  import.meta.env.VITE_LANDING_URL ||
+  (import.meta.env.PROD && typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.hostname}:5173`
+    : "http://localhost:5173");
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,

@@ -1,13 +1,17 @@
 import * as authService from "../services/authService.js";
 import { NODE_ENV } from "../config/env.js";
 
-const COOKIE_OPTIONS = {
+export const getCookieOptions = () => ({
   httpOnly: true,
-  secure: NODE_ENV === "production",
-  sameSite: NODE_ENV === "production" ? "none" : "lax",
+  secure:
+    process.env.COOKIE_SECURE !== undefined
+      ? process.env.COOKIE_SECURE === "true"
+      : NODE_ENV === "production",
+  sameSite: process.env.COOKIE_SAME_SITE || (NODE_ENV === "production" ? "none" : "lax"),
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
-};
+  ...(process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
+});
 
 /**
  * Handle user registration
@@ -18,7 +22,8 @@ export const signup = async (req, res, next) => {
     const { user, token } = await authService.signupUser(payload);
 
     // Set HttpOnly token cookie
-    res.cookie("token", token, COOKIE_OPTIONS);
+    res.cookie("token", token, getCookieOptions());
+
 
     return res.status(201).json({
       success: true,
@@ -39,7 +44,7 @@ export const login = async (req, res, next) => {
     const { user, token } = await authService.loginUser(payload);
 
     // Set HttpOnly token cookie
-    res.cookie("token", token, COOKIE_OPTIONS);
+    res.cookie("token", token, getCookieOptions());
 
     return res.status(200).json({
       success: true,
@@ -79,15 +84,13 @@ export const getMe = async (req, res, next) => {
  */
 export const logout = async (req, res, next) => {
   try {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: NODE_ENV === "production",
-      sameSite: NODE_ENV === "production" ? "none" : "lax",
-      path: "/",
-    });
+    const opts = getCookieOptions();
+    delete opts.maxAge;
+    res.clearCookie("token", opts);
 
     return res.status(200).json({
       success: true,
+
       message: "Logged out successfully.",
     });
   } catch (err) {
