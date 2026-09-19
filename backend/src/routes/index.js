@@ -6,6 +6,8 @@ import fundRoutes from "./fundRoutes.js";
 import holdingRoutes from "./holdingRoutes.js";
 import positionRoutes from "./positionRoutes.js";
 import orderRoutes from "./orderRoutes.js";
+import watchlistRoutes from "./watchlistRoutes.js";
+import portfolioRoutes from "./portfolioRoutes.js";
 import { authenticate } from "../middleware/auth.js";
 
 const router = Router();
@@ -20,5 +22,7 @@ router.use(authenticate, fundRoutes);
 router.use(authenticate, holdingRoutes);
 router.use(authenticate, positionRoutes);
 router.use(authenticate, orderRoutes);
+router.use(authenticate, watchlistRoutes);
+router.use(authenticate, portfolioRoutes);
 
 export default router;
