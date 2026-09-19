@@ -1,0 +1,164 @@
+name: Tradely CI / CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # 1. Backend Verification Job
+  backend-ci:
+    name: Backend Lint, Syntax & Integration Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      PORT: 8000
+      MONGO_URI: mongodb://localhost:27017/tradely_test
+      JWT_SECRET: tradely_ci_test_secret_must_be_at_least_32_chars_long
+      JWT_EXPIRES_IN: 7d
+      FRONTEND_URL: http://localhost:5173
+      DASHBOARD_URL: http://localhost:5174
+      ALLOWED_ORIGINS: http://localhost:5173,http://localhost:5174
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install Backend Dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Verify Backend Syntax
+        working-directory: backend
+        run: |
+          node --check src/server.js
+          node --check src/app.js
+          node --check src/config/env.js
+
+      - name: Run Backend Integration & Production Hardening Tests
+        working-directory: backend
+        run: node test_phase8_runner.js
+
+  # 2. Frontend (Landing/Auth) Verification Job
+  frontend-ci:
+    name: Frontend Lint & Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Verify Production Build
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_API_URL: http://localhost:8000
+          VITE_DASHBOARD_URL: http://localhost:5174
+
+  # 3. Dashboard (Trading Terminal) Verification Job
+  dashboard-ci:
+    name: Dashboard Lint & Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: "npm"
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install Dashboard Dependencies
+        working-directory: dashboard
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: dashboard
+        run: npm run lint
+
+      - name: Verify Production Build
+        working-directory: dashboard
+        run: npm run build
+        env:
+          VITE_API_URL: http://localhost:8000
+          VITE_SOCKET_URL: http://localhost:8000
+          VITE_LANDING_URL: http://localhost:5173
+
+  # 4. Docker Container Build Verification Job
+  docker-validation:
+    name: Dockerfile Build Validation
+    needs: [backend-ci, frontend-ci, dashboard-ci]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Backend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: false
+          tags: tradely-backend:ci
+
+      - name: Build Frontend Docker Image (Public Non-Secret Args)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: false
+          build-args: |
+            VITE_API_URL=http://localhost:8000
+            VITE_DASHBOARD_URL=http://localhost:5174
+          tags: tradely-frontend:ci
+
+      - name: Build Dashboard Docker Image (Public Non-Secret Args)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./dashboard
+          push: false
+          build-args: |
+            VITE_API_URL=http://localhost:8000
+            VITE_SOCKET_URL=http://localhost:8000
+            VITE_LANDING_URL=http://localhost:5173
+          tags: tradely-dashboard:ci

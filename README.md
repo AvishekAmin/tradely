@@ -1,51 +1,47 @@
-# Tradely — Full-Stack Stock Trading Platform
+# Tradely — Production-Hardened Stock Trading Platform
 
-Tradely is a full-stack stock trading platform built using the **MERN stack**. It provides a trading-style dashboard where users can view holdings, positions, orders, funds, market watchlist, portfolio summaries, and place buy orders through a React-based interface.
+Tradely is a full-stack, production-hardened stock trading platform built on the **MERN** architecture. It provides an institutional-style trading experience featuring real-time market simulation, advanced risk-management order types (Market, Limit, Stop-Loss, Trailing Stop, OCO), persistent user watchlists, atomic balance/share reservations with MongoDB multi-document transactions, private WebSocket execution notifications, and containerized deployment readiness.
 
-> **Note:** Tradely is an educational and portfolio project. It does not execute real stock-market transactions and should not be used for real-money trading.
-
----
-
-## 🚀 Features
-
-- 📊 Interactive trading dashboard
-- 👀 Market watchlist
-- 💼 Holdings management and visualization
-- 📈 Positions tracking
-- 🧾 Orders management
-- 💰 Funds overview
-- 📉 Portfolio charts and graphical representations
-- 🛒 Buy-order interface with quantity and price inputs
-- 🔄 REST API communication between frontend and backend
-- 🗄️ MongoDB database integration using Mongoose
-- ⚡ React-based component architecture
-- 🧭 Client-side routing using React Router
-- 🌐 Backend deployment support with Render
+> **Note:** Tradely is an educational simulation and portfolio platform. It does not execute real financial transactions and should not be used for real-money trading.
 
 ---
 
-## 🛠️ Tech Stack
+## 🚀 Key Architecture & Capabilities
 
-### Frontend
+### Core Features (Phases 1–8)
+- 🔐 **Multi-User Isolation & Auth**: JWT-based session management using secure, HttpOnly, SameSite cookies with strict user isolation.
+- ⚡ **Real-Time Market Data**: In-memory simulation tick generator emitting live prices via Socket.IO.
+- 🛒 **Advanced Order Execution Engine**:
+  - **MARKET**: Instant execution at current market prices.
+  - **LIMIT**: Bid/ask matching against live price feeds.
+  - **STOP_MARKET & STOP_LIMIT**: Server-side threshold evaluation and conditional trigger transitions.
+  - **TRAILING_STOP**: Dynamic price tracking with automatic high-water-mark adjustments.
+  - **OCO (One-Cancels-the-Other)**: Dual-bracket orders with a dedicated group schema, shared atomic reservation, and race-safe claiming.
+- 🛡️ **Atomic Reservation & Concurrency Safety**: MongoDB ACID transactions with optimistic locking and retry handling for transient write conflicts. Zero double-spend or negative balance states.
+- 📊 **Portfolio Analytics & Watchlist**: User-specific persistent watchlists ($addToSet/$pull safe mutations), real-time realized/unrealized P&L, and asset allocation breakdown with missing-quote safeguards.
+- 🛡️ **Production Hardening (DevOps & Security)**:
+  - Helmet security headers and strict CORS origin enforcement.
+  - Request body payload limiting (`1mb`) to mitigate DoS vectors.
+  - In-memory sliding-window rate limiting on sensitive authentication routes (`RateLimit-*` and `Retry-After` standard headers).
+  - Production error masking (suppression of stack traces and database internals on 500 errors).
+  - Structured zero-dependency JSON logging with automated redaction of sensitive credentials (`password`, `token`, `secret`, `cookie`, `mongo_uri`).
+  - Liveness (`GET /health`) and database-backed Readiness (`GET /ready`) probes.
+  - Idempotent, promise-awaited graceful shutdown handling `SIGTERM`/`SIGINT` with a 10s fallback guard.
+  - Multi-stage Alpine Docker images with non-root runtime users.
+  - Docker Compose orchestrating Backend, Frontend, Dashboard, and local MongoDB services.
+  - GitHub Actions CI workflow with MongoDB 7.0 service container and build validations.
 
-- **React.js**
-- **Vite**
-- **React Router**
-- **Axios**
-- **Material UI**
-- **Chart.js**
-- **React Chart.js 2**
-- **JavaScript (ES Modules)**
+---
 
-### Backend
+## 🛠️ Technology Stack
 
-- **Node.js**
-- **Express.js**
-- **MongoDB**
-- **Mongoose**
-- **CORS**
-- **dotenv**
-- **JavaScript (ES Modules)**
+| Layer | Technologies |
+|---|---|
+| **Backend API** | Node.js 20 LTS, Express 5, Mongoose 9, Socket.IO 4, Helmet, Bcryptjs, JSONWebToken, Dotenv |
+| **Frontend (Landing/Auth)** | React 19, Vite 8, React Router 7, Axios, Material UI |
+| **Dashboard (Trading Terminal)** | React 19, Vite 8, React Router 7, Axios, Material UI, Chart.js, Socket.IO Client |
+| **Database** | MongoDB 7.0+ (Replica Set required for ACID transactions) |
+| **DevOps & Containers** | Docker (Multi-stage builds), Docker Compose, Nginx (Alpine), GitHub Actions CI |
 
 ---
 
@@ -53,362 +49,141 @@ Tradely is a full-stack stock trading platform built using the **MERN stack**. I
 
 ```text
 tradely/
-│
 ├── backend/
 │   ├── src/
-│   │   ├── app.js
-│   │   │
-│   │   ├── models/
-│   │   │   ├── HoldingsModel.js
-│   │   │   ├── OrdersModel.js
-│   │   │   └── PositionsModel.js
-│   │   │
-│   │   └── schemas/
-│   │       ├── HoldingsSchema.js
-│   │       ├── OrdersSchema.js
-│   │       └── PositionsSchema.js
-│   │
-│   ├── package.json
-│   └── package-lock.json
+│   │   ├── config/             # DB connection, env validation, trust proxy config
+│   │   ├── controllers/        # Express route controllers (auth, orders, health, etc.)
+│   │   ├── middleware/         # Helmet, CORS, RateLimiter, RequestLogger, ErrorHandler
+│   │   ├── models/             # Mongoose models (User, Order, OcoGroup, Holding, Watchlist)
+│   │   ├── routes/             # Public and protected API route declarations
+│   │   ├── schemas/            # Schemas with compound and unique indexes
+│   │   ├── services/           # Order engine, market simulation, analytics, watchlist
+│   │   ├── utils/              # Structured logger, AppError, transaction helper
+│   │   ├── app.js              # Express app wiring
+│   │   ├── server.js           # Server lifecycle & graceful shutdown
+│   │   └── socket.js           # Socket.IO WebSocket management
+│   ├── Dockerfile              # Production Node.js multi-stage container
+│   ├── test_phase8_runner.js   # Automated integration and hardening test suite
+│   ├── .env.example
+│   └── package.json
 │
-├── dashboard/
-│   ├── public/
-│   │   ├── favicon.svg
-│   │   └── logo.png
-│   │
+├── frontend/                   # Landing page, authentication UI, and pricing
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── Apps.jsx
-│   │   │   ├── BuyActionWindow.jsx
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── DoughnoutChart.jsx
-│   │   │   ├── Funds.jsx
-│   │   │   ├── GeneralContext.jsx
-│   │   │   ├── Holdings.jsx
-│   │   │   ├── Home.jsx
-│   │   │   ├── Menu.jsx
-│   │   │   ├── Orders.jsx
-│   │   │   ├── Positions.jsx
-│   │   │   ├── Summary.jsx
-│   │   │   ├── TopBar.jsx
-│   │   │   ├── VerticalGraph.jsx
-│   │   │   └── WatchList.jsx
-│   │   │
-│   │   └── App.jsx
-│   │
-│   ├── package.json
-│   └── package-lock.json
+│   ├── nginx.conf              # Production Nginx reverse proxy / static server
+│   ├── Dockerfile              # Multi-stage Vite build to Nginx
+│   ├── .env.example
+│   └── package.json
 │
+├── dashboard/                  # Trading terminal, charts, watchlist, and order execution
+│   ├── src/
+│   ├── nginx.conf              # Production Nginx static server
+│   ├── Dockerfile              # Multi-stage Vite build to Nginx
+│   ├── .env.example
+│   └── package.json
+│
+├── .github/workflows/ci.yml    # Continuous Integration pipeline
+├── docker-compose.yml          # Local multi-service orchestration
 └── README.md
 ```
 
 ---
 
-## 🔌 Backend API
+## ⚙️ Environment Configuration
 
-The backend currently provides the following REST API endpoints:
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/allHoldings` | Fetch all holdings |
-| `GET` | `/allPositions` | Fetch all positions |
-| `POST` | `/newOrder` | Create and save a new order |
-
-### Create a New Order
-
-**Endpoint:**
-
-```http
-POST /newOrder
-```
-
-**Request Body:**
-
-```json
-{
-  "name": "TCS",
-  "qty": 2,
-  "price": 3500,
-  "mode": "BUY"
-}
-```
-
-The order is stored in MongoDB using the `OrdersModel`.
-
----
-
-## ⚙️ Getting Started
-
-### Prerequisites
-
-Make sure you have the following installed:
-
-- [Node.js](https://nodejs.org/)
-- npm
-- MongoDB / MongoDB Atlas
-- Git
-
----
-
-## 📥 Installation
-
-### 1. Clone the Repository
+Copy the sample environment files before running the application:
 
 ```bash
-git clone https://github.com/AvishekAmin/tradely.git
-cd tradely
+# Backend configuration
+cp backend/.env.example backend/.env
+
+# Frontend configuration
+cp frontend/.env.example frontend/.env
+
+# Dashboard configuration
+cp dashboard/.env.example dashboard/.env
+```
+
+### Backend (`backend/.env`)
+| Variable | Description | Default / Example |
+|---|---|---|
+| `PORT` | HTTP port for the backend service | `8000` |
+| `NODE_ENV` | Environment mode (`development`, `production`, `test`) | `development` |
+| `MONGO_URI` | MongoDB connection URI (must support transactions) | `mongodb://localhost:27017/tradely` |
+| `JWT_SECRET` | Secret key for JWT signing (**Min 32 characters**) | *Generated strong secret* |
+| `JWT_EXPIRES_IN` | Token validity duration | `7d` |
+| `FRONTEND_URL` | URL of the frontend web application | `http://localhost:5173` |
+| `DASHBOARD_URL` | URL of the trading dashboard application | `http://localhost:5174` |
+| `ALLOWED_ORIGINS` | Comma-delimited list of permitted CORS origins | `http://localhost:5173,http://localhost:5174` |
+| `TRUST_PROXY` | Reverse proxy trust hops (`0` for direct, `1` behind proxy) | `0` |
+| `COOKIE_SECURE` | Enforce secure HTTPS flag on auth cookies | `false` (in dev), `true` (in prod) |
+| `COOKIE_SAME_SITE` | Cookie cross-site policy (`lax` or `none`) | `lax` |
+
+> [!IMPORTANT]
+> **Vite Build-Time Variables**: Frontend and Dashboard are compiled to static assets served by Nginx. `VITE_*` environment variables are baked in at build time. When building Docker images, pass them as `--build-arg` values (already configured in `docker-compose.yml`).
+
+---
+
+## 🐳 Running with Docker Compose
+
+To launch the complete platform locally in a production-like containerized topology:
+
+```bash
+docker compose up --build
+```
+
+### Exposed Services:
+- **Frontend (Landing/Auth)**: `http://localhost:5173`
+- **Dashboard (Trading Terminal)**: `http://localhost:5174`
+- **Backend API**: `http://localhost:8000`
+- **MongoDB**: `localhost:27017`
+
+To gracefully shut down containers:
+```bash
+docker compose down
 ```
 
 ---
 
-### 2. Setup the Backend
+## 🧪 Testing & Verification
 
-Navigate to the backend directory:
+Tradely includes a comprehensive test suite that validates production hardening, security configurations, and Phase 1–7 regression:
 
 ```bash
 cd backend
+npm test
 ```
 
-Install dependencies:
-
-```bash
-npm install
-```
-
-Create a `.env` file inside the `backend` directory:
-
-```env
-PORT=8000
-MONGO_URI=your_mongodb_connection_string
-```
-
-Start the backend in development mode:
-
-```bash
-npm run dev
-```
-
-For production:
-
-```bash
-npm start
-```
-
-The backend will run on:
-
-```text
-http://localhost:8000
-```
+### Test Coverage includes:
+- **Structured JSON Logger**: Automatic redaction of sensitive credentials in strings and nested objects.
+- **Cookie Security**: Dynamic `httpOnly`, `secure`, and `sameSite` policy evaluation.
+- **Sliding-Window Rate Limiter**: Quota enforcement (20 req/15min) and standard `RateLimit-*` / `Retry-After` headers.
+- **Error Masking**: 500 error sanitization and stack-trace suppression under `NODE_ENV=production`.
+- **Health & Readiness**: `GET /health` process liveness and `GET /ready` MongoDB dependency verification.
+- **Trading Lifecycle**: Atomic reservation lock-in, OCO group win/cancel claims, and dynamic portfolio analytics.
 
 ---
 
-### 3. Setup the Dashboard
-
-Open a new terminal and navigate to the dashboard:
-
-```bash
-cd dashboard
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start the Vite development server:
-
-```bash
-npm run dev
-```
-
-Vite will display the local development URL in your terminal.
-
----
-
-## 🔐 Environment Variables
-
-The backend requires a MongoDB connection string.
-
-Create:
-
-```text
-backend/.env
-```
-
-Example:
-
-```env
-PORT=8000
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/tradely
-```
-
-> Never commit your `.env` file or expose database credentials publicly.
-
----
-
-## 🧠 Application Architecture
-
-Tradely follows a simple full-stack architecture:
-
-```text
-                ┌─────────────────────────┐
-                │     React + Vite        │
-                │       Dashboard         │
-                └────────────┬────────────┘
-                             │
-                             │ Axios / REST API
-                             ▼
-                ┌─────────────────────────┐
-                │      Express.js         │
-                │        Backend          │
-                └────────────┬────────────┘
-                             │
-                             │ Mongoose
-                             ▼
-                ┌─────────────────────────┐
-                │        MongoDB          │
-                │        Database         │
-                └─────────────────────────┘
-```
-
-The React frontend communicates with the Express backend through REST APIs. The backend uses Mongoose models and schemas to interact with MongoDB.
-
----
-
-## 📊 Dashboard Sections
-
-The dashboard contains several sections designed around a stock-trading workflow.
-
-### Summary
-
-Provides an overview of the user's trading portfolio.
-
-### Orders
-
-Displays orders submitted through the trading interface.
-
-### Holdings
-
-Shows stocks currently held in the portfolio along with quantities, average prices, current prices, and returns.
-
-### Positions
-
-Displays current trading positions and related performance information.
-
-### Funds
-
-Provides an overview of available trading funds.
-
-### Watchlist
-
-Provides a market-style watchlist for tracking selected securities.
-
-### Buy Order
-
-The buy-order interface allows users to enter:
-
-- Stock name
-- Quantity
-- Price
-- Order mode
-
-The order is sent to the backend using an Axios POST request and stored in MongoDB.
-
----
-
-## 📈 Data Visualization
-
-Tradely uses **Chart.js** and **react-chartjs-2** to present portfolio-related information through visual charts.
-
-These visualizations help make portfolio and financial information easier to understand.
-
----
-
-## 🌐 Deployment
-
-The backend can be deployed as a **Render Web Service**.
-
-The frontend can be deployed separately using a static hosting platform that supports Vite applications.
-
-When deploying the backend:
-
-1. Connect the GitHub repository.
-2. Select the `backend` directory as the root directory.
-3. Install dependencies using:
-
-```bash
-npm install
-```
-
-4. Start the service using:
-
-```bash
-npm start
-```
-
-5. Configure the required environment variables in the hosting platform.
-
----
-
-## 🎯 Learning Objectives
-
-This project was developed to gain practical experience with:
-
-- Building a full-stack MERN application
-- React component architecture
-- React Router
-- REST API development
-- Axios-based API communication
-- Express.js routing
-- MongoDB database integration
-- Mongoose schemas and models
-- Asynchronous JavaScript
-- Environment variable management
-- Frontend and backend deployment
-- Modern JavaScript ES Modules
-- Data visualization with Chart.js
-
----
-
-## 🔮 Future Improvements
-
-Possible future enhancements include:
-
-- 🔐 User authentication and authorization
-- 👤 User-specific portfolios
-- 📡 Real-time stock market data
-- ⚡ Real-time price updates using WebSockets
-- 🔎 Stock search and filtering
-- 📜 Transaction history
-- 🛍️ Sell-order functionality
-- ✅ Server-side request validation
-- 🛡️ Improved API security
-- 📱 Improved mobile responsiveness
-- 🔔 Notifications and order confirmations
-- 📊 More advanced portfolio analytics
-
----
-
-## ⚠️ Disclaimer
-
-Tradely is a **learning and portfolio project** inspired by the workflow of modern stock-trading platforms.
-
-It does **not** connect to a real stock exchange, execute real trades, or provide financial advice.
-
-All stock data and transactions represented in the application are for demonstration purposes only.
+## 🛡️ Enterprise Production Operational Prerequisites
+
+While the Tradely codebase is production-hardened and deployment-ready, deploying into live financial or enterprise environments requires the following infrastructure-level configurations:
+
+1. **TLS / SSL Termination**: Deploy behind a managed Load Balancer (e.g., AWS ALB, Cloudflare, or Ingress Controller) with automated certificate renewals (Let's Encrypt / ACM).
+2. **Reverse Proxy Trust**: Set `TRUST_PROXY=1` (or specific subnet CIDR) when routing through Cloudflare/ALB so Express resolves client IPs accurately for rate limiting.
+3. **External Secret Management**: Store `JWT_SECRET` and `MONGO_URI` in an enterprise key vault (AWS Secrets Manager, HashiCorp Vault, or Kubernetes Secrets) rather than plain-text environment files.
+4. **Distributed Rate Limiting**: In multi-replica container deployments (Kubernetes / ECS), replace the in-memory rate-limiting map with a shared Redis cluster (`rate-limit-redis`).
+5. **MongoDB High Availability**: Utilize a managed MongoDB Replica Set (Atlas or self-hosted multi-node replica set) to ensure high availability and distributed transactions.
+6. **Centralized Log Aggregation**: Ingest backend JSON log output into Datadog, Grafana Loki, or AWS CloudWatch for anomaly detection and alerting.
 
 ---
 
 ## 👨‍💻 Author
 
 **Avishek Amin**
-
 - GitHub: [@AvishekAmin](https://github.com/AvishekAmin)
 - Repository: [Tradely](https://github.com/AvishekAmin/tradely)
 
 ---
 
-## ⭐ Project
+## ⭐ License
 
-If you find this project useful or interesting, consider giving the repository a ⭐ on GitHub.
+This project is licensed under the ISC License.
