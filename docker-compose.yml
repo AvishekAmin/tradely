@@ -1,0 +1,94 @@
+services:
+  # 1. MongoDB Service (Local Production Simulation)
+  mongo:
+    image: mongo:7.0
+    container_name: tradely-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval 'db.runCommand({ ping: 1 })' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - tradely-network
+
+  # 2. Tradely Backend API & Trading Engine
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tradely-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+      - MONGO_URI=${MONGO_URI:-mongodb://mongo:27017/tradely}
+      - JWT_SECRET=${JWT_SECRET:-tradely_production_jwt_secret_min_32_characters_long}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
+      - DASHBOARD_URL=${DASHBOARD_URL:-http://localhost:5174}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:5174}
+      - TRUST_PROXY=${TRUST_PROXY:-0}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8000/ready | grep -q '\"status\":\"ok\"' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - tradely-network
+
+  # 3. Tradely Frontend (Public Landing & Authentication)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+        - VITE_DASHBOARD_URL=${VITE_DASHBOARD_URL:-http://localhost:5174}
+    container_name: tradely-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - tradely-network
+
+  # 4. Tradely Dashboard (Protected Trading Terminal)
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+        - VITE_SOCKET_URL=${VITE_SOCKET_URL:-http://localhost:8000}
+        - VITE_LANDING_URL=${VITE_LANDING_URL:-http://localhost:5173}
+    container_name: tradely-dashboard
+    restart: unless-stopped
+    ports:
+      - "5174:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - tradely-network
+
+volumes:
+  mongo_data:
+    driver: local
+
+networks:
+  tradely-network:
+    driver: bridge
