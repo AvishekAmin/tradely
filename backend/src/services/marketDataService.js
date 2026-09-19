@@ -74,6 +74,29 @@ export const getQuotes = (symbols = []) => {
 };
 
 /**
+ * Explicitly update quote price (useful for deterministic trigger tests and external feeds)
+ */
+export const setQuotePrice = (symbol, price) => {
+  const norm = normalizeSymbol(symbol);
+  const current = quotesMap.get(norm);
+  if (!current) return null;
+  const prevPrice = current.price;
+  const updatedQuote = {
+    ...current,
+    previousPrice: prevPrice,
+    price: Math.round(price * 100) / 100,
+    change: Math.round((price - prevPrice) * 100) / 100,
+    changePercent:
+      prevPrice > 0 ? Math.round(((price - prevPrice) / prevPrice) * 10000) / 100 : 0.0,
+    timestamp: new Date().toISOString(),
+  };
+  quotesMap.set(norm, updatedQuote);
+  marketEventEmitter.emit("quote:update", { ...updatedQuote });
+  return updatedQuote;
+};
+
+
+/**
  * Retrieve all 15 supported market quotes
  */
 export const getAllQuotes = () => {

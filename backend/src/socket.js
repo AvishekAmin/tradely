@@ -110,3 +110,18 @@ export const getIO = () => {
   }
   return io;
 };
+
+/**
+ * Cleanly close all active socket connections and destroy Socket.IO instance
+ */
+export const closeSocket = async () => {
+  if (!io) return;
+
+  return new Promise((resolve) => {
+    io.close(() => {
+      io = null;
+      resolve();
+    });
+  });
+};
+

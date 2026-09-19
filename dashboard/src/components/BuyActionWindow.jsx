@@ -14,6 +14,9 @@ const BuyActionWindow = ({ uid }) => {
   const [orderType, setOrderType] = useState("MARKET");
   const [stockQuantity, setStockQuantity] = useState(1);
   const [limitPrice, setLimitPrice] = useState(() => (livePrice ? livePrice.toFixed(2) : ""));
+  const [stopPrice, setStopPrice] = useState(() =>
+    livePrice ? (Math.round((livePrice * 1.02) * 100) / 100).toFixed(2) : ""
+  );
   const [availableBalance, setAvailableBalance] = useState(null);
   const [loadingFunds, setLoadingFunds] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,15 +41,29 @@ const BuyActionWindow = ({ uid }) => {
 
   const parsedQty = parseInt(stockQuantity, 10) || 0;
   const parsedLimit = parseFloat(limitPrice) || 0;
-  const executionPrice = orderType === "MARKET" ? (livePrice ?? 0) : parsedLimit;
+  const parsedStop = parseFloat(stopPrice) || 0;
+
+  let executionPrice = livePrice ?? 0;
+  if (orderType === "LIMIT") {
+    executionPrice = parsedLimit;
+  } else if (orderType === "STOP_LIMIT") {
+    executionPrice = parsedLimit;
+  }
+
   const totalCost = Math.round(parsedQty * executionPrice * 100) / 100;
   const remainingBalance =
     availableBalance !== null ? availableBalance - totalCost : null;
   const hasInsufficientFunds =
     availableBalance !== null && remainingBalance < 0;
+
   const isMarketPriceUnavailable =
     orderType === "MARKET" && (livePrice === null || livePrice <= 0);
-  const isLimitInvalid = orderType === "LIMIT" && parsedLimit <= 0;
+  const isLimitInvalid = (orderType === "LIMIT" || orderType === "STOP_LIMIT") && parsedLimit <= 0;
+  const isStopInvalid = orderType === "STOP_LIMIT" && parsedStop <= 0;
+  const isStopDirectionInvalid =
+    orderType === "STOP_LIMIT" && livePrice !== null && parsedStop <= livePrice;
+  const isStopLimitRelationInvalid =
+    orderType === "STOP_LIMIT" && parsedLimit > 0 && parsedStop > 0 && parsedLimit < parsedStop;
 
   const handleBuyClick = async (e) => {
     e.preventDefault();
@@ -60,6 +77,22 @@ const BuyActionWindow = ({ uid }) => {
     }
     if (isLimitInvalid) {
       setErrorMessage("Limit price must be greater than zero.");
+      return;
+    }
+    if (isStopInvalid) {
+      setErrorMessage("Stop price must be greater than zero.");
+      return;
+    }
+    if (isStopDirectionInvalid) {
+      setErrorMessage(
+        `BUY Stop price (₹${parsedStop.toFixed(2)}) must be strictly above current market price (₹${livePrice.toFixed(2)}).`
+      );
+      return;
+    }
+    if (isStopLimitRelationInvalid) {
+      setErrorMessage(
+        `BUY Stop-Limit requires limit price (₹${parsedLimit.toFixed(2)}) to be greater than or equal to stop price (₹${parsedStop.toFixed(2)}).`
+      );
       return;
     }
     if (!parsedQty || parsedQty <= 0) {
@@ -84,6 +117,9 @@ const BuyActionWindow = ({ uid }) => {
       };
 
       if (orderType === "LIMIT") {
+        payload.limitPrice = parsedLimit;
+      } else if (orderType === "STOP_LIMIT") {
+        payload.stopPrice = parsedStop;
         payload.limitPrice = parsedLimit;
       }
 
@@ -173,43 +209,43 @@ const BuyActionWindow = ({ uid }) => {
 
         {/* Order Type Tabs */}
         <div style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
-          <button
-            type="button"
-            onClick={() => setOrderType("MARKET")}
-            style={{
-              padding: "4px 12px",
-              fontSize: "0.78rem",
-              fontWeight: 600,
-              borderRadius: "4px",
-              border: "1px solid",
-              borderColor: orderType === "MARKET" ? "var(--accent-blue, #3b82f6)" : "rgba(255,255,255,0.1)",
-              backgroundColor: orderType === "MARKET" ? "rgba(59, 130, 246, 0.2)" : "transparent",
-              color: orderType === "MARKET" ? "#ffffff" : "var(--text-muted)",
-              cursor: "pointer",
-            }}
-          >
-            MARKET
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setOrderType("LIMIT");
-              if (!limitPrice && livePrice) setLimitPrice(livePrice.toFixed(2));
-            }}
-            style={{
-              padding: "4px 12px",
-              fontSize: "0.78rem",
-              fontWeight: 600,
-              borderRadius: "4px",
-              border: "1px solid",
-              borderColor: orderType === "LIMIT" ? "var(--accent-blue, #3b82f6)" : "rgba(255,255,255,0.1)",
-              backgroundColor: orderType === "LIMIT" ? "rgba(59, 130, 246, 0.2)" : "transparent",
-              color: orderType === "LIMIT" ? "#ffffff" : "var(--text-muted)",
-              cursor: "pointer",
-            }}
-          >
-            LIMIT
-          </button>
+          {["MARKET", "LIMIT", "STOP_LIMIT"].map((type) => {
+            const label = type === "STOP_LIMIT" ? "STOP-LIMIT" : type;
+            const isSelected = orderType === type;
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => {
+                  setOrderType(type);
+                  if (type === "LIMIT" && !limitPrice && livePrice) {
+                    setLimitPrice(livePrice.toFixed(2));
+                  }
+                  if (type === "STOP_LIMIT") {
+                    if (!stopPrice && livePrice) {
+                      setStopPrice((Math.round((livePrice * 1.02) * 100) / 100).toFixed(2));
+                    }
+                    if (!limitPrice && livePrice) {
+                      setLimitPrice((Math.round((livePrice * 1.03) * 100) / 100).toFixed(2));
+                    }
+                  }
+                }}
+                style={{
+                  padding: "4px 12px",
+                  fontSize: "0.78rem",
+                  fontWeight: 600,
+                  borderRadius: "4px",
+                  border: "1px solid",
+                  borderColor: isSelected ? "var(--accent-blue, #3b82f6)" : "rgba(255,255,255,0.1)",
+                  backgroundColor: isSelected ? "rgba(59, 130, 246, 0.2)" : "transparent",
+                  color: isSelected ? "#ffffff" : "var(--text-muted)",
+                  cursor: "pointer",
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -263,7 +299,7 @@ const BuyActionWindow = ({ uid }) => {
             />
           </fieldset>
 
-          {orderType === "MARKET" ? (
+          {orderType === "MARKET" && (
             <fieldset>
               <legend>Live Price (₹)</legend>
               <input
@@ -280,7 +316,9 @@ const BuyActionWindow = ({ uid }) => {
                 }}
               />
             </fieldset>
-          ) : (
+          )}
+
+          {orderType === "LIMIT" && (
             <fieldset>
               <legend>Limit Price (₹)</legend>
               <input
@@ -296,6 +334,41 @@ const BuyActionWindow = ({ uid }) => {
                 style={{ fontWeight: 600 }}
               />
             </fieldset>
+          )}
+
+          {orderType === "STOP_LIMIT" && (
+            <>
+              <fieldset>
+                <legend>Stop / Trigger (₹)</legend>
+                <input
+                  type="number"
+                  name="stopPrice"
+                  id="buy-stop-price"
+                  step="0.05"
+                  min="0.01"
+                  disabled={isSubmitting}
+                  onChange={(e) => setStopPrice(e.target.value)}
+                  value={stopPrice}
+                  placeholder={`> ₹${livePrice ? livePrice.toFixed(2) : "0"}`}
+                  style={{ fontWeight: 600 }}
+                />
+              </fieldset>
+              <fieldset>
+                <legend>Limit Price (₹)</legend>
+                <input
+                  type="number"
+                  name="limitPrice"
+                  id="buy-stop-limit-price"
+                  step="0.05"
+                  min="0.01"
+                  disabled={isSubmitting}
+                  onChange={(e) => setLimitPrice(e.target.value)}
+                  value={limitPrice}
+                  placeholder={`>= Stop Price`}
+                  style={{ fontWeight: 600 }}
+                />
+              </fieldset>
+            </>
           )}
         </div>
 
@@ -315,6 +388,27 @@ const BuyActionWindow = ({ uid }) => {
             💡 <strong>Condition:</strong> Executes when market price is{" "}
             <span style={{ color: "#ffffff", fontWeight: 600 }}>₹{parsedLimit ? parsedLimit.toFixed(2) : "..."}</span> or below.
             Funds (₹{totalCost.toFixed(2)}) will be reserved until triggered or cancelled.
+          </div>
+        )}
+
+        {/* Condition details for STOP_LIMIT orders */}
+        {orderType === "STOP_LIMIT" && (
+          <div
+            style={{
+              backgroundColor: "rgba(59, 130, 246, 0.1)",
+              border: "1px solid rgba(59, 130, 246, 0.25)",
+              borderRadius: "6px",
+              padding: "8px 12px",
+              fontSize: "0.78rem",
+              color: "var(--text-muted)",
+              marginTop: "8px",
+            }}
+          >
+            💡 <strong>Stop-Limit Condition:</strong> When market rises to{" "}
+            <span style={{ color: "#ffffff", fontWeight: 600 }}>₹{parsedStop ? parsedStop.toFixed(2) : "..."}</span>,
+            order activates as a Limit Buy at max{" "}
+            <span style={{ color: "#ffffff", fontWeight: 600 }}>₹{parsedLimit ? parsedLimit.toFixed(2) : "..."}</span>.
+            Funds (₹{totalCost.toFixed(2)}) reserved upfront.
           </div>
         )}
 
@@ -345,7 +439,7 @@ const BuyActionWindow = ({ uid }) => {
 
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span style={{ color: "var(--text-muted)" }}>
-              {orderType === "LIMIT" ? "Estimated Reserved Cash:" : "Total Order Value:"}
+              {orderType === "MARKET" ? "Total Order Value:" : "Estimated Reserved Cash:"}
             </span>
             <span style={{ fontWeight: 600, color: "var(--accent-blue, #3b82f6)" }}>
               {orderType === "MARKET"
@@ -356,7 +450,7 @@ const BuyActionWindow = ({ uid }) => {
             </span>
           </div>
 
-          {availableBalance !== null && (orderType === "LIMIT" || livePrice !== null) && (
+          {availableBalance !== null && (orderType !== "MARKET" || livePrice !== null) && (
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <span style={{ color: "var(--text-muted)" }}>Est. Remaining Cash:</span>
               <span
@@ -390,13 +484,45 @@ const BuyActionWindow = ({ uid }) => {
             type="button"
             className="btn btn-blue"
             onClick={handleBuyClick}
-            disabled={isSubmitting || hasInsufficientFunds || isMarketPriceUnavailable || isLimitInvalid}
+            disabled={
+              isSubmitting ||
+              hasInsufficientFunds ||
+              isMarketPriceUnavailable ||
+              isLimitInvalid ||
+              isStopInvalid ||
+              isStopDirectionInvalid ||
+              isStopLimitRelationInvalid
+            }
             style={{
-              opacity: isSubmitting || hasInsufficientFunds || isMarketPriceUnavailable || isLimitInvalid ? 0.6 : 1,
-              cursor: isSubmitting || hasInsufficientFunds || isMarketPriceUnavailable || isLimitInvalid ? "not-allowed" : "pointer",
+              opacity:
+                isSubmitting ||
+                hasInsufficientFunds ||
+                isMarketPriceUnavailable ||
+                isLimitInvalid ||
+                isStopInvalid ||
+                isStopDirectionInvalid ||
+                isStopLimitRelationInvalid
+                  ? 0.6
+                  : 1,
+              cursor:
+                isSubmitting ||
+                hasInsufficientFunds ||
+                isMarketPriceUnavailable ||
+                isLimitInvalid ||
+                isStopInvalid ||
+                isStopDirectionInvalid ||
+                isStopLimitRelationInvalid
+                  ? "not-allowed"
+                  : "pointer",
             }}
           >
-            {isSubmitting ? "Placing..." : orderType === "LIMIT" ? "Place Limit Buy" : "Buy"}
+            {isSubmitting
+              ? "Placing..."
+              : orderType === "STOP_LIMIT"
+              ? "Place Stop-Limit Buy"
+              : orderType === "LIMIT"
+              ? "Place Limit Buy"
+              : "Buy"}
           </button>
           <button
             type="button"

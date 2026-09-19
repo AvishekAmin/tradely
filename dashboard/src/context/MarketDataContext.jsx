@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { io } from "socket.io-client";
-import apiClient, { API_BASE_URL } from "../config/api";
+import apiClient, { API_BASE_URL, SOCKET_URL } from "../config/api";
 
 const SYMBOL_ALIASES = {
   HUL: "HINDUNILVR",
@@ -59,9 +59,10 @@ export const MarketDataProvider = ({ children }) => {
     fetchInitialQuotes();
 
     // 2. Establish Socket.IO real-time connection
-    const socket = io(API_BASE_URL, {
+    const socket = io(SOCKET_URL, {
       withCredentials: true,
       transports: ["websocket", "polling"],
+
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
     });

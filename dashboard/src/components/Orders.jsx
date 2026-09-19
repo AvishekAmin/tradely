@@ -76,19 +76,32 @@ const Orders = () => {
     const s = (status || "EXECUTED").toUpperCase();
     let bg = "rgba(59, 130, 246, 0.15)";
     let color = "var(--accent-blue, #3b82f6)";
+    let label = s;
 
     if (s === "PENDING") {
       bg = "rgba(245, 158, 11, 0.15)";
       color = "var(--warning, #f59e0b)";
+      label = "PENDING";
+    } else if (s === "PENDING_STOP") {
+      bg = "rgba(249, 115, 22, 0.15)";
+      color = "#fb923c";
+      label = "PENDING STOP";
+    } else if (s === "PENDING_LIMIT") {
+      bg = "rgba(168, 85, 247, 0.15)";
+      color = "#c084fc";
+      label = "PENDING LIMIT";
     } else if (s === "EXECUTED") {
       bg = "rgba(16, 185, 129, 0.15)";
       color = "var(--profit, #10b981)";
+      label = "EXECUTED";
     } else if (s === "CANCELLED") {
       bg = "rgba(156, 163, 175, 0.15)";
       color = "#9ca3af";
+      label = "CANCELLED";
     } else if (s === "REJECTED") {
       bg = "rgba(239, 68, 68, 0.15)";
       color = "var(--loss, #ef4444)";
+      label = "REJECTED";
     }
 
     return (
@@ -101,9 +114,10 @@ const Orders = () => {
           backgroundColor: bg,
           color,
           display: "inline-block",
+          whiteSpace: "nowrap",
         }}
       >
-        {s}
+        {label}
       </span>
     );
   };
@@ -170,6 +184,7 @@ const Orders = () => {
               <th>Side</th>
               <th>Type</th>
               <th>Qty.</th>
+              <th>Stop Price</th>
               <th>Limit Price</th>
               <th>Executed Price</th>
               <th>Total Value</th>
@@ -181,7 +196,7 @@ const Orders = () => {
           <tbody>
             {orders.map((order, index) => {
               const isBuy = order.mode === "BUY";
-              const isPending = order.status === "PENDING";
+              const isCancellable = ["PENDING", "PENDING_STOP", "PENDING_LIMIT"].includes(order.status);
               const totalVal =
                 order.totalValue ??
                 (order.qty || 0) * (order.executionPrice || order.limitPrice || order.price || 0);
@@ -193,6 +208,23 @@ const Orders = () => {
                     second: "2-digit",
                   })
                 : "—";
+
+              // Stop Price display
+              let stopPriceDisplay = "—";
+              if (order.stopPrice !== null && order.stopPrice !== undefined) {
+                if (order.orderType === "TRAILING_STOP" && order.highestPrice) {
+                  stopPriceDisplay = (
+                    <div>
+                      <span>₹{Number(order.stopPrice).toFixed(2)}</span>
+                      <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
+                        Peak: ₹{Number(order.highestPrice).toFixed(2)}
+                      </div>
+                    </div>
+                  );
+                } else {
+                  stopPriceDisplay = `₹${Number(order.stopPrice).toFixed(2)}`;
+                }
+              }
 
               const limitPriceDisplay =
                 order.limitPrice !== null && order.limitPrice !== undefined
@@ -211,7 +243,27 @@ const Orders = () => {
                   <td style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
                     {formattedTime}
                   </td>
-                  <td style={{ fontWeight: 600 }}>{order.name}</td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ fontWeight: 600 }}>{order.name}</span>
+                      {order.ocoGroupId && (
+                        <span
+                          title="Part of an OCO bracket"
+                          style={{
+                            fontSize: "0.68rem",
+                            fontWeight: 700,
+                            padding: "1px 5px",
+                            borderRadius: "3px",
+                            backgroundColor: "rgba(168, 85, 247, 0.2)",
+                            color: "#c084fc",
+                            border: "1px solid rgba(168, 85, 247, 0.4)",
+                          }}
+                        >
+                          OCO
+                        </span>
+                      )}
+                    </div>
+                  </td>
                   <td>
                     <span
                       style={{
@@ -242,6 +294,7 @@ const Orders = () => {
                     </span>
                   </td>
                   <td>{order.qty}</td>
+                  <td>{stopPriceDisplay}</td>
                   <td>{limitPriceDisplay}</td>
                   <td style={{ fontWeight: execPriceDisplay !== "—" ? 600 : 400 }}>
                     {execPriceDisplay}
@@ -267,11 +320,12 @@ const Orders = () => {
                   </td>
                   <td>{getStatusBadge(order.status)}</td>
                   <td>
-                    {isPending ? (
+                    {isCancellable ? (
                       <button
                         type="button"
                         onClick={() => handleCancelOrder(order._id)}
                         disabled={cancellingId === order._id}
+                        title={order.ocoGroupId ? "Cancel entire OCO bracket" : "Cancel order"}
                         style={{
                           padding: "3px 10px",
                           fontSize: "0.75rem",
@@ -281,6 +335,7 @@ const Orders = () => {
                           color: "var(--loss, #ef4444)",
                           cursor: cancellingId === order._id ? "not-allowed" : "pointer",
                           fontWeight: 600,
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {cancellingId === order._id ? "Cancelling..." : "Cancel"}
