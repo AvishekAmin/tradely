@@ -42,7 +42,16 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const signup = async ({ username, email, password }) => {
+  const signup = async (firstArg, emailArg, passwordArg) => {
+    let username, email, password;
+    if (typeof firstArg === "object" && firstArg !== null) {
+      ({ username, email, password } = firstArg);
+    } else {
+      username = firstArg;
+      email = emailArg;
+      password = passwordArg;
+    }
+
     const res = await fetch(`${API_BASE_URL}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -56,24 +65,38 @@ export const AuthProvider = ({ children }) => {
     }
 
     setUser(data.data.user);
-    return data.data.user;
+    return { success: true, user: data.data.user };
   };
 
-  const login = async ({ email, password }) => {
+  const login = async (firstArg, passwordArg) => {
+    let username, email, password;
+    if (typeof firstArg === "object" && firstArg !== null) {
+      ({ username, email, password } = firstArg);
+    } else {
+      username = firstArg;
+      password = passwordArg;
+    }
+
+    const identifier = (username || email || "").trim();
+
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        username: identifier,
+        email: identifier,
+        password,
+      }),
     });
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.success) {
-      throw new Error(data.message || "Login failed. Please check your credentials.");
+      throw new Error(data.message || "Invalid username or password.");
     }
 
     setUser(data.data.user);
-    return data.data.user;
+    return { success: true, user: data.data.user };
   };
 
   const logout = async () => {
