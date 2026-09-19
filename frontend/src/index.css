@@ -1,113 +1,218 @@
-/* Tradely Design System - Theme Tokens inspired by Horizon AI (ChatGPT-style dark/light) */
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
 :root,
-[data-theme="dark"] {
-  --bg-main: #212121;
-  --bg-sidebar: #171717;
-  --bg-surface: #262626;
-  --bg-surface-hover: #303030;
-  --bg-card: #262626;
-  --bg-input: #1a1a1a;
+.dark {
+  --background: #0F0F0F;
+  --foreground: #EDEDED;
 
-  --border-subtle: rgba(255, 255, 255, 0.1);
-  --border-medium: rgba(255, 255, 255, 0.18);
-  --border-focus: rgba(255, 255, 255, 0.32);
+  --card: #171717;
+  --card-foreground: #EDEDED;
 
-  --text-primary: #ececec;
-  --text-secondary: #b4b4b4;
-  --text-muted: #8e8e8e;
+  --surface: #1A1A1A;
+  --surface-hover: #222222;
+  --surface-active: #2A2A2A;
 
-  --accent-blue: #3b82f6;
-  --accent-blue-hover: #2563eb;
-  --profit: #10b981;
-  --loss: #ef4444;
+  --popover: #171717;
+  --popover-foreground: #EDEDED;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --primary: #3B82F6;
+  --primary-foreground: #FFFFFF;
+  --primary-hover: #2563EB;
+
+  --secondary: #1E1E1E;
+  --secondary-foreground: #EDEDED;
+
+  --muted: #1F1F1F;
+  --muted-foreground: #A1A1AA;
+
+  --accent: #262626;
+  --accent-foreground: #EDEDED;
+
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+
+  --profit: #10B981;
+  --profit-foreground: #052E16;
+
+  --warning: #F59E0B;
+  --warning-foreground: #451A03;
+
+  --loss: #EF4444;
+  --loss-foreground: #450A0A;
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.14);
+  --border-focus: rgba(255, 255, 255, 0.28);
+  --input: #1A1A1A;
+  --ring: #3B82F6;
+
+  --radius: 0.75rem;
 }
 
-[data-theme="light"] {
-  --bg-main: #ffffff;
-  --bg-sidebar: #ffffff;
-  --bg-surface: #ffffff;
-  --bg-surface-hover: #f1f5f9;
-  --bg-card: #ffffff;
-  --bg-input: #ffffff;
-
-  --border-subtle: #e2e8f0;
-  --border-medium: #cbd5e1;
-  --border-focus: #94a3b8;
-
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-
-  --accent-blue: #2563eb;
-  --accent-blue-hover: #1d4ed8;
-  --profit: #16a34a;
-  --loss: #dc2626;
-
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.08);
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  margin: 0;
+  background-color: #0F0F0F;
+  color: #EDEDED;
   font-family:
-    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-main);
-  color: var(--text-primary);
+    "Poppins",
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+input,
+select,
+textarea {
+  font-family:
+    "Poppins",
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+@theme inline {
+  --font-heading: "Poppins", "Inter", sans-serif;
+  --font-sans: "Poppins", "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-active: var(--surface-active);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-profit: var(--profit);
+  --color-loss: var(--loss);
+  --color-warning: var(--warning);
+
+  --radius-sm: calc(var(--radius) * 0.75);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 1.5);
+  --radius-xl: calc(var(--radius) * 2);
+  --radius-full: 9999px;
+}
+
+/* Base Body Styles */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  margin: 0;
+  padding: 0;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-code {
-  font-family:
-    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+/* Tabular Numerals for Numerical & Financial Data */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
-.custom-navbar {
-  background-color: var(--bg-sidebar) !important;
-  border-color: var(--border-subtle) !important;
+/* Connekt-Inspired Glowing Gradient CTA Button */
+.btn-tradely-gradient {
+  background: linear-gradient(90deg, #00D8F6 0%, #7B61FF 100%);
+  color: #000000 !important;
+  font-weight: 700;
+  box-shadow: 0 20px 25px -5px rgba(0, 216, 246, 0.25), 0 8px 10px -6px rgba(0, 216, 246, 0.25);
+  transition: all 0.2s ease;
 }
 
-.custom-navbar .nav-link {
-  color: var(--text-secondary) !important;
-  transition: color 0.15s ease;
+.btn-tradely-gradient:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 25px 30px -5px rgba(0, 216, 246, 0.35), 0 0 24px -2px rgba(0, 216, 246, 0.4);
 }
 
-.custom-navbar .nav-link:hover,
-.custom-navbar .nav-link.active {
-  color: var(--text-primary) !important;
+.btn-tradely-gradient:active {
+  transform: scale(0.98);
 }
 
-.nav-link {
-  margin-left: 20px;
+/* Text Gradient */
+.text-tradely-gradient {
+  background: linear-gradient(90deg, #00D8F6 0%, #6366F1 50%, #EC4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-#supportHero {
-  background-color: var(--bg-surface);
-  border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-primary);
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.28);
 }
 
-#supportHero a {
-  color: var(--accent-blue);
+/* Groww-Inspired Horizontally Moving Market Ticker */
+@keyframes ticker-marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }
 
-#supportWrapper {
-  display: flex;
-  justify-content: space-between;
-  margin: 0 150px;
+.animate-ticker-marquee {
+  animation: ticker-marquee 130s linear infinite;
+  will-change: transform;
 }
 
-#supportHero input {
-  padding: 16px 24px;
-  width: 100%;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-medium);
-  background-color: var(--bg-input);
-  color: var(--text-primary);
+.group:hover .animate-ticker-marquee {
+  animation-play-state: paused;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-ticker-marquee {
+    animation: none !important;
+  }
 }
