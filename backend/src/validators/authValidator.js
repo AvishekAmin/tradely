@@ -44,14 +44,14 @@ export const validateSignup = (req, res, next) => {
 };
 
 export const validateLogin = (req, res, next) => {
-  const { email, password } = req.body || {};
+  const { username, email, identifier: rawId, password } = req.body || {};
+  const identifier = (username || email || rawId || "").trim();
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email || typeof email !== "string" || !emailRegex.test(email.trim())) {
+  if (!identifier || typeof identifier !== "string") {
     return res.status(400).json({
       success: false,
-      code: "INVALID_EMAIL",
-      message: "A valid email address is required.",
+      code: "INVALID_USERNAME",
+      message: "Username is required.",
     });
   }
 
@@ -64,7 +64,9 @@ export const validateLogin = (req, res, next) => {
   }
 
   req.sanitizedLogin = {
-    email: email.trim().toLowerCase(),
+    username: identifier,
+    email: identifier,
+    identifier,
     password,
   };
 

@@ -70,21 +70,26 @@ export const signupUser = async ({ username, email, password }) => {
 /**
  * Authenticate user credentials and return safe user with JWT
  */
-export const loginUser = async ({ email, password }) => {
-  const normalizedEmail = email.toLowerCase().trim();
+export const loginUser = async ({ username, email, identifier, password }) => {
+  const id = (username || email || identifier || "").trim();
 
-  // 1. Find user by email and explicitly include passwordHash
-  const user = await UserModel.findOne({ email: normalizedEmail }).select(
-    "+passwordHash"
-  );
+  // 1. Find user by username OR email
+  const user = await UserModel.findOne({
+    $or: [
+      { username: id },
+      { email: id.toLowerCase() },
+      { username: new RegExp(`^${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+    ],
+  }).select("+passwordHash");
+
   if (!user) {
-    throw new AppError("Invalid email or password", 401, "INVALID_CREDENTIALS");
+    throw new AppError("Invalid username or password", 401, "INVALID_CREDENTIALS");
   }
 
   // 2. Compare password
   const isMatch = await bcrypt.compare(password, user.passwordHash);
   if (!isMatch) {
-    throw new AppError("Invalid email or password", 401, "INVALID_CREDENTIALS");
+    throw new AppError("Invalid username or password", 401, "INVALID_CREDENTIALS");
   }
 
   // 3. Generate JWT
