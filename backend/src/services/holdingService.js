@@ -174,10 +174,3 @@ export const applyBuyToHolding = async (userId, symbol, qty, price, session = nu
   );
   return created[0];
 };
-
-/**
- * Legacy compatibility wrapper for applySellToHolding
- */
-export const applySellToHolding = async (holding, qty, price, session = null) => {
-  return deductMarketSellHolding(holding.userId, holding.name, qty, price, session);
-};

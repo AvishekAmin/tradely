@@ -134,32 +134,3 @@ export const reorderSymbols = async (userId, symbols) => {
   await current.save();
   return current;
 };
-
-/**
- * Replace entire watchlist with a validated list of unique symbols.
- */
-export const replaceWatchlist = async (userId, symbols) => {
-  if (!Array.isArray(symbols)) {
-    throw new AppError("Symbols must be provided as an array.", 400, "INVALID_INPUT");
-  }
-
-  const validatedSymbols = [];
-  for (const sym of symbols) {
-    if (!sym || typeof sym !== "string") continue;
-    const q = getQuote(sym.trim().toUpperCase());
-    if (!q) {
-      throw new AppError(`Instrument not found in market feed: ${sym}`, 404, "INSTRUMENT_NOT_FOUND");
-    }
-    if (!validatedSymbols.includes(q.symbol)) {
-      validatedSymbols.push(q.symbol);
-    }
-  }
-
-  const updated = await WatchlistModel.findOneAndUpdate(
-    { userId },
-    { $set: { symbols: validatedSymbols } },
-    { new: true, upsert: true, setDefaultsOnInsert: true }
-  );
-
-  return updated;
-};

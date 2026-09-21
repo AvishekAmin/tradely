@@ -5,7 +5,6 @@ import { connectDB, disconnectDB } from "./config/db.js";
 import { HoldingsModel } from "./models/HoldingsModel.js";
 import { OrdersModel } from "./models/OrdersModel.js";
 import { PositionsModel } from "./models/PositionsModel.js";
-import { AccountModel } from "./models/AccountModel.js";
 import { initSocket, closeSocket } from "./socket.js";
 import {
   startMarketSimulation,
@@ -26,7 +25,6 @@ const cleanupLegacyOrphanData = async () => {
     const orphanHoldings = await HoldingsModel.deleteMany({ userId: { $exists: false } });
     const orphanOrders = await OrdersModel.deleteMany({ userId: { $exists: false } });
     const orphanPositions = await PositionsModel.deleteMany({ userId: { $exists: false } });
-    await AccountModel.deleteMany({});
 
     if (orphanHoldings.deletedCount || orphanOrders.deletedCount || orphanPositions.deletedCount) {
       logger.info(
