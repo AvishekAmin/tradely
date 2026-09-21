@@ -1,1 +1,4 @@
-export { DoughnutChart, default } from "./DoughnutChart";
+import DoughnutChart from "./DoughnutChart";
+
+export { DoughnutChart };
+export default DoughnutChart;

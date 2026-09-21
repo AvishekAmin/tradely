@@ -16,22 +16,67 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend,
+  Legend
 );
 
-export const options = {
+const options = {
   responsive: true,
+  maintainAspectRatio: false,
   plugins: {
     legend: {
       position: "top",
+      labels: {
+        color: "#94A3B8",
+        font: {
+          family: "'Inter', sans-serif",
+          size: 11,
+          weight: "500",
+        },
+      },
     },
     title: {
-      display: true,
-      text: "Holdings",
+      display: false,
+      text: "Holdings Performance",
+      color: "#EDEDED",
+    },
+    tooltip: {
+      backgroundColor: "#171717",
+      titleColor: "#EDEDED",
+      bodyColor: "#94A3B8",
+      borderColor: "rgba(255, 255, 255, 0.1)",
+      borderWidth: 1,
+      padding: 10,
+      cornerRadius: 8,
+    },
+  },
+  scales: {
+    x: {
+      ticks: {
+        color: "#94A3B8",
+        font: { family: "'Inter', sans-serif", size: 11 },
+      },
+      grid: {
+        color: "rgba(255, 255, 255, 0.05)",
+      },
+    },
+    y: {
+      ticks: {
+        color: "#94A3B8",
+        font: { family: "'Inter', sans-serif", size: 11 },
+      },
+      grid: {
+        color: "rgba(255, 255, 255, 0.05)",
+      },
     },
   },
 };
 
 export function VerticalGraph({ data }) {
-  return <Bar options={options} data={data} />;
+  return (
+    <div className="w-full h-64">
+      <Bar options={options} data={data} />
+    </div>
+  );
 }
+
+export default VerticalGraph;
