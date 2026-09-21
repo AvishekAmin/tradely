@@ -8,6 +8,8 @@ import Orders from "./Orders";
 import Positions from "./Positions";
 import Summary from "./Summary";
 import WatchList from "./WatchList";
+import PaymentPage from "../pages/PaymentPage";
+import WithdrawPage from "../pages/WithdrawPage";
 import { GeneralContextProvider } from "./GeneralContext";
 
 const Dashboard = () => {
@@ -27,6 +29,8 @@ const Dashboard = () => {
             <Route path="/holdings" element={<Holdings />} />
             <Route path="/positions" element={<Positions />} />
             <Route path="/funds" element={<Funds />} />
+            <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/withdraw" element={<WithdrawPage />} />
             <Route path="/explore" element={<Explore />} />
           </Routes>
         </main>

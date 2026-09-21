@@ -29,6 +29,13 @@ const Menu = () => {
     if (path === "/") {
       return location.pathname === "/";
     }
+    if (path === "/funds") {
+      return (
+        location.pathname === "/funds" ||
+        location.pathname === "/payment" ||
+        location.pathname === "/withdraw"
+      );
+    }
     return location.pathname.startsWith(path);
   };
 
