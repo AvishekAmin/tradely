@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Home, HelpCircle } from "lucide-react";
+import { Home, HelpCircle } from "lucide-react";
 import TradelyLogo from "./TradelyLogo";
 import { Button } from "@/components/ui/button";
 

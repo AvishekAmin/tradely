@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Send,
   Terminal,
-  ExternalLink,
   Info,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

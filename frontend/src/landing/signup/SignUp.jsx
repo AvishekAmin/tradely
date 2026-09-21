@@ -11,7 +11,6 @@ import {
   Mail,
   User,
   ArrowRight,
-  Sparkles,
 } from "lucide-react";
 import TradelyLogo from "../TradelyLogo";
 import { useAuth } from "@/context/AuthContext";

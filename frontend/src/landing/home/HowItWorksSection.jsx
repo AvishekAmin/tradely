@@ -4,7 +4,6 @@ import {
   ListPlus,
   TrendingUp,
   PieChart,
-  ArrowRight,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 

@@ -7,9 +7,7 @@ import {
   Send,
   CheckCircle2,
   Clock,
-  Sparkles,
   MapPin,
-  ExternalLink,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

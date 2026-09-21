@@ -11,7 +11,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
-  ShieldCheck,
   Info,
   ArrowUpRight,
 } from "lucide-react";

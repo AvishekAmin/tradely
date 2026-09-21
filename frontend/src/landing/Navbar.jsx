@@ -5,9 +5,6 @@ import {
   LayoutDashboard,
   LogOut,
   ArrowRight,
-  TrendingUp,
-  ShieldCheck,
-  Zap,
 } from "lucide-react";
 import TradelyLogo from "./TradelyLogo";
 import { useAuth } from "@/context/AuthContext";

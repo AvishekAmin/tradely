@@ -14,14 +14,9 @@ import {
 } from "./ui/tooltip";
 import {
   Search,
-  TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
   Compass,
-  Building2,
-  BarChart3,
-  Layers,
-  Sparkles,
   Plus,
   Check,
   Loader2,
