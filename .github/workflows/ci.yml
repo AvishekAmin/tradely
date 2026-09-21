@@ -57,7 +57,7 @@ jobs:
 
       - name: Run Backend Integration & Production Hardening Tests
         working-directory: backend
-        run: node test_phase8_runner.js
+        run: node test/test_security_and_trading.js
 
   # 2. Frontend (Landing/Auth) Verification Job
   frontend-ci:

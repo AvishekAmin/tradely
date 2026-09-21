@@ -10,11 +10,13 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "prod": "pm2 src/server.js",
-    "test": "node test_phase8_runner.js && node test_phase10a_runner.js && node test_phase10b_runner.js && node test_phase10c_runner.js",
-    "test:phase8": "node test_phase8_runner.js",
-    "test:phase10a": "node test_phase10a_runner.js",
-    "test:phase10b": "node test_phase10b_runner.js",
-    "test:phase10c": "node test_phase10c_runner.js"
+    "test": "node test/test_security_and_trading.js && node test/test_payment_deposits.js && node test/test_virtual_withdrawals.js && node test/test_cash_ledger_semantics.js",
+    "test:security": "node test/test_security_and_trading.js",
+    "test:deposits": "node test/test_payment_deposits.js",
+    "test:withdrawals": "node test/test_virtual_withdrawals.js",
+    "test:ledger": "node test/test_cash_ledger_semantics.js",
+    "test:concurrency": "node test/test_concurrency_and_edge_cases.js",
+    "test:all": "npm test && node test/test_concurrency_and_edge_cases.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

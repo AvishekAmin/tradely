@@ -1,5 +1,5 @@
 /**
- * Tradely Phase 8 Automated Verification Test Suite
+ * Tradely System Security & Core Trading Automated Test Suite
  *
  * Validates:
  * 1. Production environment hardening and configuration validation
@@ -10,26 +10,26 @@
  * 6. Strict CORS origin enforcement and credentials support
  * 7. Secure HttpOnly cookie configuration
  * 8. Graceful shutdown mechanics
- * 9. Phase 1-7 core regression testing (Auth, Orders, OCO, Watchlist, Analytics)
+ * 9. Core regression testing (Auth, Orders, OCO, Watchlist, Analytics)
  */
 
 import http from "http";
 import mongoose from "mongoose";
-import app from "./src/app.js";
-import { connectDB, disconnectDB } from "./src/config/db.js";
-import { sanitizeData } from "./src/utils/logger.js";
-import { getCookieOptions } from "./src/controllers/authController.js";
-import { createRateLimiter, _resetRateLimiter } from "./src/middleware/rateLimiter.js";
-import { errorHandler } from "./src/middleware/errorHandler.js";
-import { corsMiddleware } from "./src/middleware/cors.js";
-import { UserModel } from "./src/models/UserModel.js";
-import { OrdersModel } from "./src/models/OrdersModel.js";
-import { HoldingsModel } from "./src/models/HoldingsModel.js";
-import { WatchlistModel } from "./src/models/WatchlistModel.js";
-import { OcoGroupModel } from "./src/models/OcoGroupModel.js";
-import * as watchlistService from "./src/services/watchlistService.js";
-import * as analyticsService from "./src/services/portfolioAnalyticsService.js";
-import { createOCOGroup } from "./src/services/orderLifecycleService.js";
+import app from "../src/app.js";
+import { connectDB, disconnectDB } from "../src/config/db.js";
+import { sanitizeData } from "../src/utils/logger.js";
+import { getCookieOptions } from "../src/controllers/authController.js";
+import { createRateLimiter, _resetRateLimiter } from "../src/middleware/rateLimiter.js";
+import { errorHandler } from "../src/middleware/errorHandler.js";
+import { corsMiddleware } from "../src/middleware/cors.js";
+import { UserModel } from "../src/models/UserModel.js";
+import { OrdersModel } from "../src/models/OrdersModel.js";
+import { HoldingsModel } from "../src/models/HoldingsModel.js";
+import { WatchlistModel } from "../src/models/WatchlistModel.js";
+import { OcoGroupModel } from "../src/models/OcoGroupModel.js";
+import * as watchlistService from "../src/services/watchlistService.js";
+import * as analyticsService from "../src/services/portfolioAnalyticsService.js";
+import { createOCOGroup } from "../src/services/orderLifecycleService.js";
 
 let passed = 0;
 let failed = 0;
@@ -46,7 +46,7 @@ const assert = (condition, testName, details = "") => {
 
 const runAllTests = async () => {
   console.log("==================================================");
-  console.log("TRADELY PHASE 8 PRODUCTION HARDENING VERIFICATION");
+  console.log("TRADELY SYSTEM SECURITY & CORE TRADING SUITE");
   console.log("==================================================\n");
 
   let server;
