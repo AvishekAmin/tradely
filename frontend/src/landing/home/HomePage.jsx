@@ -10,7 +10,7 @@ import FinalCtaSection from "./FinalCtaSection";
 
 export default function HomePage() {
   useEffect(() => {
-    document.title = "Tradely — Professional Trading & Portfolio Simulator";
+    document.title = "Tradely — Professional Paper Trading & Portfolio Terminal";
   }, []);
 
   return (

@@ -19,11 +19,11 @@ export default function PrivacyPage() {
 
   const sections = [
     {
-      title: "1. Scope & Educational Simulation Nature",
+      title: "1. Scope & Educational Nature",
       icon: ShieldCheck,
       content: (
         <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-          Tradely is a simulated trading and portfolio tracking educational platform. We do not require, collect, or process real bank account numbers, credit/debit card numbers, Aadhaar details, PAN numbers, or demat brokerage account credentials. All transactions within Tradely use virtual simulated currency with zero monetary value.
+          Tradely is a paper trading and portfolio tracking educational platform. We do not require, collect, or process real bank account numbers, credit/debit card numbers, Aadhaar details, PAN numbers, or demat brokerage account credentials. All transactions within Tradely use virtual currency with zero monetary value.
         </p>
       ),
     },
@@ -32,10 +32,10 @@ export default function PrivacyPage() {
       icon: Database,
       content: (
         <div className="space-y-3 text-slate-300 text-xs sm:text-sm leading-relaxed">
-          <p>When you create an account on Tradely, we collect minimal information necessary to deliver the simulation experience:</p>
+          <p>When you create an account on Tradely, we collect minimal information necessary to deliver the trading platform experience:</p>
           <ul className="list-disc list-inside space-y-1 text-slate-400 pl-2">
             <li><strong>Account Credentials:</strong> Username, email address, and cryptographically hashed password (using bcrypt with work factor 10).</li>
-            <li><strong>Simulated Portfolio Data:</strong> Virtual cash ledger, executed order history, open positions, and customized watchlist symbols.</li>
+            <li><strong>Portfolio Data:</strong> Virtual cash ledger, executed order history, open positions, and customized watchlist symbols.</li>
             <li><strong>Technical Session Logs:</strong> Standard HTTP request metadata including IP address and user-agent string for brute-force rate-limiting and security auditing.</li>
           </ul>
         </div>
@@ -55,7 +55,7 @@ export default function PrivacyPage() {
       icon: Lock,
       content: (
         <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-          Every database query executed by the server matching engine enforces authenticated user scoping. Users can never view, mutate, or access another user's simulated portfolio, watchlist, pending orders, or transaction history. Multi-document MongoDB transactional boundaries safeguard ledger integrity.
+          Every database query executed by the server matching engine enforces authenticated user scoping. Users can never view, mutate, or access another user's portfolio, watchlist, pending orders, or transaction history. Multi-document MongoDB transactional boundaries safeguard ledger integrity.
         </p>
       ),
     },
@@ -73,7 +73,7 @@ export default function PrivacyPage() {
       icon: UserX,
       content: (
         <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-          You retain full autonomy over your simulated account. Users can trigger an instant educational portfolio reset directly from the terminal Funds page, or contact our support team at <a href="mailto:avishekamin207@gmail.com" className="text-cyan-400 hover:underline">avishekamin207@gmail.com</a> to request full account deletion and ledger erasure.
+          You retain full autonomy over your trading account. Users can trigger an instant educational portfolio reset directly from the terminal Funds page, or contact our support team at <a href="mailto:avishekamin207@gmail.com" className="text-cyan-400 hover:underline">avishekamin207@gmail.com</a> to request full account deletion and ledger erasure.
         </p>
       ),
     },
@@ -99,7 +99,7 @@ export default function PrivacyPage() {
             Privacy Policy
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
-            Effective Date: September 2026. This policy outlines how Tradely collects, protects, and handles simulated trading account data.
+            Effective Date: September 2026. This policy outlines how Tradely collects, protects, and handles trading account data.
           </p>
         </div>
 
@@ -107,10 +107,10 @@ export default function PrivacyPage() {
         <div className="rounded-2xl border border-white/10 bg-[#121212] p-6 space-y-3">
           <div className="flex items-center gap-2 text-cyan-400 text-sm font-bold">
             <CheckCircle2 className="size-4" />
-            <span>Key Commitment: 100% Simulated & Privacy-First</span>
+            <span>Key Commitment: Privacy-First & Zero Financial Risk</span>
           </div>
           <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            Tradely is designed exclusively for simulated financial education. We will never ask for your real banking credentials, demat account logins, or real payment details. Your simulated portfolios remain strictly private to your authenticated session.
+            Tradely is designed exclusively for financial education and paper trading. We will never ask for your real banking credentials, demat account logins, or real payment details. Your portfolios remain strictly private to your authenticated session.
           </p>
         </div>
 

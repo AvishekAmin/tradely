@@ -67,10 +67,10 @@ export default function ReportIssuePage() {
         {/* Page Header */}
         <div className="text-center space-y-4 py-4">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
-            Report a Simulation Issue
+            Report a Platform Issue
           </h1>
           <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
-            Discovered an order matching glitch, tick calculation error, or UI anomaly? Help us maintain high-fidelity trading simulation.
+            Discovered an order matching glitch, tick calculation error, or UI anomaly? Help us maintain high-fidelity trading execution.
           </p>
         </div>
 
@@ -102,7 +102,7 @@ export default function ReportIssuePage() {
                 </p>
               </div>
               <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
-                Thank you for contributing to Tradely's reliability. Our engineering team has received your report and will replicate the simulation conditions.
+                Thank you for contributing to Tradely's reliability. Our engineering team has received your report and will investigate the reported conditions.
               </p>
               <div className="pt-3">
                 <Button
@@ -164,7 +164,7 @@ export default function ReportIssuePage() {
                     className="w-full h-10 px-3 bg-[#181818] border border-white/10 text-xs text-white rounded-xl outline-none focus:border-white/30"
                   >
                     <option value="Low">Low — Minor UI issue</option>
-                    <option value="Medium">Medium — Simulation glitch</option>
+                    <option value="Medium">Medium — Platform glitch</option>
                     <option value="High">High — Matching or ledger flaw</option>
                     <option value="Critical">Critical — Engine lockup</option>
                   </select>

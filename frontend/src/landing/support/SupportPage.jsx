@@ -24,11 +24,11 @@ export default function SupportPage() {
   const faqs = [
     {
       q: "Is Tradely a real broker or licensed exchange?",
-      a: "No. Tradely is a 100% simulated trading platform built for education, software architecture demonstrations, and strategy testing. No real money, deposits, or regulated brokerage transactions occur.",
+      a: "No. Tradely is a paper trading platform built for education, software architecture demonstrations, and strategy testing. No real money, deposits, or regulated brokerage transactions occur.",
     },
     {
-      q: "How fast is the simulated market stream updated?",
-      a: "Our simulation engine pushes live price ticks to connected clients every approximately 1.5 seconds via Socket.IO WebSockets. This provides realistic price motion without overwhelming the client.",
+      q: "How fast is the market stream updated?",
+      a: "Our market engine pushes live price ticks to connected clients every approximately 1.5 seconds via Socket.IO WebSockets. This provides realistic price motion without overwhelming the client.",
     },
     {
       q: "How does the OCO (One-Cancels-the-Other) order work?",
@@ -39,8 +39,8 @@ export default function SupportPage() {
       a: "Yes. Every open LIMIT, STOP, or OCO order reserves the required capital or share quantity in your portfolio ledger. You cannot double-spend shares across conflicting pending orders.",
     },
     {
-      q: "Can I reset my simulated account balance?",
-      a: "Yes. Simulated accounts start with ₹100,000 in virtual capital. If your balance runs low, you can trigger an educational funds reset directly from the terminal Funds page.",
+      q: "Can I reset my trading account balance?",
+      a: "Yes. Accounts start with ₹100,000 in virtual capital. If your balance runs low, you can trigger an educational funds reset directly from the terminal Funds page.",
     },
     {
       q: "Where can I report bugs or review the source code?",
@@ -75,7 +75,7 @@ export default function SupportPage() {
             How can we help your strategy?
           </h1>
           <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
-            Search our knowledge base for answers on simulated order mechanics,
+            Search our knowledge base for answers on order mechanics,
             portfolio analytics, and platform architecture.
           </p>
 

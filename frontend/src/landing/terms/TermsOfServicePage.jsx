@@ -19,7 +19,7 @@ export default function TermsOfServicePage() {
 
   const terms = [
     {
-      title: "1. Educational Simulation Disclaimer",
+      title: "1. Educational Paper Trading Disclaimer",
       icon: AlertTriangle,
       badgeColor: "text-amber-400 bg-amber-500/10 border-amber-500/20",
       content: (
@@ -44,14 +44,14 @@ export default function TermsOfServicePage() {
         <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
           You must create an account to access the trading terminal. You are
           responsible for maintaining the confidentiality of your authentication
-          credentials and for all simulated actions occurring under your
+          credentials and for all trading actions occurring under your
           account. Tradely reserves the right to suspend or delete accounts that
           engage in malicious exploitation.
         </p>
       ),
     },
     {
-      title: "3. Virtual Capital & Simulation Mechanics",
+      title: "3. Paper Trading Capital & Execution Mechanics",
       icon: Coins,
       badgeColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
       content: (
@@ -62,8 +62,8 @@ export default function TermsOfServicePage() {
             transferred to real-world monetary systems.
           </p>
           <p>
-            Simulation fills occur using algorithmic matching against simulated
-            price ticks. Simulated historical or forward-looking performance on
+            Order fills occur using algorithmic matching against live
+            price ticks. Historical or forward-looking performance on
             Tradely does not guarantee or indicate comparable outcomes when
             trading real equities on regulated exchanges.
           </p>
@@ -115,7 +115,7 @@ export default function TermsOfServicePage() {
         <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
           Tradely, its creator, and contributors shall not be held liable for
           any real-world financial losses, damages, or missed trading
-          opportunities resulting from the use of, or reliance upon, simulation
+          opportunities resulting from the use of, or reliance upon, trading
           models, analytics, or educational content provided on this platform.
         </p>
       ),
@@ -143,7 +143,7 @@ export default function TermsOfServicePage() {
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
             Last Updated: September 2026. Please review the terms governing
-            access to and usage of Tradely's educational simulation terminal.
+            access to and usage of Tradely's educational paper trading terminal.
           </p>
         </div>
 

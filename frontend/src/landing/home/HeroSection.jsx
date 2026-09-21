@@ -59,7 +59,7 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* Right Column: Connekt-Inspired Simulated Trading Terminal Preview Window */}
+          {/* Right Column: Connekt-Inspired Trading Terminal Preview Window */}
           <div className="lg:col-span-6">
             <div className="relative mx-auto max-w-lg lg:max-w-none">
               {/* Outer Glow */}
@@ -87,7 +87,7 @@ export default function HeroSection() {
                   </Badge>
                 </div>
 
-                {/* Simulated Content Area */}
+                {/* Terminal Content Area */}
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 my-3.5">
                   {/* Left Mini-Watchlist */}
                   <div className="sm:col-span-5 space-y-1 bg-[#171717] rounded-2xl p-2.5 border border-white/[0.07]">

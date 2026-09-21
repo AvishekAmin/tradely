@@ -52,7 +52,7 @@ export default function HelpPage() {
       items: [
         {
           title: "Market vs Limit Orders",
-          desc: "Market orders execute immediately against the latest simulation tick, while Limit orders rest on the order book until market price hits your threshold.",
+          desc: "Market orders execute immediately against the latest market tick, while Limit orders rest on the order book until market price hits your threshold.",
         },
         {
           title: "OCO (One-Cancels-the-Other) Brackets",
@@ -60,7 +60,7 @@ export default function HelpPage() {
         },
         {
           title: "Ratcheting Trailing Stops",
-          desc: "Set a dynamic trailing buffer that ratchets upward as stock prices advance, locking in simulated profits while protecting downside risk.",
+          desc: "Set a dynamic trailing buffer that ratchets upward as stock prices advance, locking in gains while protecting downside risk.",
         },
       ],
     },
@@ -84,7 +84,7 @@ export default function HelpPage() {
       ],
     },
     {
-      category: "Simulation Engine & Streaming",
+      category: "Market Engine & Streaming",
       icon: Cpu,
       accent: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
       items: [
@@ -133,7 +133,7 @@ export default function HelpPage() {
             How can we help your strategy?
           </h1>
           <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Explore comprehensive guides and documentation for Tradely's virtual simulation engine, advanced bracket orders, and portfolio tracking.
+            Explore comprehensive guides and documentation for Tradely's market engine, advanced bracket orders, and portfolio tracking.
           </p>
 
           {/* Search Bar */}

@@ -60,7 +60,7 @@ export default function ContactPage() {
             Contact the Tradely Team
           </h1>
           <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
-            Have questions about simulated order mechanics, portfolio analytics, or architectural feedback? We'd love to hear from you.
+            Have questions about order execution mechanics, portfolio analytics, or architectural feedback? We'd love to hear from you.
           </p>
         </div>
 

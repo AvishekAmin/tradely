@@ -20,7 +20,7 @@ export default function PricingSection() {
       popular: false,
     },
     {
-      title: "Simulated Orders",
+      title: "Advanced Orders",
       price: "₹0",
       popular: true,
       desc: "Practice with advanced order types without hidden execution fees.",
@@ -59,7 +59,7 @@ export default function PricingSection() {
             Zero Fees. Unlimited Strategy Testing.
           </h2>
           <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-            Tradely is completely free to use. We provide open, barrier-free access to realistic financial market simulation so you can master order types and portfolio risk without financial exposure.
+            Tradely is completely free to use. We provide open, barrier-free access to realistic financial market mechanics so you can master order types and portfolio risk without financial exposure.
           </p>
         </div>
 

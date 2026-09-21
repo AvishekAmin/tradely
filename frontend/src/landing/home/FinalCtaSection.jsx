@@ -18,7 +18,7 @@ export default function FinalCtaSection() {
             </h2>
 
             <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
-              Practice with simulated capital. Master advanced limit, trailing, and OCO bracket orders. Understand your portfolio before committing real capital anywhere.
+              Practice with zero-risk capital. Master advanced limit, trailing, and OCO bracket orders. Understand your portfolio before committing real capital anywhere.
             </p>
           </div>
 

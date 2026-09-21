@@ -118,7 +118,7 @@ export default function Footer() {
               <TradelyLogo size="default" />
             </Link>
             <p className="text-slate-400 text-[0.88rem] leading-[1.68] max-w-[320px]">
-              A modern simulated trading platform built for education, strategy
+              A modern paper trading platform built for education, strategy
               testing and portfolio analytics.
             </p>
 
@@ -276,7 +276,7 @@ export default function Footer() {
               Stay in the loop
             </h4>
             <p className="text-[0.88rem] text-slate-400 leading-[1.68]">
-              Get simulated market insights, platform updates, and feature
+              Get market insights, platform updates, and feature
               announcements.
             </p>
 
@@ -340,10 +340,10 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Educational Simulation Disclaimer */}
+        {/* Educational Paper Trading Disclaimer */}
         <div className="pt-2 text-[0.82rem] text-slate-400/90 leading-[1.6] w-full border-t border-white/[0.06]">
           <strong className="text-slate-300 font-semibold">Disclaimer:</strong> Tradely is a
-          simulated educational trading platform. All market data, orders, and
+          paper trading educational platform. All market data, orders, and
           executions are virtual and do not represent real financial
           transactions. Tradely does not provide investment advice, broker
           services, or access to real stock exchanges.

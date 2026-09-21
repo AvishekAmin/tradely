@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 
 /**
  * MarketTickerBar - Groww-inspired continuously moving horizontal market ticker.
- * Displays major Indian indices and top equities with live simulated movements,
+ * Displays major Indian indices and top equities with live market movements,
  * directional arrows, percentage changes, and hover-to-pause micro-interactions.
  */
 export default function MarketTickerBar() {

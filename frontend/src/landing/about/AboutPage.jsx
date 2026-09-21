@@ -81,7 +81,7 @@ export default function AboutPage() {
             <span className="text-2xl sm:text-3xl font-extrabold text-blue-400 font-mono tabular-nums">
               ~1.5s
             </span>
-            <p className="text-xs text-slate-400 font-medium">Market Simulation Tick</p>
+            <p className="text-xs text-slate-400 font-medium">Market Price Tick</p>
           </div>
           <div className="rounded-2xl bg-[#141414] border border-white/[0.08] p-5 text-center space-y-1">
             <span className="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono tabular-nums">
@@ -113,7 +113,7 @@ export default function AboutPage() {
             Financial trading platforms often present beginners with high barriers to entry, complex jargon, and catastrophic risk of capital loss while testing new strategies. Tradely was created to eliminate this barrier.
           </p>
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-            We set out to build a platform that mirrors the exact realities of professional electronic exchanges — continuous price action, order queues, stop triggers, trailing ratchets, and bracket cancellation — while running in a completely simulated, zero-risk sandbox.
+            We set out to build a platform that mirrors the exact realities of professional electronic exchanges — continuous price action, order queues, stop triggers, trailing ratchets, and bracket cancellation — while running in a completely risk-free, zero-loss paper trading sandbox.
           </p>
         </div>
 
