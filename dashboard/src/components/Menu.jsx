@@ -1,29 +1,29 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { LANDING_URL } from "../config/api";
 import {
-  LightMode,
-  DarkMode,
-  Logout,
-  OpenInNew,
-} from "@mui/icons-material";
-import TradelyLogo from "./TradelyLogo";
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "./ui/dropdown-menu";
+import { ExternalLink, LogOut, User } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const NAV_ITEMS = [
+  { path: "/", label: "Dashboard" },
+  { path: "/orders", label: "Orders" },
+  { path: "/holdings", label: "Holdings" },
+  { path: "/positions", label: "Positions" },
+  { path: "/funds", label: "Funds" },
+  { path: "/explore", label: "Explore" },
+];
 
 const Menu = () => {
   const location = useLocation();
-  const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-
-  const handleProfileClick = () => {
-    setIsProfileDropdownOpen((prev) => !prev);
-  };
-
-  const handleLogout = () => {
-    logout();
-  };
 
   const isCurrent = (path) => {
     if (path === "/") {
@@ -32,173 +32,94 @@ const Menu = () => {
     return location.pathname.startsWith(path);
   };
 
-  const menuClass = "menu";
-  const activeMenuClass = "menu selected";
+  const initials = user?.username
+    ? user.username.slice(0, 2).toUpperCase()
+    : "TR";
 
   return (
-    <div className="menu-container">
-      <Link to="/" style={{ display: "flex", alignItems: "center", textDecoration: "none" }} aria-label="Tradely Dashboard Home">
-        <TradelyLogo size="small" />
-      </Link>
-      <div className="menus">
-        <ul>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/">
-              <p className={isCurrent("/") ? activeMenuClass : menuClass}>
-                Dashboard
-              </p>
+    <div className="flex items-center gap-4 lg:gap-6">
+      {/* Nav Link Items */}
+      <nav className="hidden md:flex items-center gap-1">
+        {NAV_ITEMS.map((item) => {
+          const active = isCurrent(item.path);
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={cn(
+                "relative px-3 py-1.5 text-xs font-semibold rounded-lg transition-all",
+                active
+                  ? "bg-white/10 text-white shadow-sm"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+              )}
+            >
+              {item.label}
+              {active && (
+                <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-gradient-to-r from-[#00D8F6] to-[#7B61FF] rounded-full" />
+              )}
             </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/orders">
-              <p className={isCurrent("/orders") ? activeMenuClass : menuClass}>
-                Orders
-              </p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/holdings">
-              <p className={isCurrent("/holdings") ? activeMenuClass : menuClass}>
-                Holdings
-              </p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/positions">
-              <p className={isCurrent("/positions") ? activeMenuClass : menuClass}>
-                Positions
-              </p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/funds">
-              <p className={isCurrent("/funds") ? activeMenuClass : menuClass}>
-                Funds
-              </p>
-            </Link>
-          </li>
-          <li>
-            <Link style={{ textDecoration: "none" }} to="/apps">
-              <p className={isCurrent("/apps") ? activeMenuClass : menuClass}>
-                Apps
-              </p>
-            </Link>
-          </li>
-        </ul>
+          );
+        })}
+      </nav>
 
-        <div className="nav-actions" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          {/* Theme Toggle Button */}
+      {/* User Profile Avatar with ShadCN Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="theme-toggle-btn"
-            onClick={toggleTheme}
-            title={`Switch to ${theme === "dark" ? "Light" : "Dark"} mode`}
-            style={{
-              background: "transparent",
-              border: "1px solid var(--border-subtle, rgba(255,255,255,0.1))",
-              borderRadius: "8px",
-              cursor: "pointer",
-              padding: "6px 8px",
-              color: "var(--text-primary, inherit)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.2s ease",
-            }}
+            className="flex items-center gap-2 p-1 pr-2.5 rounded-full bg-[#171717] border border-white/10 hover:border-white/20 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-cyan-500/40"
           >
-            {theme === "dark" ? (
-              <LightMode style={{ fontSize: "1.1rem", color: "#f59e0b" }} />
-            ) : (
-              <DarkMode style={{ fontSize: "1.1rem", color: "#64748b" }} />
-            )}
-          </button>
-
-          <hr style={{ height: "24px", margin: "0 4px", opacity: 0.2 }} />
-
-          {/* Profile Badge */}
-          <div
-            className="profile"
-            onClick={handleProfileClick}
-            style={{ position: "relative", cursor: "pointer" }}
-          >
-            <div className="avatar">
-              {user?.username ? user.username.slice(0, 2).toUpperCase() : "TR"}
+            <div className="size-7 rounded-full bg-gradient-to-r from-[#00D8F6] to-[#7B61FF] text-black font-extrabold text-xs flex items-center justify-center shadow-sm">
+              {initials}
             </div>
-            <p className="username">{user?.username || "Trader"}</p>
+            <span className="text-xs font-semibold text-slate-200 hidden sm:inline max-w-[100px] truncate">
+              {user?.username || "Trader"}
+            </span>
+          </button>
+        </DropdownMenuTrigger>
 
-            {/* Profile Dropdown Menu */}
-            {isProfileDropdownOpen && (
-              <div
-                className="profile-dropdown"
-                style={{
-                  position: "absolute",
-                  top: "100%",
-                  right: 0,
-                  marginTop: "8px",
-                  background: "var(--bg-surface, #2f2f2f)",
-                  border: "1px solid var(--border-subtle, rgba(255,255,255,0.1))",
-                  borderRadius: "8px",
-                  boxShadow: "var(--shadow-lg, 0 10px 25px rgba(0,0,0,0.4))",
-                  minWidth: "180px",
-                  zIndex: 200,
-                  padding: "8px 0",
-                  color: "var(--text-primary, #ececec)",
-                }}
-              >
-                <div
-                  style={{
-                    padding: "8px 16px",
-                    borderBottom: "1px solid var(--border-subtle, rgba(255,255,255,0.08))",
-                    fontSize: "0.85rem",
-                  }}
-                >
-                  <div style={{ fontWeight: 600 }}>{user?.username || "Trading Account"}</div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--text-muted, #888)" }}>
-                    {user?.email || "Authenticated"}
-                  </div>
-                </div>
-
-                <a
-                  href={LANDING_URL}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "10px 16px",
-                    color: "inherit",
-                    textDecoration: "none",
-                    fontSize: "0.85rem",
-                  }}
-                >
-                  <OpenInNew style={{ fontSize: "1rem" }} />
-                  Landing Page
-                </a>
-
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    width: "100%",
-                    padding: "10px 16px",
-                    background: "none",
-                    border: "none",
-                    color: "var(--loss, #ef4444)",
-                    fontSize: "0.85rem",
-                    cursor: "pointer",
-                    textAlign: "left",
-                  }}
-                >
-                  <Logout style={{ fontSize: "1rem" }} />
-                  Logout
-                </button>
-              </div>
-            )}
+        <DropdownMenuContent align="end" className="w-56">
+          <div className="px-3 py-2 border-b border-white/10">
+            <div className="font-semibold text-white text-sm">
+              {user?.username || "Trading Account"}
+            </div>
+            <div className="text-xs text-slate-400 truncate">
+              {user?.email || "Authenticated Session"}
+            </div>
           </div>
-        </div>
-      </div>
+
+          <div className="md:hidden py-1">
+            {NAV_ITEMS.map((item) => (
+              <DropdownMenuItem key={item.path} asChild>
+                <Link to={item.path} className="text-xs font-medium">
+                  {item.label}
+                </Link>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+          </div>
+
+          <DropdownMenuItem asChild>
+            <a
+              href={LANDING_URL}
+              className="flex items-center gap-2 text-xs font-medium text-slate-200 hover:text-white"
+            >
+              <ExternalLink className="size-3.5 text-cyan-400" />
+              <span>Back To Home</span>
+            </a>
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            onClick={logout}
+            className="flex items-center gap-2 text-xs font-medium text-rose-400 hover:text-rose-300 focus:text-rose-300 focus:bg-rose-500/10 cursor-pointer"
+          >
+            <LogOut className="size-3.5 text-rose-400" />
+            <span>Log Out</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };
