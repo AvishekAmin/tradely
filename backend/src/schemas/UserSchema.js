@@ -38,6 +38,12 @@ const UserSchema = new Schema(
       required: true,
       default: 100000,
     },
+    pendingWithdrawalAmount: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: [0, "Pending withdrawal amount cannot be negative"],
+    },
   },
   { timestamps: true }
 );

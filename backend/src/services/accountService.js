@@ -3,7 +3,7 @@ import { UserModel } from "../models/UserModel.js";
 const DEFAULT_INITIAL_BALANCE = 100000;
 
 /**
- * Get current user funds and margin information
+ * Get current user funds, margins, and withdrawable cash information
  */
 export const getFunds = async (user) => {
   const userId = user._id || user.id;
@@ -13,11 +13,15 @@ export const getFunds = async (user) => {
   const initial = u.initialBalance !== undefined ? u.initialBalance : DEFAULT_INITIAL_BALANCE;
   const available = Math.round((u.balance || 0) * 100) / 100;
   const reserved = Math.round((u.reservedBalance || 0) * 100) / 100;
+  const pendingWithdrawal = Math.round((u.pendingWithdrawalAmount || 0) * 100) / 100;
+  const withdrawable = Math.max(0, Math.round((available - reserved - pendingWithdrawal) * 100) / 100);
   const total = Math.round((available + reserved) * 100) / 100;
 
   return {
     balance: available,
     reservedBalance: reserved,
+    pendingWithdrawalAmount: pendingWithdrawal,
+    withdrawableBalance: withdrawable,
     totalBalance: total,
     initialBalance: initial,
     availableMargin: available,
@@ -35,11 +39,31 @@ export const resetFunds = async (user, initialAmount = DEFAULT_INITIAL_BALANCE) 
     {
       balance: initialAmount,
       reservedBalance: 0,
+      pendingWithdrawalAmount: 0,
       initialBalance: initialAmount,
     },
     { new: true }
   );
   return updated;
+};
+
+/**
+ * Null-safe migration ensuring existing users possess pendingWithdrawalAmount: 0
+ */
+export const ensurePendingWithdrawalMigration = async () => {
+  try {
+    await UserModel.updateMany(
+      {
+        $or: [
+          { pendingWithdrawalAmount: { $exists: false } },
+          { pendingWithdrawalAmount: null },
+        ],
+      },
+      { $set: { pendingWithdrawalAmount: 0 } }
+    );
+  } catch (err) {
+    console.warn("Migration warning for pendingWithdrawalAmount:", err.message);
+  }
 };
 
 /**

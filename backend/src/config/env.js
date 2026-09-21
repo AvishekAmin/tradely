@@ -66,3 +66,18 @@ export const parseTrustProxy = () => {
 };
 
 export const TRUST_PROXY = parseTrustProxy();
+
+// Payment Gateway Configuration
+export const PAYMENT_PROVIDER = (process.env.PAYMENT_PROVIDER || "razorpay").toLowerCase();
+export const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "";
+export const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "";
+export const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || "";
+
+// In production, enforce credentials when PAYMENT_PROVIDER is razorpay
+if (PAYMENT_PROVIDER === "razorpay") {
+  if (NODE_ENV === "production" && (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET)) {
+    throw new Error(
+      "RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables are required in production when PAYMENT_PROVIDER=razorpay."
+    );
+  }
+}

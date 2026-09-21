@@ -26,8 +26,34 @@ app.use(corsMiddleware);
 // 4. Structured HTTP Request Logging
 app.use(requestLogger);
 
-// 5. Request Body & Cookie Parsing (with 1mb payload limit to prevent DoS)
-app.use(express.json({ limit: "1mb" }));
+// 5. Raw Request Body Handling for Webhooks (Preserves pristine byte buffers for HMAC verification)
+app.use(
+  "/webhooks/razorpay",
+  express.raw({ type: "*/*", limit: "1mb" }),
+  (req, res, next) => {
+    if (Buffer.isBuffer(req.body)) {
+      req.rawBody = req.body;
+      try {
+        req.body = JSON.parse(req.body.toString("utf8"));
+      } catch (err) {
+        req.body = {};
+      }
+    }
+    next();
+  }
+);
+
+// 6. Global Request Body & Cookie Parsing (with 1mb payload limit to prevent DoS)
+app.use(
+  express.json({
+    limit: "1mb",
+    verify: (req, res, buf) => {
+      if (!req.rawBody && buf) {
+        req.rawBody = buf;
+      }
+    },
+  })
+);
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 app.use(cookieParser());
 

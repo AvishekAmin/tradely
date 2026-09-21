@@ -10,7 +10,11 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "prod": "pm2 src/server.js",
-    "test": "node test_phase8_runner.js"
+    "test": "node test_phase8_runner.js && node test_phase10a_runner.js && node test_phase10b_runner.js && node test_phase10c_runner.js",
+    "test:phase8": "node test_phase8_runner.js",
+    "test:phase10a": "node test_phase10a_runner.js",
+    "test:phase10b": "node test_phase10b_runner.js",
+    "test:phase10c": "node test_phase10c_runner.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -21,6 +25,7 @@
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.10.1",
+    "razorpay": "^2.9.8",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {

@@ -11,6 +11,8 @@ import {
   startMarketSimulation,
   stopMarketSimulation,
 } from "./services/marketDataService.js";
+import { ensurePendingWithdrawalMigration } from "./services/accountService.js";
+import { recoverPendingWithdrawals } from "./services/withdrawalService.js";
 import { logger } from "./utils/logger.js";
 
 let server = null;
@@ -49,8 +51,10 @@ export const startServer = async () => {
     // 1. Connect to Database
     await connectDB();
 
-    // 2. Perform Phase 3 legacy data reset
+    // 2. Perform Phase 3 legacy data reset & Phase 10B migration/recovery
     await cleanupLegacyOrphanData();
+    await ensurePendingWithdrawalMigration();
+    await recoverPendingWithdrawals();
 
     // 3. Create HTTP Server & initialize Socket.IO
     server = http.createServer(app);
