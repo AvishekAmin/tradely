@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { io } from "socket.io-client";
 import apiClient, { API_BASE_URL, SOCKET_URL } from "../config/api";

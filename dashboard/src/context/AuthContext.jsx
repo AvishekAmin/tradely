@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import apiClient, { LANDING_URL } from "../config/api";
 
@@ -38,8 +39,8 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.warn("Logout error:", err);
     } finally {
-      setUser(null);
-      window.location.href = `${LANDING_URL}/login`;
+      const destination = LANDING_URL.endsWith("/") ? LANDING_URL : `${LANDING_URL}/`;
+      window.location.href = destination;
     }
   };
 
