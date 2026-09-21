@@ -1,15 +1,98 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useMemo, useRef } from "react";
 import apiClient from "../config/api";
 import GeneralContext from "./GeneralContext";
 import { useMarketData } from "../context/MarketDataContext";
-import { Tooltip, Grow } from "@mui/material";
-import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowUp from "@mui/icons-material/KeyboardArrowUp";
-import ArrowUpward from "@mui/icons-material/ArrowUpward";
-import ArrowDownward from "@mui/icons-material/ArrowDownward";
-import Delete from "@mui/icons-material/Delete";
-import Add from "@mui/icons-material/Add";
-import { DoughnutChart } from "./DoughnoutChart";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "./ui/tooltip";
+import {
+  Search,
+  Plus,
+  Trash2,
+  ChevronUp,
+  ChevronDown,
+  ArrowUpRight,
+  ArrowDownRight,
+  Loader2,
+  X,
+} from "lucide-react";
+import { DoughnutChart } from "./DoughnutChart";
+import { cn } from "@/lib/utils";
+
+const COMPANY_NAMES = {
+  TCS: "Tata Consultancy Services",
+  INFY: "Infosys Ltd",
+  RELIANCE: "Reliance Industries",
+  HDFCBANK: "HDFC Bank Ltd",
+  ICICIBANK: "ICICI Bank Ltd",
+  SBIN: "State Bank of India",
+  ITC: "ITC Ltd",
+  HINDUNILVR: "Hindustan Unilever Ltd",
+  HUL: "Hindustan Unilever Ltd",
+  WIPRO: "Wipro Ltd",
+  "M&M": "Mahindra & Mahindra Ltd",
+  ONGC: "Oil & Natural Gas Corp",
+  AXISBANK: "Axis Bank Ltd",
+  KOTAKBANK: "Kotak Mahindra Bank",
+  KPITTECH: "KPIT Technologies",
+  QUICKHEAL: "Quick Heal Technologies",
+  TATAMOTORS: "Tata Motors Ltd",
+  BHARTIARTL: "Bharti Airtel Ltd",
+  LT: "Larsen & Toubro Ltd",
+  BAJFINANCE: "Bajaj Finance Ltd",
+  BAJAJFINSV: "Bajaj Finserv Ltd",
+  HCLTECH: "HCL Technologies Ltd",
+  SUNPHARMA: "Sun Pharmaceutical Industries",
+  MARUTI: "Maruti Suzuki India Ltd",
+  NTPC: "NTPC Ltd",
+  POWERGRID: "Power Grid Corp of India",
+  TITAN: "Titan Company Ltd",
+  ASIANPAINT: "Asian Paints Ltd",
+  ULTRACEMCO: "UltraTech Cement Ltd",
+  TATASTEEL: "Tata Steel Ltd",
+  COALINDIA: "Coal India Ltd",
+  ADANIENT: "Adani Enterprises Ltd",
+  ADANIPORTS: "Adani Ports and SEZ Ltd",
+  JSWSTEEL: "JSW Steel Ltd",
+  GRASIM: "Grasim Industries Ltd",
+  TECHM: "Tech Mahindra Ltd",
+  CIPLA: "Cipla Ltd",
+  DRREDDY: "Dr. Reddy's Laboratories",
+  NESTLEIND: "Nestle India Ltd",
+  BRITANNIA: "Britannia Industries Ltd",
+  EICHERMOT: "Eicher Motors Ltd",
+  DIVISLAB: "Divi's Laboratories Ltd",
+  APOLLOHOSP: "Apollo Hospitals Enterprise",
+  INDUSINDBK: "IndusInd Bank Ltd",
+  HEROMOTOCO: "Hero MotoCorp Ltd",
+  HINDALCO: "Hindalco Industries Ltd",
+  BPCL: "Bharat Petroleum Corp Ltd",
+  IOC: "Indian Oil Corporation Ltd",
+  ZOMATO: "Zomato Ltd",
+  JIOFIN: "Jio Financial Services Ltd",
+  PAYTM: "One97 Communications Ltd",
+};
+
+const CHART_COLORS = [
+  "#00D8F6",
+  "#7B61FF",
+  "#10B981",
+  "#F59E0B",
+  "#EF4444",
+  "#3B82F6",
+  "#A855F7",
+  "#EC4899",
+  "#14B8A6",
+  "#6366F1",
+  "#F97316",
+  "#84CC16",
+  "#D946EF",
+  "#06B6D4",
+  "#EAB308",
+];
 
 const ALL_SUPPORTED_STOCKS = [
   { name: "TCS" },
@@ -27,16 +110,68 @@ const ALL_SUPPORTED_STOCKS = [
   { name: "KOTAKBANK" },
   { name: "KPITTECH" },
   { name: "QUICKHEAL" },
+  { name: "TATAMOTORS" },
+  { name: "BHARTIARTL" },
+  { name: "LT" },
+  { name: "BAJFINANCE" },
+  { name: "BAJAJFINSV" },
+  { name: "HCLTECH" },
+  { name: "SUNPHARMA" },
+  { name: "MARUTI" },
+  { name: "NTPC" },
+  { name: "POWERGRID" },
+  { name: "TITAN" },
+  { name: "ASIANPAINT" },
+  { name: "ULTRACEMCO" },
+  { name: "TATASTEEL" },
+  { name: "COALINDIA" },
+  { name: "ADANIENT" },
+  { name: "ADANIPORTS" },
+  { name: "JSWSTEEL" },
+  { name: "GRASIM" },
+  { name: "TECHM" },
+  { name: "CIPLA" },
+  { name: "DRREDDY" },
+  { name: "NESTLEIND" },
+  { name: "BRITANNIA" },
+  { name: "EICHERMOT" },
+  { name: "DIVISLAB" },
+  { name: "APOLLOHOSP" },
+  { name: "INDUSINDBK" },
+  { name: "HEROMOTOCO" },
+  { name: "HINDALCO" },
+  { name: "BPCL" },
+  { name: "IOC" },
+  { name: "ZOMATO" },
+  { name: "JIOFIN" },
+  { name: "PAYTM" },
 ];
 
 const WatchList = () => {
   const { refreshKey } = useContext(GeneralContext);
-  const { getQuote, connectionStatus } = useMarketData();
+  const { getQuote } = useMarketData();
   const [search, setSearch] = useState("");
   const [watchlistSymbols, setWatchlistSymbols] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionInProgress, setActionInProgress] = useState(null);
   const [feedback, setFeedback] = useState("");
+  const watchlistRef = useRef(null);
+
+  // Clear search and dismiss search list on click outside the watchlist sidebar
+  useEffect(() => {
+    if (!search) return;
+
+    const handleOutsideClick = (e) => {
+      if (watchlistRef.current && !watchlistRef.current.contains(e.target)) {
+        setSearch("");
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [search]);
 
   // 1. Fetch user's persistent watchlist on mount / refresh
   useEffect(() => {
@@ -64,7 +199,7 @@ const WatchList = () => {
 
   const showFeedback = (msg) => {
     setFeedback(msg);
-    setTimeout(() => setFeedback(""), 2200);
+    setTimeout(() => setFeedback(""), 2500);
   };
 
   // Add symbol to persistent watchlist
@@ -129,232 +264,267 @@ const WatchList = () => {
 
   // Filter existing watchlist symbols matching search
   const cleanSearch = search.toLowerCase().trim();
-  const filteredSymbols = watchlistSymbols.filter((sym) =>
-    sym.toLowerCase().includes(cleanSearch)
+  const filteredSymbols = useMemo(
+    () =>
+      watchlistSymbols.filter((sym) =>
+        sym.toLowerCase().includes(cleanSearch)
+      ),
+    [watchlistSymbols, cleanSearch]
   );
 
   // Discover unadded supported instruments matching search query
-  const unaddedMatches = cleanSearch
-    ? ALL_SUPPORTED_STOCKS.filter(
-        (stock) =>
-          !watchlistSymbols.includes(stock.name) &&
-          stock.name.toLowerCase().includes(cleanSearch)
-      )
-    : [];
+  const unaddedMatches = useMemo(
+    () =>
+      cleanSearch
+        ? ALL_SUPPORTED_STOCKS.filter(
+            (stock) =>
+              !watchlistSymbols.includes(stock.name) &&
+              stock.name.toLowerCase().includes(cleanSearch)
+          )
+        : [],
+    [cleanSearch, watchlistSymbols]
+  );
 
-  const data = {
-    labels: filteredSymbols,
-    datasets: [
-      {
-        label: "Price",
-        data: filteredSymbols.map((sym) => {
-          const q = getQuote(sym);
-          return q ? q.price : 0;
-        }),
-        backgroundColor: [
-          "rgba(255, 99, 132, 0.6)",
-          "rgba(54, 162, 235, 0.6)",
-          "rgba(255, 206, 86, 0.6)",
-          "rgba(75, 192, 192, 0.6)",
-          "rgba(153, 102, 255, 0.6)",
-          "rgba(255, 159, 64, 0.6)",
-          "rgba(16, 185, 129, 0.6)",
-          "rgba(239, 68, 68, 0.6)",
-          "rgba(59, 130, 246, 0.6)",
-          "rgba(147, 51, 234, 0.6)",
-          "rgba(236, 72, 153, 0.6)",
-          "rgba(14, 165, 233, 0.6)",
-          "rgba(249, 115, 22, 0.6)",
-          "rgba(168, 85, 247, 0.6)",
-          "rgba(34, 197, 94, 0.6)",
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
+  const watchlistStockStats = useMemo(() => {
+    const items = filteredSymbols.map((sym, index) => {
+      const q = getQuote(sym);
+      const price = q?.price !== undefined ? q.price : 0;
+      const fullName = q?.name || COMPANY_NAMES[sym] || sym;
+      const color = CHART_COLORS[index % CHART_COLORS.length];
+      return {
+        symbol: sym,
+        name: fullName,
+        price,
+        color,
+      };
+    });
+
+    const sum = items.reduce((acc, item) => acc + item.price, 0);
+
+    return items.map((item) => ({
+      ...item,
+      percentage: sum > 0 ? ((item.price / sum) * 100).toFixed(1) : "0.0",
+    }));
+  }, [filteredSymbols, getQuote]);
+
+  const totalPrice = useMemo(() => {
+    return watchlistStockStats.reduce((sum, item) => sum + item.price, 0);
+  }, [watchlistStockStats]);
+
+  const chartData = useMemo(() => {
+    return {
+      labels: watchlistStockStats.map((item) => item.symbol),
+      datasets: [
+        {
+          label: "Price",
+          data: watchlistStockStats.map((item) => item.price),
+          backgroundColor: watchlistStockStats.map((item) => item.color),
+          borderWidth: 1,
+          borderColor: "rgba(0, 0, 0, 0.5)",
+        },
+      ],
+    };
+  }, [watchlistStockStats]);
 
   return (
-    <div className="watchlist-container">
-      <div className="search-container">
-        <input
-          type="text"
-          name="search"
-          id="search"
-          placeholder="Search stocks eg: infy, tcs, sbin"
-          className="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <div
-          style={{
-            position: "absolute",
-            right: "14px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "0.68rem",
-              fontWeight: 600,
-              padding: "2px 6px",
-              borderRadius: "4px",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-              backgroundColor:
-                connectionStatus === "connected"
-                  ? "rgba(16, 185, 129, 0.15)"
-                  : connectionStatus === "connecting"
-                  ? "rgba(245, 158, 11, 0.15)"
-                  : "rgba(239, 68, 68, 0.15)",
-              color:
-                connectionStatus === "connected"
-                  ? "var(--profit, #10b981)"
-                  : connectionStatus === "connecting"
-                  ? "var(--warning, #f59e0b)"
-                  : "var(--loss, #ef4444)",
-            }}
-            title={`Market Stream: ${connectionStatus}`}
-          >
-            <span
-              style={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                backgroundColor:
-                  connectionStatus === "connected"
-                    ? "var(--profit, #10b981)"
-                    : connectionStatus === "connecting"
-                    ? "var(--warning, #f59e0b)"
-                    : "var(--loss, #ef4444)",
+    <TooltipProvider delayDuration={200}>
+      <div ref={watchlistRef} className="flex flex-col h-full select-none">
+        {/* Search Header */}
+        <div className="p-3 border-b border-white/10 bg-[#111111]/80 backdrop-blur sticky top-0 z-10">
+          <div className="relative flex items-center">
+            <Search className="absolute left-3 size-4 text-slate-500 pointer-events-none" />
+            <input
+              type="text"
+              name="search"
+              placeholder="Search stocks (e.g. INFY, TCS)"
+              className="w-full h-9 pl-9 pr-24 rounded-xl border border-white/10 bg-[#1A1A1A] text-xs text-white placeholder:text-slate-500 outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setSearch("");
+                }
               }}
             />
-            {connectionStatus === "connected"
-              ? "LIVE"
-              : connectionStatus === "connecting"
-              ? "SYNC"
-              : "OFFLINE"}
-          </span>
-          <span className="counts">
-            {watchlistSymbols.length} / {ALL_SUPPORTED_STOCKS.length}
-          </span>
-        </div>
-      </div>
-
-      {feedback && (
-        <div
-          style={{
-            fontSize: "0.75rem",
-            padding: "4px 14px",
-            backgroundColor: "rgba(59, 130, 246, 0.15)",
-            color: "var(--accent-blue, #3b82f6)",
-            borderBottom: "1px solid rgba(59, 130, 246, 0.2)",
-          }}
-        >
-          {feedback}
-        </div>
-      )}
-
-      {/* Available to Add Search Results */}
-      {cleanSearch && unaddedMatches.length > 0 && (
-        <div
-          style={{
-            padding: "8px 14px",
-            backgroundColor: "rgba(255, 255, 255, 0.02)",
-            borderBottom: "1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "0.72rem",
-              fontWeight: 600,
-              color: "var(--text-muted, #888)",
-              marginBottom: "6px",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            Available to Add ({unaddedMatches.length})
-          </div>
-          {unaddedMatches.map((stock) => {
-            const quote = getQuote(stock.name);
-            return (
-              <div
-                key={stock.name}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "5px 0",
-                  fontSize: "0.85rem",
-                }}
-              >
-                <div>
-                  <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-                    {stock.name}
-                  </span>
-                  <span style={{ marginLeft: "8px", fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                    {quote?.price !== undefined ? `₹${quote.price.toFixed(2)}` : "—"}
-                  </span>
-                </div>
+            <div className="absolute right-2.5 flex items-center gap-1.5">
+              {search && (
                 <button
                   type="button"
-                  onClick={() => handleAddSymbol(stock.name)}
-                  disabled={actionInProgress === `add-${stock.name}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "2px",
-                    padding: "3px 8px",
-                    borderRadius: "4px",
-                    border: "1px solid var(--accent-blue, #3b82f6)",
-                    backgroundColor: "rgba(59, 130, 246, 0.15)",
-                    color: "var(--accent-blue, #3b82f6)",
-                    fontSize: "0.75rem",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
+                  onClick={() => setSearch("")}
+                  className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                  title="Clear search"
+                  aria-label="Clear search"
                 >
-                  <Add style={{ fontSize: "0.9rem" }} />
-                  Add
+                  <X className="size-3.5" />
                 </button>
-              </div>
-            );
-          })}
+              )}
+              <span className="text-[10px] font-bold text-slate-400 bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">
+                {watchlistSymbols.length}/{ALL_SUPPORTED_STOCKS.length}
+              </span>
+            </div>
+          </div>
         </div>
-      )}
 
-      {/* Active Watchlist Items */}
-      <ul className="list">
-        {loading ? (
-          <li style={{ padding: "16px", textAlign: "center", color: "var(--text-muted)" }}>
-            Loading watchlist...
-          </li>
-        ) : filteredSymbols.length === 0 ? (
-          <li style={{ padding: "16px", textAlign: "center", color: "var(--text-muted)" }}>
-            {cleanSearch ? "No matching instruments in watchlist." : "Watchlist is empty. Search above to add stocks."}
-          </li>
-        ) : (
-          filteredSymbols.map((symbol, index) => {
-            return (
-              <WatchListItem
-                key={symbol}
-                symbol={symbol}
-                index={index}
-                totalCount={filteredSymbols.length}
-                onMoveUp={() => handleMoveSymbol(index, "up")}
-                onMoveDown={() => handleMoveSymbol(index, "down")}
-                onRemove={() => handleRemoveSymbol(symbol)}
-              />
-            );
-          })
+        {/* Feedback Alert Banner */}
+        {feedback && (
+          <div className="px-3 py-1.5 text-xs font-semibold bg-cyan-500/10 text-cyan-300 border-b border-cyan-500/20 animate-in fade-in-0 duration-200">
+            {feedback}
+          </div>
         )}
-      </ul>
 
-      {filteredSymbols.length > 0 && <DoughnutChart data={data} />}
-    </div>
+        {/* Available to Add Search Results */}
+        {cleanSearch && unaddedMatches.length > 0 && (
+          <div className="p-3 border-b border-white/10 bg-white/[0.02]">
+            <div className="text-[11px] font-bold tracking-wider uppercase text-slate-400 mb-2">
+              Available to Add ({unaddedMatches.length})
+            </div>
+            <div className="space-y-1.5">
+              {unaddedMatches.map((stock) => {
+                const quote = getQuote(stock.name);
+                const isAdding = actionInProgress === `add-${stock.name}`;
+                return (
+                  <div
+                    key={stock.name}
+                    className="flex items-center justify-between p-2 rounded-lg bg-[#141414] border border-white/5 hover:border-white/10 transition-all"
+                  >
+                    <div>
+                      <span className="text-xs font-bold text-white">
+                        {stock.name}
+                      </span>
+                      <span className="ml-2 text-xs text-slate-400 tabular-nums">
+                        {quote?.price !== undefined ? `₹${quote.price.toFixed(2)}` : "—"}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleAddSymbol(stock.name)}
+                      disabled={isAdding}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      {isAdding ? (
+                        <Loader2 className="size-3 animate-spin" />
+                      ) : (
+                        <Plus className="size-3" />
+                      )}
+                      <span>Add</span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Active Watchlist Items & Price Distribution */}
+        <div className="flex-1 overflow-y-auto">
+          {loading ? (
+            <div className="flex items-center justify-center p-8 text-xs text-slate-400 gap-2">
+              <Loader2 className="size-4 animate-spin text-cyan-400" />
+              <span>Loading watchlist...</span>
+            </div>
+          ) : filteredSymbols.length === 0 ? (
+            <div className="p-8 text-center text-xs text-slate-500">
+              {cleanSearch
+                ? "No matching instruments in watchlist."
+                : "Watchlist is empty. Search above to add stocks."}
+            </div>
+          ) : (
+            <>
+              <div className="divide-y divide-white/5">
+                {filteredSymbols.map((symbol, index) => {
+                  return (
+                    <WatchListItem
+                      key={symbol}
+                      symbol={symbol}
+                      index={index}
+                      totalCount={filteredSymbols.length}
+                      onMoveUp={() => handleMoveSymbol(index, "up")}
+                      onMoveDown={() => handleMoveSymbol(index, "down")}
+                      onRemove={() => handleRemoveSymbol(symbol)}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Watchlist Price Distribution Chart & Breakdown */}
+              {!cleanSearch && (
+                <div className="p-4 border-t border-white/10 bg-[#0C0C0C]/50 flex flex-col items-center">
+                  <div className="text-[11px] font-semibold text-slate-400 mb-2 text-center uppercase tracking-wider">
+                    Watchlist Price Distribution
+                  </div>
+
+                  {/* Circular Chart */}
+                  <div className="w-64 h-64 flex items-center justify-center relative">
+                    <DoughnutChart data={chartData} />
+                    {totalPrice > 0 && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center p-4">
+                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                          Watchlist Total
+                        </span>
+                        <span className="text-base font-black text-white font-mono tabular-nums leading-tight mt-0.5">
+                          ₹{totalPrice.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                        <span className="text-[10px] text-cyan-400 font-semibold mt-0.5">
+                          {watchlistStockStats.length} Stocks
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Stock Companies List with Share Percentage & Name */}
+                  <div className="w-full mt-4 space-y-1.5 pt-3 border-t border-white/5">
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 px-1 pb-1">
+                      <span>Company</span>
+                      <div className="flex items-center gap-3">
+                        <span>Price</span>
+                        <span className="w-12 text-right">Share</span>
+                      </div>
+                    </div>
+
+                    {watchlistStockStats.map((item) => (
+                      <div
+                        key={item.symbol}
+                        className="flex items-center justify-between p-2 rounded-lg bg-white/[0.02] border border-white/5 hover:border-white/10 hover:bg-white/[0.04] transition-all"
+                      >
+                        <div className="flex items-center gap-2 min-w-0 pr-2">
+                          <span
+                            className="size-2.5 rounded-full shrink-0 shadow-sm"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-bold text-white truncate">
+                              {item.symbol}
+                            </span>
+                            <span
+                              className="text-[10px] text-slate-400 truncate max-w-[110px]"
+                              title={item.name}
+                            >
+                              {item.name}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          <span className="text-xs font-semibold text-slate-300 tabular-nums">
+                            {item.price > 0 ? `₹${item.price.toFixed(2)}` : "—"}
+                          </span>
+                          <span
+                            className="text-xs font-bold tabular-nums min-w-[48px] text-right px-1.5 py-0.5 rounded bg-white/5"
+                            style={{ color: item.color }}
+                          >
+                            {item.percentage}%
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </TooltipProvider>
   );
 };
 
@@ -368,7 +538,7 @@ const WatchListItem = ({
   onMoveDown,
   onRemove,
 }) => {
-  const [showWatchlistActions, setShowWatchlistActions] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const { getQuote } = useMarketData();
   const quote = getQuote(symbol);
 
@@ -381,36 +551,81 @@ const WatchListItem = ({
       : "—";
 
   return (
-    <li
-      onMouseEnter={() => setShowWatchlistActions(true)}
-      onMouseLeave={() => setShowWatchlistActions(false)}
-    >
-      <div className="item">
-        <p className={isDown ? "down" : "up"} style={{ fontWeight: "600" }}>{symbol}</p>
-        <div className="item-info">
-          <span className="percent tabular-nums">{percentText}</span>
-          {price !== null &&
-            (isDown ? (
-              <KeyboardArrowDown className="down" fontSize="small" />
-            ) : (
-              <KeyboardArrowUp className="up" fontSize="small" />
-            ))}
-          <span className="price tabular-nums" style={{ fontWeight: "500" }}>
-            {price !== null ? price.toFixed(2) : "—"}
-          </span>
-        </div>
-      </div>
-      {showWatchlistActions && (
-        <WatchListActions
-          uid={symbol}
-          index={index}
-          totalCount={totalCount}
-          onMoveUp={onMoveUp}
-          onMoveDown={onMoveDown}
-          onRemove={onRemove}
-        />
+    <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={cn(
+        "relative flex items-center justify-between px-3.5 py-2.5 transition-all group",
+        isHovered
+          ? "bg-[#181818]"
+          : "hover:bg-white/[0.02]"
       )}
-    </li>
+    >
+      {/* Left side blue/cyan accent line only */}
+      {isHovered && (
+        <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-cyan-400 pointer-events-none" />
+      )}
+
+      {/* Symbol & Name - always visible, highlighted on hover */}
+      <div className="flex flex-col min-w-0 pr-2">
+        <span
+          className={cn(
+            "text-xs font-bold transition-all truncate",
+            isHovered
+              ? "text-cyan-300 font-black tracking-wide drop-shadow-[0_0_8px_rgba(0,216,246,0.6)]"
+              : isDown
+              ? "text-rose-400"
+              : "text-emerald-400"
+          )}
+        >
+          {symbol}
+        </span>
+        <span
+          className={cn(
+            "text-[10px] font-medium transition-colors",
+            isHovered ? "text-cyan-400/80 font-semibold" : "text-slate-500"
+          )}
+        >
+          NSE EQ
+        </span>
+      </div>
+
+      {/* Right Side: Actions when hovered, Quotes when not hovered */}
+      <div className="flex items-center shrink-0">
+        {isHovered ? (
+          <WatchListActions
+            uid={symbol}
+            index={index}
+            totalCount={totalCount}
+            onMoveUp={onMoveUp}
+            onMoveDown={onMoveDown}
+            onRemove={onRemove}
+          />
+        ) : (
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                "flex items-center text-[11px] font-bold tabular-nums px-1.5 py-0.5 rounded",
+                isDown
+                  ? "bg-rose-500/10 text-rose-400"
+                  : "bg-emerald-500/10 text-emerald-400"
+              )}
+            >
+              {isDown ? (
+                <ArrowDownRight className="size-3 mr-0.5" />
+              ) : (
+                <ArrowUpRight className="size-3 mr-0.5" />
+              )}
+              {percentText}
+            </span>
+
+            <span className="text-xs font-bold text-white tabular-nums min-w-[65px] text-right">
+              {price !== null ? `₹${price.toFixed(2)}` : "—"}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
@@ -450,60 +665,78 @@ const WatchListActions = ({
   };
 
   return (
-    <span className="actions">
-      <span>
-        <Tooltip title="Buy (B)" placement="top" arrow TransitionComponent={Grow}>
-          <button type="button" className="buy" onClick={handleBuyClick} aria-label={`Buy ${uid}`}>
-            Buy
-          </button>
-        </Tooltip>
-
-        <Tooltip title="Sell (S)" placement="top" arrow TransitionComponent={Grow}>
-          <button type="button" className="sell" onClick={handleSellClick} aria-label={`Sell ${uid}`}>
-            Sell
-          </button>
-        </Tooltip>
-
-        {index > 0 && (
-          <Tooltip title="Move Up" placement="top" arrow TransitionComponent={Grow}>
-            <button
-              type="button"
-              className="action"
-              onClick={handleMoveUpClick}
-              aria-label={`Move ${uid} up`}
-              style={{ padding: "4px" }}
-            >
-              <ArrowUpward style={{ fontSize: "0.95rem" }} />
-            </button>
-          </Tooltip>
-        )}
-
-        {index < totalCount - 1 && (
-          <Tooltip title="Move Down" placement="top" arrow TransitionComponent={Grow}>
-            <button
-              type="button"
-              className="action"
-              onClick={handleMoveDownClick}
-              aria-label={`Move ${uid} down`}
-              style={{ padding: "4px" }}
-            >
-              <ArrowDownward style={{ fontSize: "0.95rem" }} />
-            </button>
-          </Tooltip>
-        )}
-
-        <Tooltip title="Remove from Watchlist" placement="top" arrow TransitionComponent={Grow}>
+    <div className="flex items-center gap-1.5 z-10 animate-in fade-in-0 duration-150">
+      {/* Buy Button */}
+      <Tooltip>
+        <TooltipTrigger asChild>
           <button
             type="button"
-            className="action"
-            onClick={handleRemoveClick}
-            aria-label={`Remove ${uid} from Watchlist`}
-            style={{ padding: "4px", color: "var(--loss, #ef4444)" }}
+            onClick={handleBuyClick}
+            className="size-6 rounded bg-emerald-500 hover:bg-emerald-400 text-black font-black text-[11px] flex items-center justify-center shadow-sm cursor-pointer transition-all active:scale-95"
           >
-            <Delete style={{ fontSize: "0.95rem" }} />
+            B
           </button>
-        </Tooltip>
-      </span>
-    </span>
+        </TooltipTrigger>
+        <TooltipContent>Buy {uid}</TooltipContent>
+      </Tooltip>
+
+      {/* Sell Button */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={handleSellClick}
+            className="size-6 rounded bg-rose-500 hover:bg-rose-400 text-black font-black text-[11px] flex items-center justify-center shadow-sm cursor-pointer transition-all active:scale-95"
+          >
+            S
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Sell {uid}</TooltipContent>
+      </Tooltip>
+
+      {/* Move Up */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            disabled={index === 0}
+            onClick={handleMoveUpClick}
+            className="size-6 rounded bg-white/5 hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-all cursor-pointer"
+          >
+            <ChevronUp className="size-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Move Up</TooltipContent>
+      </Tooltip>
+
+      {/* Move Down */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            disabled={index === totalCount - 1}
+            onClick={handleMoveDownClick}
+            className="size-6 rounded bg-white/5 hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-all cursor-pointer"
+          >
+            <ChevronDown className="size-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Move Down</TooltipContent>
+      </Tooltip>
+
+      {/* Delete Symbol */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={handleRemoveClick}
+            className="size-6 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 flex items-center justify-center transition-all cursor-pointer"
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>Remove from Watchlist</TooltipContent>
+      </Tooltip>
+    </div>
   );
 };

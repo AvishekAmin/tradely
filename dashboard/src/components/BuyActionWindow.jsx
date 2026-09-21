@@ -2,7 +2,19 @@ import React, { useState, useContext, useEffect } from "react";
 import apiClient from "../config/api";
 import GeneralContext from "./GeneralContext";
 import { useMarketData } from "../context/MarketDataContext";
-import "../index.css";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  X,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  ShieldCheck,
+  Info,
+  ArrowUpRight,
+} from "lucide-react";
 
 const BuyActionWindow = ({ uid }) => {
   const { closeBuyWindow, triggerRefresh } = useContext(GeneralContext);
@@ -15,7 +27,7 @@ const BuyActionWindow = ({ uid }) => {
   const [stockQuantity, setStockQuantity] = useState(1);
   const [limitPrice, setLimitPrice] = useState(() => (livePrice ? livePrice.toFixed(2) : ""));
   const [stopPrice, setStopPrice] = useState(() =>
-    livePrice ? (Math.round((livePrice * 1.02) * 100) / 100).toFixed(2) : ""
+    livePrice ? (Math.round(livePrice * 1.02 * 100) / 100).toFixed(2) : ""
   );
   const [availableBalance, setAvailableBalance] = useState(null);
   const [loadingFunds, setLoadingFunds] = useState(true);
@@ -39,14 +51,23 @@ const BuyActionWindow = ({ uid }) => {
       });
   }, []);
 
+  // Keyboard escape listener to close modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && !isSubmitting) {
+        closeBuyWindow();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [closeBuyWindow, isSubmitting]);
+
   const parsedQty = parseInt(stockQuantity, 10) || 0;
   const parsedLimit = parseFloat(limitPrice) || 0;
   const parsedStop = parseFloat(stopPrice) || 0;
 
   let executionPrice = livePrice ?? 0;
-  if (orderType === "LIMIT") {
-    executionPrice = parsedLimit;
-  } else if (orderType === "STOP_LIMIT") {
+  if (orderType === "LIMIT" || orderType === "STOP_LIMIT") {
     executionPrice = parsedLimit;
   }
 
@@ -58,15 +79,19 @@ const BuyActionWindow = ({ uid }) => {
 
   const isMarketPriceUnavailable =
     orderType === "MARKET" && (livePrice === null || livePrice <= 0);
-  const isLimitInvalid = (orderType === "LIMIT" || orderType === "STOP_LIMIT") && parsedLimit <= 0;
+  const isLimitInvalid =
+    (orderType === "LIMIT" || orderType === "STOP_LIMIT") && parsedLimit <= 0;
   const isStopInvalid = orderType === "STOP_LIMIT" && parsedStop <= 0;
   const isStopDirectionInvalid =
     orderType === "STOP_LIMIT" && livePrice !== null && parsedStop <= livePrice;
   const isStopLimitRelationInvalid =
-    orderType === "STOP_LIMIT" && parsedLimit > 0 && parsedStop > 0 && parsedLimit < parsedStop;
+    orderType === "STOP_LIMIT" &&
+    parsedLimit > 0 &&
+    parsedStop > 0 &&
+    parsedLimit < parsedStop;
 
   const handleBuyClick = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setErrorMessage("");
     setSuccessMessage("");
 
@@ -127,7 +152,8 @@ const BuyActionWindow = ({ uid }) => {
 
       if (res.data?.success) {
         setSuccessMessage(
-          res.data.message || `Successfully placed ${orderType} BUY order for ${parsedQty} share(s) of ${uid}!`
+          res.data.message ||
+            `Successfully placed ${orderType} BUY order for ${parsedQty} share(s) of ${uid}!`
         );
         triggerRefresh();
 
@@ -146,392 +172,315 @@ const BuyActionWindow = ({ uid }) => {
     }
   };
 
+  const isFormInvalid =
+    isSubmitting ||
+    hasInsufficientFunds ||
+    isMarketPriceUnavailable ||
+    isLimitInvalid ||
+    isStopInvalid ||
+    isStopDirectionInvalid ||
+    isStopLimitRelationInvalid;
+
   return (
-    <div className="buy-window-container" id="buy-window">
-      <div className="header">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <h3 style={{ margin: 0 }}>Buy {uid}</h3>
-            {livePrice !== null ? (
-              <span
-                style={{
-                  fontSize: "0.75rem",
-                  fontWeight: 600,
-                  padding: "2px 8px",
-                  borderRadius: "4px",
-                  backgroundColor: "rgba(16, 185, 129, 0.15)",
-                  color: "var(--profit, #10b981)",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "5px",
-                }}
-              >
-                <span
-                  style={{
-                    width: "6px",
-                    height: "6px",
-                    borderRadius: "50%",
-                    backgroundColor: "var(--profit, #10b981)",
-                  }}
-                />
-                ₹{livePrice.toFixed(2)} LIVE
-              </span>
-            ) : (
-              <span
-                style={{
-                  fontSize: "0.75rem",
-                  fontWeight: 500,
-                  padding: "2px 8px",
-                  borderRadius: "4px",
-                  backgroundColor: "rgba(239, 68, 68, 0.15)",
-                  color: "var(--loss, #ef4444)",
-                }}
-              >
-                Price unavailable
-              </span>
-            )}
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
+      {/* Modal Dialog Card */}
+      <div
+        className="bg-[#141414] border border-white/10 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden text-white animate-in zoom-in-95 duration-200"
+        role="dialog"
+        aria-modal="true"
+      >
+        {/* Top Header */}
+        <div className="p-5 border-b border-white/10 bg-[#171717] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="size-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <ArrowUpRight className="size-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                  BUY ORDER
+                </span>
+                <span className="text-slate-400 text-xs">•</span>
+                <span className="text-xs text-slate-400 font-medium">NSE/BSE</span>
+              </div>
+              <h3 className="text-lg font-bold text-white tracking-tight">{uid}</h3>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={closeBuyWindow}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--text-muted)",
-              fontSize: "1.2rem",
-              cursor: "pointer",
-              padding: "0 4px",
-            }}
-          >
-            ×
-          </button>
+
+          <div className="flex items-center gap-3">
+            {livePrice !== null ? (
+              <Badge variant="live" className="gap-1.5 font-mono text-xs">
+                <span className="size-1.5 rounded-full bg-emerald-400 animate-ping" />
+                ₹{livePrice.toFixed(2)}
+              </Badge>
+            ) : (
+              <Badge variant="loss" className="text-xs">
+                Price Unavailable
+              </Badge>
+            )}
+
+            <button
+              type="button"
+              onClick={closeBuyWindow}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Close modal"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
         </div>
 
         {/* Order Type Tabs */}
-        <div style={{ display: "flex", gap: "6px", marginTop: "10px" }}>
-          {["MARKET", "LIMIT", "STOP_LIMIT"].map((type) => {
-            const label = type === "STOP_LIMIT" ? "STOP-LIMIT" : type;
-            const isSelected = orderType === type;
-            return (
-              <button
-                key={type}
-                type="button"
-                onClick={() => {
-                  setOrderType(type);
-                  if (type === "LIMIT" && !limitPrice && livePrice) {
-                    setLimitPrice(livePrice.toFixed(2));
-                  }
-                  if (type === "STOP_LIMIT") {
-                    if (!stopPrice && livePrice) {
-                      setStopPrice((Math.round((livePrice * 1.02) * 100) / 100).toFixed(2));
+        <div className="p-4 border-b border-white/5 bg-[#141414]">
+          <div className="grid grid-cols-3 gap-2 bg-[#1A1A1A] p-1 rounded-xl border border-white/5">
+            {[
+              { id: "MARKET", label: "Market" },
+              { id: "LIMIT", label: "Limit" },
+              { id: "STOP_LIMIT", label: "Stop-Limit" },
+            ].map((tab) => {
+              const active = orderType === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setOrderType(tab.id);
+                    if (tab.id === "LIMIT" && !limitPrice && livePrice) {
+                      setLimitPrice(livePrice.toFixed(2));
                     }
-                    if (!limitPrice && livePrice) {
-                      setLimitPrice((Math.round((livePrice * 1.03) * 100) / 100).toFixed(2));
+                    if (tab.id === "STOP_LIMIT") {
+                      if (!stopPrice && livePrice) {
+                        setStopPrice((Math.round(livePrice * 1.02 * 100) / 100).toFixed(2));
+                      }
+                      if (!limitPrice && livePrice) {
+                        setLimitPrice((Math.round(livePrice * 1.03 * 100) / 100).toFixed(2));
+                      }
                     }
-                  }
-                }}
-                style={{
-                  padding: "4px 12px",
-                  fontSize: "0.78rem",
-                  fontWeight: 600,
-                  borderRadius: "4px",
-                  border: "1px solid",
-                  borderColor: isSelected ? "var(--accent-blue, #3b82f6)" : "rgba(255,255,255,0.1)",
-                  backgroundColor: isSelected ? "rgba(59, 130, 246, 0.2)" : "transparent",
-                  color: isSelected ? "#ffffff" : "var(--text-muted)",
-                  cursor: "pointer",
-                }}
-              >
-                {label}
-              </button>
-            );
-          })}
+                  }}
+                  className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                    active
+                      ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm"
+                      : "text-slate-400 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      <div className="regular-order">
-        {/* Status Feedbacks */}
-        {errorMessage && (
-          <div
-            style={{
-              backgroundColor: "rgba(239, 68, 68, 0.15)",
-              color: "var(--loss, #ef4444)",
-              border: "1px solid rgba(239, 68, 68, 0.3)",
-              borderRadius: "6px",
-              padding: "8px 12px",
-              fontSize: "0.85rem",
-              marginBottom: "12px",
-            }}
-          >
-            {errorMessage}
-          </div>
-        )}
-
-        {successMessage && (
-          <div
-            style={{
-              backgroundColor: "rgba(16, 185, 129, 0.15)",
-              color: "var(--profit, #10b981)",
-              border: "1px solid rgba(16, 185, 129, 0.3)",
-              borderRadius: "6px",
-              padding: "8px 12px",
-              fontSize: "0.85rem",
-              marginBottom: "12px",
-            }}
-          >
-            ✓ {successMessage}
-          </div>
-        )}
-
-        {/* Input Fields */}
-        <div className="inputs">
-          <fieldset>
-            <legend>Qty.</legend>
-            <input
-              type="number"
-              name="qty"
-              id="buy-qty"
-              min="1"
-              step="1"
-              disabled={isSubmitting}
-              onChange={(e) => setStockQuantity(e.target.value)}
-              value={stockQuantity}
-            />
-          </fieldset>
-
-          {orderType === "MARKET" && (
-            <fieldset>
-              <legend>Live Price (₹)</legend>
-              <input
-                type="text"
-                name="price"
-                id="buy-price"
-                readOnly
-                disabled
-                value={livePrice !== null ? `₹${livePrice.toFixed(2)} (Live)` : "Price unavailable"}
-                style={{
-                  cursor: "not-allowed",
-                  color: livePrice !== null ? "var(--profit, #10b981)" : "var(--loss, #ef4444)",
-                  fontWeight: 600,
-                }}
-              />
-            </fieldset>
+        {/* Form Body */}
+        <div className="p-5 space-y-4">
+          {/* Status Alerts */}
+          {errorMessage && (
+            <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2.5">
+              <AlertCircle className="size-4 shrink-0 mt-0.5 text-rose-400" />
+              <span>{errorMessage}</span>
+            </div>
           )}
 
-          {orderType === "LIMIT" && (
-            <fieldset>
-              <legend>Limit Price (₹)</legend>
-              <input
+          {successMessage && (
+            <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-start gap-2.5">
+              <CheckCircle2 className="size-4 shrink-0 mt-0.5 text-emerald-400" />
+              <span>{successMessage}</span>
+            </div>
+          )}
+
+          {/* Inputs Grid */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Quantity */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">Quantity (Shares)</label>
+              <Input
                 type="number"
-                name="limitPrice"
-                id="buy-limit-price"
+                min="1"
+                step="1"
+                disabled={isSubmitting}
+                value={stockQuantity}
+                onChange={(e) => setStockQuantity(e.target.value)}
+                className="font-mono text-sm"
+                placeholder="1"
+              />
+            </div>
+
+            {/* Price fields */}
+            {orderType === "MARKET" && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">Market Price</label>
+                <div className="h-10 px-3 py-2 rounded-xl bg-[#1A1A1A] border border-white/10 flex items-center justify-between text-sm font-mono text-emerald-400 font-bold">
+                  <span>{livePrice !== null ? `₹${livePrice.toFixed(2)}` : "Unavailable"}</span>
+                  <Badge variant="live" className="text-[10px] py-0 px-1.5 h-4">
+                    LTP
+                  </Badge>
+                </div>
+              </div>
+            )}
+
+            {orderType === "LIMIT" && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">Limit Price (₹)</label>
+                <Input
+                  type="number"
+                  step="0.05"
+                  min="0.01"
+                  disabled={isSubmitting}
+                  value={limitPrice}
+                  onChange={(e) => setLimitPrice(e.target.value)}
+                  className="font-mono text-sm"
+                  placeholder="e.g. 3400.00"
+                />
+              </div>
+            )}
+
+            {orderType === "STOP_LIMIT" && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">Stop Trigger (₹)</label>
+                <Input
+                  type="number"
+                  step="0.05"
+                  min="0.01"
+                  disabled={isSubmitting}
+                  value={stopPrice}
+                  onChange={(e) => setStopPrice(e.target.value)}
+                  className="font-mono text-sm"
+                  placeholder={`> ₹${livePrice ? livePrice.toFixed(2) : "0"}`}
+                />
+              </div>
+            )}
+          </div>
+
+          {orderType === "STOP_LIMIT" && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">Limit Price (₹)</label>
+              <Input
+                type="number"
                 step="0.05"
                 min="0.01"
                 disabled={isSubmitting}
-                onChange={(e) => setLimitPrice(e.target.value)}
                 value={limitPrice}
-                placeholder="e.g. 3400.00"
-                style={{ fontWeight: 600 }}
+                onChange={(e) => setLimitPrice(e.target.value)}
+                className="font-mono text-sm"
+                placeholder=">= Stop Trigger"
               />
-            </fieldset>
+            </div>
           )}
 
-          {orderType === "STOP_LIMIT" && (
-            <>
-              <fieldset>
-                <legend>Stop / Trigger (₹)</legend>
-                <input
-                  type="number"
-                  name="stopPrice"
-                  id="buy-stop-price"
-                  step="0.05"
-                  min="0.01"
-                  disabled={isSubmitting}
-                  onChange={(e) => setStopPrice(e.target.value)}
-                  value={stopPrice}
-                  placeholder={`> ₹${livePrice ? livePrice.toFixed(2) : "0"}`}
-                  style={{ fontWeight: 600 }}
-                />
-              </fieldset>
-              <fieldset>
-                <legend>Limit Price (₹)</legend>
-                <input
-                  type="number"
-                  name="limitPrice"
-                  id="buy-stop-limit-price"
-                  step="0.05"
-                  min="0.01"
-                  disabled={isSubmitting}
-                  onChange={(e) => setLimitPrice(e.target.value)}
-                  value={limitPrice}
-                  placeholder={`>= Stop Price`}
-                  style={{ fontWeight: 600 }}
-                />
-              </fieldset>
-            </>
-          )}
-        </div>
-
-        {/* Condition details for LIMIT orders */}
-        {orderType === "LIMIT" && (
-          <div
-            style={{
-              backgroundColor: "rgba(59, 130, 246, 0.1)",
-              border: "1px solid rgba(59, 130, 246, 0.25)",
-              borderRadius: "6px",
-              padding: "8px 12px",
-              fontSize: "0.78rem",
-              color: "var(--text-muted)",
-              marginTop: "8px",
-            }}
-          >
-            💡 <strong>Condition:</strong> Executes when market price is{" "}
-            <span style={{ color: "#ffffff", fontWeight: 600 }}>₹{parsedLimit ? parsedLimit.toFixed(2) : "..."}</span> or below.
-            Funds (₹{totalCost.toFixed(2)}) will be reserved until triggered or cancelled.
-          </div>
-        )}
-
-        {/* Condition details for STOP_LIMIT orders */}
-        {orderType === "STOP_LIMIT" && (
-          <div
-            style={{
-              backgroundColor: "rgba(59, 130, 246, 0.1)",
-              border: "1px solid rgba(59, 130, 246, 0.25)",
-              borderRadius: "6px",
-              padding: "8px 12px",
-              fontSize: "0.78rem",
-              color: "var(--text-muted)",
-              marginTop: "8px",
-            }}
-          >
-            💡 <strong>Stop-Limit Condition:</strong> When market rises to{" "}
-            <span style={{ color: "#ffffff", fontWeight: 600 }}>₹{parsedStop ? parsedStop.toFixed(2) : "..."}</span>,
-            order activates as a Limit Buy at max{" "}
-            <span style={{ color: "#ffffff", fontWeight: 600 }}>₹{parsedLimit ? parsedLimit.toFixed(2) : "..."}</span>.
-            Funds (₹{totalCost.toFixed(2)}) reserved upfront.
-          </div>
-        )}
-
-        {/* Balance & Order Summary */}
-        <div
-          style={{
-            background: "var(--bg-input, #1a1a1a)",
-            borderRadius: "6px",
-            padding: "10px 14px",
-            fontSize: "0.82rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "6px",
-            marginTop: "8px",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ color: "var(--text-muted)" }}>Available Cash:</span>
-            <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-              {loadingFunds
-                ? "Loading..."
-                : `₹${(availableBalance ?? 0).toLocaleString("en-IN", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}`}
-            </span>
-          </div>
-
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ color: "var(--text-muted)" }}>
-              {orderType === "MARKET" ? "Total Order Value:" : "Estimated Reserved Cash:"}
-            </span>
-            <span style={{ fontWeight: 600, color: "var(--accent-blue, #3b82f6)" }}>
-              {orderType === "MARKET"
-                ? livePrice !== null
-                  ? `₹${totalCost.toFixed(2)}`
-                  : "—"
-                : `₹${totalCost.toFixed(2)}`}
-            </span>
-          </div>
-
-          {availableBalance !== null && (orderType !== "MARKET" || livePrice !== null) && (
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: "var(--text-muted)" }}>Est. Remaining Cash:</span>
-              <span
-                style={{
-                  fontWeight: 600,
-                  color: hasInsufficientFunds
-                    ? "var(--loss, #ef4444)"
-                    : "var(--profit, #10b981)",
-                }}
-              >
-                ₹{remainingBalance.toFixed(2)}
+          {/* Condition Helper Card */}
+          {orderType === "LIMIT" && (
+            <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-slate-300 flex items-start gap-2">
+              <Info className="size-4 shrink-0 text-cyan-400 mt-0.5" />
+              <span>
+                Executes when market reaches{" "}
+                <strong className="text-white font-mono">
+                  ₹{parsedLimit ? parsedLimit.toFixed(2) : "..."}
+                </strong>{" "}
+                or below. Funds (₹{totalCost.toFixed(2)}) will be reserved upfront until filled or cancelled.
               </span>
             </div>
           )}
-        </div>
-      </div>
 
-      <div className="buttons">
-        <span style={{ fontSize: "0.82rem" }}>
-          Margin req:{" "}
-          <strong>
-            {orderType === "MARKET"
-              ? livePrice !== null
-                ? `₹${totalCost.toFixed(2)}`
-                : "—"
-              : `₹${totalCost.toFixed(2)}`}
-          </strong>
-        </span>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            type="button"
-            className="btn btn-blue"
-            onClick={handleBuyClick}
-            disabled={
-              isSubmitting ||
-              hasInsufficientFunds ||
-              isMarketPriceUnavailable ||
-              isLimitInvalid ||
-              isStopInvalid ||
-              isStopDirectionInvalid ||
-              isStopLimitRelationInvalid
-            }
-            style={{
-              opacity:
-                isSubmitting ||
-                hasInsufficientFunds ||
-                isMarketPriceUnavailable ||
-                isLimitInvalid ||
-                isStopInvalid ||
-                isStopDirectionInvalid ||
-                isStopLimitRelationInvalid
-                  ? 0.6
-                  : 1,
-              cursor:
-                isSubmitting ||
-                hasInsufficientFunds ||
-                isMarketPriceUnavailable ||
-                isLimitInvalid ||
-                isStopInvalid ||
-                isStopDirectionInvalid ||
-                isStopLimitRelationInvalid
-                  ? "not-allowed"
-                  : "pointer",
-            }}
-          >
-            {isSubmitting
-              ? "Placing..."
-              : orderType === "STOP_LIMIT"
-              ? "Place Stop-Limit Buy"
-              : orderType === "LIMIT"
-              ? "Place Limit Buy"
-              : "Buy"}
-          </button>
-          <button
-            type="button"
-            className="btn btn-grey"
-            onClick={closeBuyWindow}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
+          {orderType === "STOP_LIMIT" && (
+            <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-slate-300 flex items-start gap-2">
+              <Info className="size-4 shrink-0 text-cyan-400 mt-0.5" />
+              <span>
+                When market rises to{" "}
+                <strong className="text-white font-mono">
+                  ₹{parsedStop ? parsedStop.toFixed(2) : "..."}
+                </strong>
+                , triggers a Limit Buy at max{" "}
+                <strong className="text-white font-mono">
+                  ₹{parsedLimit ? parsedLimit.toFixed(2) : "..."}
+                </strong>
+                .
+              </span>
+            </div>
+          )}
+
+          {/* Ledger Financial Summary Card */}
+          <div className="bg-[#171717] rounded-xl p-3.5 border border-white/5 space-y-2 text-xs font-mono">
+            <div className="flex justify-between items-center text-slate-400 font-sans">
+              <span>Available Cash:</span>
+              <span className="font-mono font-semibold text-white">
+                {loadingFunds
+                  ? "..."
+                  : `₹${(availableBalance ?? 0).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}`}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center text-slate-400 font-sans">
+              <span>Required Margin:</span>
+              <span className="font-mono font-bold text-cyan-400">
+                {orderType === "MARKET"
+                  ? livePrice !== null
+                    ? `₹${totalCost.toFixed(2)}`
+                    : "—"
+                  : `₹${totalCost.toFixed(2)}`}
+              </span>
+            </div>
+
+            {availableBalance !== null && (orderType !== "MARKET" || livePrice !== null) && (
+              <div className="flex justify-between items-center text-slate-400 font-sans pt-1 border-t border-white/5">
+                <span>Remaining Cash:</span>
+                <span
+                  className={`font-mono font-bold ${
+                    hasInsufficientFunds ? "text-rose-400" : "text-emerald-400"
+                  }`}
+                >
+                  ₹{remainingBalance.toFixed(2)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="p-5 border-t border-white/10 bg-[#171717] flex items-center justify-between">
+          <div className="text-xs text-slate-400">
+            <span>Order Value: </span>
+            <span className="font-mono font-bold text-white text-sm">
+              ₹{totalCost.toFixed(2)}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+            <Button
+              variant="outline"
+              type="button"
+              onClick={closeBuyWindow}
+              disabled={isSubmitting}
+              className="text-xs border-white/10 text-slate-300 hover:bg-white/5"
+            >
+              Cancel
+            </Button>
+
+            <Button
+              variant="buy"
+              type="button"
+              onClick={handleBuyClick}
+              disabled={isFormInvalid}
+              className="text-xs px-5 gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="size-3.5 animate-spin" />
+                  Placing...
+                </>
+              ) : (
+                <>
+                  <ArrowUpRight className="size-4" />
+                  {orderType === "STOP_LIMIT"
+                    ? "Place Stop-Limit Buy"
+                    : orderType === "LIMIT"
+                    ? "Place Limit Buy"
+                    : "Buy Now"}
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
