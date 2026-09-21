@@ -16,12 +16,10 @@ const Dashboard = () => {
   return (
     <GeneralContextProvider>
       <div className="flex flex-col lg:flex-row min-h-[calc(100vh-3.5rem)] w-full bg-[#0A0A0A] text-[#EDEDED]">
-        {/* Persistent WatchList Sidebar */}
         <aside className="w-full lg:w-80 lg:min-w-[20rem] lg:max-w-xs border-b lg:border-b-0 lg:border-r border-white/10 bg-[#0E0E0E] shrink-0 flex flex-col lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)]">
           <WatchList />
         </aside>
 
-        {/* Dynamic Terminal Content Area */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
           <Routes>
             <Route path="/" element={<Summary />} />

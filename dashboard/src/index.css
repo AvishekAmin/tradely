@@ -3,43 +3,43 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #0A0A0A;
-  --foreground: #EDEDED;
+  --background: #0a0a0a;
+  --foreground: #ededed;
 
   --card: #141414;
-  --card-foreground: #EDEDED;
+  --card-foreground: #ededed;
 
   --surface: #171717;
-  --surface-hover: #1F1F1F;
+  --surface-hover: #1f1f1f;
   --surface-active: #262626;
 
   --popover: #171717;
-  --popover-foreground: #EDEDED;
+  --popover-foreground: #ededed;
 
-  --primary: #00D8F6;
+  --primary: #00d8f6;
   --primary-foreground: #000000;
 
-  --secondary: #1A1A1A;
-  --secondary-foreground: #EDEDED;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #ededed;
 
-  --muted: #1A1A1A;
-  --muted-foreground: #94A3B8;
+  --muted: #1a1a1a;
+  --muted-foreground: #94a3b8;
 
   --accent: #222222;
-  --accent-foreground: #EDEDED;
+  --accent-foreground: #ededed;
 
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
 
-  --profit: #10B981;
-  --loss: #EF4444;
-  --warning: #F59E0B;
+  --profit: #10b981;
+  --loss: #ef4444;
+  --warning: #f59e0b;
 
   --border: rgba(255, 255, 255, 0.08);
   --border-subtle: rgba(255, 255, 255, 0.05);
   --border-focus: rgba(0, 216, 246, 0.4);
-  --input: #1A1A1A;
-  --ring: #00D8F6;
+  --input: #1a1a1a;
+  --ring: #00d8f6;
 
   --radius: 0.75rem;
 }
@@ -50,8 +50,8 @@ html {
 }
 
 body {
-  background-color: #0A0A0A;
-  color: #EDEDED;
+  background-color: #0a0a0a;
+  color: #ededed;
   font-family:
     "Inter",
     system-ui,
@@ -63,15 +63,13 @@ body {
   overflow-x: hidden;
 }
 
-/* Tabular Numerals for Financial Data */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
 
-/* Glowing Gradient Tradely Button */
 .btn-tradely-gradient {
-  background: linear-gradient(90deg, #00D8F6 0%, #7B61FF 100%);
+  background: linear-gradient(90deg, #00d8f6 0%, #7b61ff 100%);
   color: #000000 !important;
   font-weight: 700;
   box-shadow: 0 10px 20px -5px rgba(0, 216, 246, 0.25);
@@ -87,20 +85,18 @@ body {
   transform: scale(0.98);
 }
 
-/* Text Gradient */
 .text-tradely-gradient {
-  background: linear-gradient(90deg, #00D8F6 0%, #7B61FF 100%);
+  background: linear-gradient(90deg, #00d8f6 0%, #7b61ff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0A0A0A;
+  background: #0a0a0a;
 }
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);

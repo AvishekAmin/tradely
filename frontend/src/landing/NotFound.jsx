@@ -17,17 +17,25 @@ export default function NotFound() {
           </span>
           <h1 className="text-2xl font-bold text-white">Page Not Found</h1>
           <p className="text-sm text-slate-400 max-w-sm mx-auto leading-relaxed">
-            The page or route you are attempting to view does not exist on Tradely.
+            The page or route you are attempting to view does not exist on
+            Tradely.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-          <Button asChild className="btn-tradely-gradient rounded-full px-6 text-xs font-bold text-white shadow-lg">
+          <Button
+            asChild
+            className="btn-tradely-gradient rounded-full px-6 text-xs font-bold text-white shadow-lg"
+          >
             <Link to="/" className="inline-flex items-center gap-2">
               <Home className="size-4" />
               <span>Return Home</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="rounded-full border-white/10 px-6 text-xs font-semibold">
+          <Button
+            asChild
+            variant="outline"
+            className="rounded-full border-white/10 px-6 text-xs font-semibold"
+          >
             <Link to="/support" className="inline-flex items-center gap-2">
               <HelpCircle className="size-4" />
               <span>Knowledge Base</span>

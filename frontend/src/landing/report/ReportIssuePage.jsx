@@ -52,7 +52,6 @@ export default function ReportIssuePage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-between pt-4 pb-20">
       <main className="max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-        {/* Back Link */}
         <div>
           <Link
             to="/"
@@ -63,28 +62,28 @@ export default function ReportIssuePage() {
           </Link>
         </div>
 
-        {/* Page Header */}
         <div className="text-center space-y-4 py-4">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
             Report a Platform Issue
           </h1>
           <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
-            Discovered an order matching glitch, tick calculation error, or UI anomaly? Help us maintain high-fidelity trading execution.
+            Discovered an order matching glitch, tick calculation error, or UI
+            anomaly? Help us maintain high-fidelity trading execution.
           </p>
         </div>
 
-        {/* Info Banner */}
         <div className="rounded-2xl border border-blue-500/20 bg-blue-500/5 p-5 flex items-start gap-3.5">
           <Info className="size-5 text-blue-400 shrink-0 mt-0.5" />
           <div className="space-y-1 text-xs sm:text-sm text-slate-300 leading-relaxed">
             <p className="font-bold text-white">Tips for a fast resolution:</p>
             <p className="text-slate-400">
-              Please include the exact stock ticker (e.g. RELIANCE, TCS), the order type (MARKET, LIMIT, STOP, or OCO), and your approximate steps before the glitch occurred.
+              Please include the exact stock ticker (e.g. RELIANCE, TCS), the
+              order type (MARKET, LIMIT, STOP, or OCO), and your approximate
+              steps before the glitch occurred.
             </p>
           </div>
         </div>
 
-        {/* Form Container */}
         <div className="rounded-3xl border border-white/10 bg-[#141414] p-6 sm:p-8 space-y-6 shadow-2xl">
           {submitted ? (
             <div className="py-8 text-center space-y-4 animate-in fade-in zoom-in duration-300">
@@ -92,7 +91,9 @@ export default function ReportIssuePage() {
                 <CheckCircle2 className="size-7" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-xl font-bold text-white">Issue Filed Successfully</h3>
+                <h3 className="text-xl font-bold text-white">
+                  Issue Filed Successfully
+                </h3>
                 <p className="text-xs text-slate-400">
                   Ticket Reference ID:{" "}
                   <code className="text-cyan-400 font-mono font-bold bg-[#181818] px-2.5 py-1 rounded-md border border-white/10">
@@ -101,7 +102,9 @@ export default function ReportIssuePage() {
                 </p>
               </div>
               <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
-                Thank you for contributing to Tradely's reliability. Our engineering team has received your report and will investigate the reported conditions.
+                Thank you for contributing to Tradely's reliability. Our
+                engineering team has received your report and will investigate
+                the reported conditions.
               </p>
               <div className="pt-3">
                 <Button
@@ -115,7 +118,6 @@ export default function ReportIssuePage() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Category Picker */}
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-300">
                   Issue Category *
@@ -138,7 +140,6 @@ export default function ReportIssuePage() {
                 </div>
               </div>
 
-              {/* Title & Severity */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="sm:col-span-2 space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">
@@ -170,7 +171,6 @@ export default function ReportIssuePage() {
                 </div>
               </div>
 
-              {/* Steps to Reproduce */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">
                   Steps to Reproduce *
@@ -180,12 +180,13 @@ export default function ReportIssuePage() {
                   rows={4}
                   value={steps}
                   onChange={(e) => setSteps(e.target.value)}
-                  placeholder={"1. Placed OCO bracket buy order on RELIANCE at ₹2,900...\n2. Waited for price tick to touch ₹2,920...\n3. Observed order status in ledger..."}
+                  placeholder={
+                    "1. Placed OCO bracket buy order on RELIANCE at ₹2,900...\n2. Waited for price tick to touch ₹2,920...\n3. Observed order status in ledger..."
+                  }
                   className="w-full rounded-xl border border-white/10 bg-[#181818] p-3 text-xs sm:text-sm text-white placeholder:text-slate-500 outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition-all resize-none font-mono"
                 />
               </div>
 
-              {/* Expected vs Actual */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">

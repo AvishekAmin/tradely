@@ -4,7 +4,13 @@ import apiClient from "../config/api";
 import { useAuth } from "../context/AuthContext";
 import { useGeneralContext } from "../components/GeneralContext";
 import { useToast } from "../components/ui/ToastContainer";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +41,6 @@ const PaymentPage = () => {
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState("");
 
-  // Load current available balance
   useEffect(() => {
     let isMounted = true;
     apiClient
@@ -56,7 +61,6 @@ const PaymentPage = () => {
     };
   }, [refreshKey]);
 
-  // Handle amount change
   const handleAmountChange = (e) => {
     const val = e.target.value.replace(/[^0-9]/g, "");
     setInputVal(val);
@@ -75,7 +79,6 @@ const PaymentPage = () => {
     setError("");
   };
 
-  // Dynamically load Razorpay checkout.js script
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
       if (typeof window !== "undefined" && window.Razorpay) {
@@ -91,14 +94,13 @@ const PaymentPage = () => {
     });
   };
 
-  // Submit payment order creation and trigger Checkout
   const handleProceedToPayment = async (e) => {
     e.preventDefault();
     setError("");
 
     if (!amount || amount < MIN_AMOUNT || amount > MAX_AMOUNT) {
       setError(
-        `Please enter a deposit amount between ₹${MIN_AMOUNT.toLocaleString("en-IN")} and ₹${MAX_AMOUNT.toLocaleString("en-IN")}.`
+        `Please enter a deposit amount between ₹${MIN_AMOUNT.toLocaleString("en-IN")} and ₹${MAX_AMOUNT.toLocaleString("en-IN")}.`,
       );
       return;
     }
@@ -106,26 +108,25 @@ const PaymentPage = () => {
     setSubmitting(true);
 
     try {
-      // 1. Ensure Razorpay Checkout SDK is loaded
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
         throw new Error(
-          "Unable to load Razorpay payment gateway script. Please check your internet connection."
+          "Unable to load Razorpay payment gateway script. Please check your internet connection.",
         );
       }
 
-      // 2. Request backend to create server-authoritative Razorpay TEST order
       const orderRes = await apiClient.post("/payments/create-order", {
         amount: Number(amount),
       });
 
       if (!orderRes.data?.success || !orderRes.data?.data) {
-        throw new Error(orderRes.data?.message || "Failed to create payment order.");
+        throw new Error(
+          orderRes.data?.message || "Failed to create payment order.",
+        );
       }
 
       const orderData = orderRes.data.data;
 
-      // 3. Configure Razorpay Standard Checkout
       const options = {
         key: orderData.keyId,
         amount: orderData.amount, // in paise
@@ -134,7 +135,6 @@ const PaymentPage = () => {
         description: "Add Funds (Razorpay)",
         order_id: orderData.orderId,
         handler: async function (response) {
-          // 4. Client submits cryptographically verified tokens to backend
           setSubmitting(false);
           setVerifying(true);
           try {
@@ -149,14 +149,14 @@ const PaymentPage = () => {
             if (verifyRes.data?.success) {
               addToast(
                 `₹${Number(amount).toLocaleString("en-IN")} added successfully.`,
-                "success"
+                "success",
               );
               triggerRefresh();
               navigate("/funds");
             } else {
               addToast(
                 "Payment completed but verification is pending. Your balance has not been credited yet.",
-                "info"
+                "info",
               );
             }
           } catch (verifyErr) {
@@ -183,11 +183,11 @@ const PaymentPage = () => {
         },
       };
 
-      // 4. Open Checkout
       const rzp = new window.Razorpay(options);
       rzp.on("payment.failed", function (response) {
         setSubmitting(false);
-        const reason = response.error?.description || "Payment failed in Razorpay.";
+        const reason =
+          response.error?.description || "Payment failed in Razorpay.";
         setError(reason);
         addToast(reason, "error");
       });
@@ -196,7 +196,9 @@ const PaymentPage = () => {
     } catch (err) {
       setSubmitting(false);
       const msg =
-        err.response?.data?.message || err.message || "An error occurred while initiating payment.";
+        err.response?.data?.message ||
+        err.message ||
+        "An error occurred while initiating payment.";
       setError(msg);
       addToast(msg, "error");
     }
@@ -206,7 +208,6 @@ const PaymentPage = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 pb-12">
-      {/* Back to Funds link */}
       <div className="flex items-center justify-between">
         <Link
           to="/funds"
@@ -217,7 +218,6 @@ const PaymentPage = () => {
         </Link>
       </div>
 
-      {/* Main Add Funds Card */}
       <Card className="border-white/10 bg-[#141414] relative overflow-hidden shadow-2xl">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500" />
 
@@ -232,28 +232,39 @@ const PaymentPage = () => {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Current Available Cash */}
           <div className="p-4 rounded-lg bg-[#0E0E0E] border border-white/5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="size-10 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
                 <Wallet className="size-5" />
               </div>
               <div>
-                <span className="text-xs text-slate-400 font-medium">Current Available Cash</span>
+                <span className="text-xs text-slate-400 font-medium">
+                  Current Available Cash
+                </span>
                 <div className="text-lg font-bold text-white font-mono tabular-nums">
-                  ₹{loadingCash ? "..." : availableCash.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  ₹
+                  {loadingCash
+                    ? "..."
+                    : availableCash.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                      })}
                 </div>
               </div>
             </div>
-            <Badge variant="outline" className="text-[11px] text-slate-400 border-white/10">
+            <Badge
+              variant="outline"
+              className="text-[11px] text-slate-400 border-white/10"
+            >
               Instant Margin
             </Badge>
           </div>
 
-          {/* Deposit Form */}
           <form onSubmit={handleProceedToPayment} className="space-y-5">
             <div className="space-y-2">
-              <label htmlFor="amount-input" className="text-xs font-semibold text-slate-300">
+              <label
+                htmlFor="amount-input"
+                className="text-xs font-semibold text-slate-300"
+              >
                 Deposit Amount (INR)
               </label>
               <div className="relative">
@@ -276,9 +287,10 @@ const PaymentPage = () => {
               </div>
             </div>
 
-            {/* Quick Amount Pills */}
             <div className="space-y-1.5">
-              <span className="text-[11px] font-medium text-slate-400">Quick Select:</span>
+              <span className="text-[11px] font-medium text-slate-400">
+                Quick Select:
+              </span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {QUICK_AMOUNTS.map((val) => {
                   const isSelected = amount === val;
@@ -301,7 +313,6 @@ const PaymentPage = () => {
               </div>
             </div>
 
-            {/* Payment Summary Box */}
             <div className="rounded-lg border border-white/10 bg-[#0A0A0A] p-4 space-y-2.5 text-xs">
               <div className="font-semibold text-slate-300 uppercase tracking-wider text-[10px] pb-1 border-b border-white/5">
                 Payment Summary
@@ -309,7 +320,12 @@ const PaymentPage = () => {
               <div className="flex items-center justify-between text-slate-400">
                 <span>Requested Deposit:</span>
                 <span className="font-mono font-bold text-white tabular-nums">
-                  ₹{amount > 0 ? amount.toLocaleString("en-IN", { minimumFractionDigits: 2 }) : "0.00"}
+                  ₹
+                  {amount > 0
+                    ? amount.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                      })
+                    : "0.00"}
                 </span>
               </div>
               <div className="flex items-center justify-between text-slate-400">
@@ -317,14 +333,18 @@ const PaymentPage = () => {
                 <span className="text-cyan-400 font-medium">Razorpay</span>
               </div>
               <div className="flex items-center justify-between text-slate-400 pt-1.5 border-t border-white/5">
-                <span className="text-slate-200 font-medium">Account balance after success:</span>
+                <span className="text-slate-200 font-medium">
+                  Account balance after success:
+                </span>
                 <span className="font-mono font-bold text-emerald-400 text-sm tabular-nums">
-                  ₹{projectBalance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  ₹
+                  {projectBalance.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
                 </span>
               </div>
             </div>
 
-            {/* Error Message */}
             {error && (
               <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300 flex items-start gap-2">
                 <AlertCircle className="size-4 shrink-0 mt-0.5" />
@@ -332,11 +352,15 @@ const PaymentPage = () => {
               </div>
             )}
 
-            {/* Submit Button */}
             <Button
               type="submit"
               variant="default"
-              disabled={submitting || verifying || amount < MIN_AMOUNT || amount > MAX_AMOUNT}
+              disabled={
+                submitting ||
+                verifying ||
+                amount < MIN_AMOUNT ||
+                amount > MAX_AMOUNT
+              }
               className="w-full py-6 text-sm font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black shadow-lg shadow-cyan-500/20 transition-all cursor-pointer"
             >
               {submitting ? (
@@ -352,7 +376,8 @@ const PaymentPage = () => {
               ) : (
                 <>
                   <CheckCircle2 className="size-4 mr-2" />
-                  Proceed to Payment (₹{amount > 0 ? amount.toLocaleString("en-IN") : "0"})
+                  Proceed to Payment (₹
+                  {amount > 0 ? amount.toLocaleString("en-IN") : "0"})
                 </>
               )}
             </Button>

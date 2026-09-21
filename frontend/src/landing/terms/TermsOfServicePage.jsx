@@ -44,9 +44,9 @@ export default function TermsOfServicePage() {
         <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
           You must create an account to access the trading terminal. You are
           responsible for maintaining the confidentiality of your authentication
-          credentials and for all trading actions occurring under your
-          account. Tradely reserves the right to suspend or delete accounts that
-          engage in malicious exploitation.
+          credentials and for all trading actions occurring under your account.
+          Tradely reserves the right to suspend or delete accounts that engage
+          in malicious exploitation.
         </p>
       ),
     },
@@ -62,10 +62,10 @@ export default function TermsOfServicePage() {
             transferred to real-world monetary systems.
           </p>
           <p>
-            Order fills occur using algorithmic matching against live
-            price ticks. Historical or forward-looking performance on
-            Tradely does not guarantee or indicate comparable outcomes when
-            trading real equities on regulated exchanges.
+            Order fills occur using algorithmic matching against live price
+            ticks. Historical or forward-looking performance on Tradely does not
+            guarantee or indicate comparable outcomes when trading real equities
+            on regulated exchanges.
           </p>
         </div>
       ),
@@ -125,7 +125,6 @@ export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-between pt-4 pb-20">
       <main className="max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-        {/* Back Link */}
         <div>
           <Link
             to="/"
@@ -136,7 +135,6 @@ export default function TermsOfServicePage() {
           </Link>
         </div>
 
-        {/* Page Header */}
         <div className="text-center space-y-4 py-4">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
             Terms of Service
@@ -147,7 +145,6 @@ export default function TermsOfServicePage() {
           </p>
         </div>
 
-        {/* Terms Sections */}
         <div className="space-y-6">
           {terms.map((term) => {
             const Icon = term.icon;
@@ -172,7 +169,6 @@ export default function TermsOfServicePage() {
           })}
         </div>
 
-        {/* Bottom Notice */}
         <div className="rounded-2xl border border-white/10 bg-[#141414] p-6 text-center space-y-2">
           <p className="text-xs sm:text-sm text-slate-400">
             For questions or legal inquiries regarding these terms, please

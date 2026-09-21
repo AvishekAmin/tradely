@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
 
-/**
- * Root information endpoint
- */
 export const getRoot = (req, res) => {
   res.json({
     status: "ok",
@@ -12,10 +9,6 @@ export const getRoot = (req, res) => {
   });
 };
 
-/**
- * Liveness probe (GET /health)
- * Simple, low-overhead check indicating the Express process is running and accepting requests.
- */
 export const getHealth = (req, res) => {
   res.status(200).json({
     status: "ok",
@@ -25,12 +18,6 @@ export const getHealth = (req, res) => {
   });
 };
 
-/**
- * Readiness probe (GET /ready)
- * Verifies that critical dependencies (MongoDB) are available before routing traffic.
- * Used for Docker container healthchecks and orchestrator readiness probes.
- * Minimal details exposed: no database hostnames, credentials, or topology leaked.
- */
 export const getReady = (req, res) => {
   const isDbConnected = mongoose.connection.readyState === 1;
 

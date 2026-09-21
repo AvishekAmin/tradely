@@ -10,7 +10,6 @@ export default function TerminalShowcaseSection() {
       className="pt-8 pb-16 lg:pt-10 lg:pb-24 border-t border-white/[0.08] bg-[#0C0C0C] scroll-mt-16"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
@@ -39,9 +38,7 @@ export default function TerminalShowcaseSection() {
           </div>
         </div>
 
-        {/* Large Editorial Terminal Visualization */}
         <div className="rounded-3xl border border-white/10 bg-[#141414] p-4 sm:p-7 lg:p-8 shadow-2xl shadow-black/80 space-y-6">
-          {/* Terminal Mock Top Bar */}
           <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/10 text-xs">
             <div className="flex items-center gap-4">
               <span className="font-mono font-bold text-white tracking-wider">
@@ -71,9 +68,7 @@ export default function TerminalShowcaseSection() {
             </div>
           </div>
 
-          {/* Holdings & Summary Grid Mockup */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Holdings Table (8 Cols) */}
             <div className="lg:col-span-8 rounded-2xl border border-white/[0.08] bg-[#181818] p-5 space-y-4 overflow-x-auto">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-white flex items-center gap-2">
@@ -210,7 +205,6 @@ export default function TerminalShowcaseSection() {
               </table>
             </div>
 
-            {/* Portfolio Summary Card (4 Cols) */}
             <div className="lg:col-span-4 rounded-2xl border border-white/[0.08] bg-[#181818] p-5 flex flex-col justify-between space-y-4">
               <div>
                 <h4 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider mb-3">
@@ -253,7 +247,6 @@ export default function TerminalShowcaseSection() {
                 </div>
               </div>
 
-              {/* Capital Allocation & Engine Activity */}
               <div className="pt-3 border-t border-white/10 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
@@ -264,7 +257,6 @@ export default function TerminalShowcaseSection() {
                   </span>
                 </div>
 
-                {/* Margin Utilization Progress Bar */}
                 <div className="space-y-1.5">
                   <div className="h-2 w-full rounded-full bg-white/5 overflow-hidden flex">
                     <div
@@ -278,15 +270,22 @@ export default function TerminalShowcaseSection() {
                   </div>
                 </div>
 
-                {/* Performance & Execution Grid */}
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 space-y-0.5">
-                    <div className="text-[10px] text-slate-400 font-medium">Day Realized P&L</div>
-                    <div className="text-xs font-mono font-bold text-emerald-400">+₹1,240.00</div>
+                    <div className="text-[10px] text-slate-400 font-medium">
+                      Day Realized P&L
+                    </div>
+                    <div className="text-xs font-mono font-bold text-emerald-400">
+                      +₹1,240.00
+                    </div>
                   </div>
                   <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 space-y-0.5">
-                    <div className="text-[10px] text-slate-400 font-medium">Order Execution</div>
-                    <div className="text-xs font-mono font-bold text-white">8 Filled (100%)</div>
+                    <div className="text-[10px] text-slate-400 font-medium">
+                      Order Execution
+                    </div>
+                    <div className="text-xs font-mono font-bold text-white">
+                      8 Filled (100%)
+                    </div>
                   </div>
                 </div>
               </div>

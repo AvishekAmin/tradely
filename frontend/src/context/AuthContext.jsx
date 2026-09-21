@@ -14,7 +14,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check existing session on mount using HttpOnly cookie
   useEffect(() => {
     const checkAuth = async () => {
       try {

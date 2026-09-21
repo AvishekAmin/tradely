@@ -3,7 +3,6 @@ import { ALLOWED_ORIGINS, NODE_ENV } from "../config/env.js";
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g. mobile apps, curl, server-to-server, health probes)
     if (!origin) {
       return callback(null, true);
     }
@@ -12,7 +11,6 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    // In development mode only, permit local dev server ports
     if (NODE_ENV !== "production") {
       if (
         /^http:\/\/localhost:\d+$/.test(origin) ||
@@ -22,8 +20,9 @@ const corsOptions = {
       }
     }
 
-    // Origin not allowed: reject with operational 403 error
-    const corsError = new Error(`CORS error: Origin ${origin} not permitted by policy.`);
+    const corsError = new Error(
+      `CORS error: Origin ${origin} not permitted by policy.`,
+    );
     corsError.statusCode = 403;
     corsError.code = "CORS_ORIGIN_DENIED";
     corsError.isOperational = true;

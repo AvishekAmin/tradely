@@ -1,8 +1,5 @@
 import * as accountService from "../services/accountService.js";
 
-/**
- * Controller to fetch authenticated user's funds
- */
 export const getFunds = async (req, res, next) => {
   try {
     const fundsData = await accountService.getFunds(req.user);
@@ -15,9 +12,6 @@ export const getFunds = async (req, res, next) => {
   }
 };
 
-/**
- * Controller to reset authenticated user's funds to ₹100,000
- */
 export const resetFunds = async (req, res, next) => {
   try {
     const updatedUser = await accountService.resetFunds(req.user);

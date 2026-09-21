@@ -4,7 +4,13 @@ import apiClient from "../config/api";
 import GeneralContext from "./GeneralContext";
 import { useMarketData } from "../context/MarketDataContext";
 import { useToast } from "./ui/ToastContainer";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -71,16 +77,13 @@ const Funds = () => {
   const [transactionsError, setTransactionsError] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Filtering state
   const [typeFilter, setTypeFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  // Cancellation Modal state
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedTx, setSelectedTx] = useState(null);
   const [cancelling, setCancelling] = useState(false);
 
-  // Load on mount and on global refresh triggers
   useEffect(() => {
     let isMounted = true;
 
@@ -96,7 +99,9 @@ const Funds = () => {
       .catch((err) => {
         if (isMounted) {
           console.error("Error loading account funds:", err);
-          setFundsError("Unable to load funds data. Please check your connection.");
+          setFundsError(
+            "Unable to load funds data. Please check your connection.",
+          );
           setLoadingFunds(false);
         }
       });
@@ -136,13 +141,11 @@ const Funds = () => {
     triggerRefresh();
   };
 
-  // Open cancellation confirmation dialog
   const openCancelConfirmation = (tx) => {
     setSelectedTx(tx);
     setCancelModalOpen(true);
   };
 
-  // Execute cancellation
   const handleConfirmCancel = async () => {
     if (!selectedTx) return;
     setCancelling(true);
@@ -159,10 +162,8 @@ const Funds = () => {
     } catch (err) {
       setCancelling(false);
       setCancelModalOpen(false);
-      const msg =
-        err.response?.data?.message || "Failed to cancel withdrawal.";
+      const msg = err.response?.data?.message || "Failed to cancel withdrawal.";
       addToast(msg, "error");
-      // Refresh in case of race condition (e.g. moved to PROCESSING)
       triggerRefresh();
     }
   };
@@ -172,20 +173,28 @@ const Funds = () => {
     maximumFractionDigits: 2,
   });
 
-  const formattedReserved = (funds.reservedBalance || 0).toLocaleString("en-IN", {
+  const formattedReserved = (funds.reservedBalance || 0).toLocaleString(
+    "en-IN",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  );
+
+  const formattedPendingWithdrawal = (
+    funds.pendingWithdrawalAmount || 0
+  ).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 
-  const formattedPendingWithdrawal = (funds.pendingWithdrawalAmount || 0).toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-
-  const formattedWithdrawable = (funds.withdrawableBalance || 0).toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  const formattedWithdrawable = (funds.withdrawableBalance || 0).toLocaleString(
+    "en-IN",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  );
 
   const formattedTotal = (
     funds.totalBalance || (funds.balance || 0) + (funds.reservedBalance || 0)
@@ -194,10 +203,13 @@ const Funds = () => {
     maximumFractionDigits: 2,
   });
 
-  const formattedInitial = (funds.initialBalance || 100000).toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  const formattedInitial = (funds.initialBalance || 100000).toLocaleString(
+    "en-IN",
+    {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    },
+  );
 
   const formattedUsedMargin = (funds.usedMargin || 0).toLocaleString("en-IN", {
     minimumFractionDigits: 2,
@@ -206,7 +218,6 @@ const Funds = () => {
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
-      {/* Header with Title and Primary Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -215,7 +226,8 @@ const Funds = () => {
             </h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Real-time cash balance, active order reservations, and fund withdrawals.
+            Real-time cash balance, active order reservations, and fund
+            withdrawals.
           </p>
         </div>
 
@@ -228,7 +240,9 @@ const Funds = () => {
             className="h-9 px-3 text-xs text-slate-300 border-white/10 hover:bg-white/5 cursor-pointer"
             title="Refresh funds ledger"
           >
-            <RefreshCw className={`size-3.5 mr-1.5 ${isRefreshing ? "animate-spin text-cyan-400" : ""}`} />
+            <RefreshCw
+              className={`size-3.5 mr-1.5 ${isRefreshing ? "animate-spin text-cyan-400" : ""}`}
+            />
             Refresh
           </Button>
 
@@ -273,14 +287,14 @@ const Funds = () => {
         </div>
       )}
 
-      {/* 4 Core Cash Management Pillars */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* 1. Available Cash */}
         <Card className="border-white/10 bg-[#141414] relative overflow-hidden shadow-lg">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 to-blue-500" />
           <CardContent className="p-5">
             <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Available Cash</span>
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                Available Cash
+              </span>
               <div className="size-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
                 <Wallet className="size-4" />
               </div>
@@ -288,16 +302,19 @@ const Funds = () => {
             <div className="text-2xl font-bold text-white font-mono tabular-nums">
               ₹{loadingFunds ? "..." : formattedBalance}
             </div>
-            <p className="text-[11px] text-slate-500 mt-1">Available for active market trading</p>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Available for active market trading
+            </p>
           </CardContent>
         </Card>
 
-        {/* 2. Reserved for Trading */}
         <Card className="border-white/10 bg-[#141414] relative overflow-hidden shadow-lg">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500" />
           <CardContent className="p-5">
             <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Reserved for Trading</span>
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                Reserved for Trading
+              </span>
               <div className="size-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
                 <Lock className="size-4" />
               </div>
@@ -305,16 +322,19 @@ const Funds = () => {
             <div className="text-2xl font-bold text-amber-400 font-mono tabular-nums">
               ₹{loadingFunds ? "..." : formattedReserved}
             </div>
-            <p className="text-[11px] text-slate-500 mt-1">Locked in pending limit & stop triggers</p>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Locked in pending limit & stop triggers
+            </p>
           </CardContent>
         </Card>
 
-        {/* 3. Pending Withdrawal */}
         <Card className="border-white/10 bg-[#141414] relative overflow-hidden shadow-lg">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-rose-500" />
           <CardContent className="p-5">
             <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Pending Withdrawal</span>
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                Pending Withdrawal
+              </span>
               <div className="size-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400">
                 <Clock className="size-4" />
               </div>
@@ -322,16 +342,19 @@ const Funds = () => {
             <div className="text-2xl font-bold text-orange-400 font-mono tabular-nums">
               ₹{loadingFunds ? "..." : formattedPendingWithdrawal}
             </div>
-            <p className="text-[11px] text-slate-500 mt-1">Reserved in pending withdrawal requests</p>
+            <p className="text-[11px] text-slate-500 mt-1">
+              Reserved in pending withdrawal requests
+            </p>
           </CardContent>
         </Card>
 
-        {/* 4. Withdrawable Cash (Net Liquid) */}
         <Card className="border-emerald-500/30 bg-[#141414] relative overflow-hidden shadow-lg ring-1 ring-emerald-500/20">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 to-teal-500" />
           <CardContent className="p-5">
             <div className="flex items-center justify-between text-emerald-300 mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider">Withdrawable Cash</span>
+              <span className="text-xs font-semibold uppercase tracking-wider">
+                Withdrawable Cash
+              </span>
               <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
                 <CheckCircle2 className="size-4" />
               </div>
@@ -339,12 +362,13 @@ const Funds = () => {
             <div className="text-2xl font-bold text-emerald-400 font-mono tabular-nums">
               ₹{loadingFunds ? "..." : formattedWithdrawable}
             </div>
-            <p className="text-[11px] text-emerald-500/80 mt-1 font-medium">Net unencumbered liquid balance</p>
+            <p className="text-[11px] text-emerald-500/80 mt-1 font-medium">
+              Net unencumbered liquid balance
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Cash Ledger Breakdown - Tradely Accounting */}
       <Card className="w-full border-white/10 bg-[#141414]">
         <CardHeader className="pb-3 border-b border-white/5">
           <div className="flex items-center justify-between">
@@ -354,7 +378,8 @@ const Funds = () => {
                 Trading Cash Ledger
               </CardTitle>
               <CardDescription className="text-xs text-slate-400">
-                Institutional portfolio collateral, margin pools, and unencumbered reserves.
+                Institutional portfolio collateral, margin pools, and
+                unencumbered reserves.
               </CardDescription>
             </div>
             <Badge variant="profit" className="text-[11px]">
@@ -366,49 +391,63 @@ const Funds = () => {
         <CardContent className="p-0">
           <div className="divide-y divide-white/5 font-mono text-xs">
             <div className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors">
-              <span className="font-sans text-slate-300 font-medium">Available Cash</span>
+              <span className="font-sans text-slate-300 font-medium">
+                Available Cash
+              </span>
               <span className="text-cyan-400 font-bold tabular-nums">
                 ₹{loadingFunds ? "..." : formattedBalance}
               </span>
             </div>
 
             <div className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors">
-              <span className="font-sans text-slate-300 font-medium">Reserved Cash</span>
+              <span className="font-sans text-slate-300 font-medium">
+                Reserved Cash
+              </span>
               <span className="text-amber-400 font-bold tabular-nums">
                 ₹{loadingFunds ? "..." : formattedReserved}
               </span>
             </div>
 
             <div className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors">
-              <span className="font-sans text-slate-300 font-medium">Pending Withdrawal</span>
+              <span className="font-sans text-slate-300 font-medium">
+                Pending Withdrawal
+              </span>
               <span className="text-orange-400 font-bold tabular-nums">
                 ₹{loadingFunds ? "..." : formattedPendingWithdrawal}
               </span>
             </div>
 
             <div className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors">
-              <span className="font-sans text-slate-300 font-medium">Withdrawable Cash</span>
+              <span className="font-sans text-slate-300 font-medium">
+                Withdrawable Cash
+              </span>
               <span className="text-emerald-400 font-bold tabular-nums">
                 ₹{loadingFunds ? "..." : formattedWithdrawable}
               </span>
             </div>
 
             <div className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors">
-              <span className="font-sans text-slate-300 font-medium">Total Cash Ledger</span>
+              <span className="font-sans text-slate-300 font-medium">
+                Total Cash Ledger
+              </span>
               <span className="text-white font-bold tabular-nums">
                 ₹{loadingFunds ? "..." : formattedTotal}
               </span>
             </div>
 
             <div className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors">
-              <span className="font-sans text-slate-300 font-medium">Used Margin</span>
+              <span className="font-sans text-slate-300 font-medium">
+                Used Margin
+              </span>
               <span className="text-slate-300 tabular-nums">
                 ₹{loadingFunds ? "..." : formattedUsedMargin}
               </span>
             </div>
 
             <div className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors">
-              <span className="font-sans text-slate-300 font-medium">Account Opening Capital</span>
+              <span className="font-sans text-slate-300 font-medium">
+                Account Opening Capital
+              </span>
               <span className="text-slate-300 tabular-nums">
                 ₹{loadingFunds ? "..." : formattedInitial}
               </span>
@@ -417,7 +456,6 @@ const Funds = () => {
         </CardContent>
       </Card>
 
-      {/* Cash Activity Section */}
       <Card className="w-full border-white/10 bg-[#141414]">
         <CardHeader className="pb-4 border-b border-white/5 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -432,11 +470,11 @@ const Funds = () => {
                 </Badge>
               </div>
               <CardDescription className="text-xs text-slate-400 mt-0.5">
-                Audit log of all deposits, withdrawals, and ledger lifecycle events.
+                Audit log of all deposits, withdrawals, and ledger lifecycle
+                events.
               </CardDescription>
             </div>
 
-            {/* Quick Actions */}
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -459,9 +497,7 @@ const Funds = () => {
             </div>
           </div>
 
-          {/* Filter Bar */}
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-            {/* Type Filters */}
             <div className="flex items-center gap-1 bg-black/40 p-1 rounded-lg border border-white/5">
               {TYPE_FILTERS.map((t) => (
                 <button
@@ -479,7 +515,6 @@ const Funds = () => {
               ))}
             </div>
 
-            {/* Status Filters */}
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-[11px] text-slate-500 font-medium mr-1 flex items-center gap-1">
                 <Filter className="size-3" />
@@ -528,9 +563,12 @@ const Funds = () => {
                 <History className="size-5" />
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-slate-300 text-sm">No cash activity yet</p>
+                <p className="font-semibold text-slate-300 text-sm">
+                  No cash activity yet
+                </p>
                 <p className="text-slate-500">
-                  Add funds or initiate a withdrawal to view your transaction ledger here.
+                  Add funds or initiate a withdrawal to view your transaction
+                  ledger here.
                 </p>
               </div>
               <div className="flex items-center gap-2 mt-2">
@@ -579,7 +617,6 @@ const Funds = () => {
                     const isFailed = tx.status === "FAILED";
                     const isRefunded = tx.status === "REFUNDED";
 
-                    // Semantic Status Treatment - Review Correction 1: Always SUCCESS, never COMPLETED
                     let statusVariant = "secondary";
                     let statusLabel = tx.status;
 
@@ -591,7 +628,10 @@ const Funds = () => {
                       statusLabel = "PROCESSING";
                     } else if (isPending) {
                       statusVariant = "warning";
-                      statusLabel = tx.status === "PAYMENT_PENDING" ? "PAYMENT_PENDING" : "PENDING";
+                      statusLabel =
+                        tx.status === "PAYMENT_PENDING"
+                          ? "PAYMENT_PENDING"
+                          : "PENDING";
                     } else if (isFailed) {
                       statusVariant = "loss";
                       statusLabel = "FAILED";
@@ -604,7 +644,10 @@ const Funds = () => {
                     }
 
                     return (
-                      <tr key={tx._id} className="hover:bg-white/[0.02] transition-colors">
+                      <tr
+                        key={tx._id}
+                        className="hover:bg-white/[0.02] transition-colors"
+                      >
                         <td className="p-3.5 pl-5 text-slate-300 font-sans whitespace-nowrap">
                           {new Date(tx.createdAt).toLocaleString("en-IN", {
                             day: "2-digit",
@@ -627,12 +670,14 @@ const Funds = () => {
                           {isDeposit
                             ? "Razorpay"
                             : tx.method === "UPI_SIMULATED"
-                            ? "UPI Transfer"
-                            : "Bank Transfer"}
+                              ? "UPI Transfer"
+                              : "Bank Transfer"}
                         </td>
                         <td className="p-3.5 text-slate-400 font-mono text-[11px] truncate max-w-[140px]">
                           {isDeposit
-                            ? tx.providerOrderId || tx.metadata?.receipt || tx._id
+                            ? tx.providerOrderId ||
+                              tx.metadata?.receipt ||
+                              tx._id
                             : tx.destination || "****"}
                         </td>
                         <td className="p-3.5 font-sans">
@@ -649,7 +694,9 @@ const Funds = () => {
                           }`}
                         >
                           {isDeposit ? "+" : "-"}₹
-                          {tx.amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                          {tx.amount.toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                          })}
                         </td>
                         <td className="p-3.5 pr-5 text-center">
                           {!isDeposit && isPending ? (
@@ -669,7 +716,9 @@ const Funds = () => {
                               In Flight
                             </span>
                           ) : (
-                            <span className="text-slate-600 text-[11px]">—</span>
+                            <span className="text-slate-600 text-[11px]">
+                              —
+                            </span>
                           )}
                         </td>
                       </tr>
@@ -682,7 +731,6 @@ const Funds = () => {
         </CardContent>
       </Card>
 
-      {/* Cancellation Confirmation Dialog */}
       <Dialog open={cancelModalOpen} onOpenChange={setCancelModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -693,7 +741,10 @@ const Funds = () => {
             <DialogDescription className="text-xs text-slate-400 leading-relaxed pt-2">
               Are you sure you want to cancel this withdrawal of{" "}
               <span className="text-white font-mono font-bold">
-                ₹{selectedTx?.amount?.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                ₹
+                {selectedTx?.amount?.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                })}
               </span>
               ?
             </DialogDescription>
@@ -702,14 +753,19 @@ const Funds = () => {
           <div className="my-2 p-3.5 rounded-xl border border-white/5 bg-black/40 text-xs space-y-2">
             <div className="flex justify-between">
               <span className="text-slate-400">Destination:</span>
-              <span className="font-mono text-slate-200">{selectedTx?.destination || "****"}</span>
+              <span className="font-mono text-slate-200">
+                {selectedTx?.destination || "****"}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Ledger Effect:</span>
-              <span className="text-emerald-400 font-medium">Pending reservation released back to cash</span>
+              <span className="text-emerald-400 font-medium">
+                Pending reservation released back to cash
+              </span>
             </div>
             <p className="text-[11px] text-slate-500 pt-1 border-t border-white/5">
-              No real money movement occurs. Your withdrawable cash balance will be immediately restored.
+              No real money movement occurs. Your withdrawable cash balance will
+              be immediately restored.
             </p>
           </div>
 

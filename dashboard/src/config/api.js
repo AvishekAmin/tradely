@@ -1,9 +1,5 @@
 import axios from "axios";
 
-/**
- * Production-hardened API, Socket, and Landing URL configuration
- * Supports build-time Vite environment variables with intelligent fallbacks.
- */
 export const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
   (import.meta.env.PROD && typeof window !== "undefined"
@@ -31,11 +27,9 @@ const apiClient = axios.create({
   },
 });
 
-// Centralized error interceptor
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // If request received 401 on protected trading endpoints, redirect to public login
     if (error.response && error.response.status === 401) {
       const url = error.config?.url || "";
       if (!url.includes("/auth/me") && !url.includes("/auth/login")) {
@@ -43,7 +37,7 @@ apiClient.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

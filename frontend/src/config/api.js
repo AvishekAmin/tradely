@@ -1,7 +1,3 @@
-/**
- * Production-hardened API and Dashboard URL configuration
- * Supports build-time Vite environment variables with intelligent fallbacks.
- */
 export const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
   (import.meta.env.PROD && typeof window !== "undefined"

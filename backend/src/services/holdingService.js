@@ -1,26 +1,25 @@
 import { HoldingsModel } from "../models/HoldingsModel.js";
 
-/**
- * Fetch all holdings for a specific authenticated user (sorted by name)
- */
 export const getAllHoldings = async (userId) => {
   return HoldingsModel.find({ userId }).sort({ name: 1 });
 };
 
-/**
- * Find a specific holding by user ID and symbol name
- */
 export const getHoldingByName = async (userId, symbol, session = null) => {
   const options = {};
   if (session) options.session = session;
-  return HoldingsModel.findOne({ userId, name: symbol.toUpperCase() }, null, options);
+  return HoldingsModel.findOne(
+    { userId, name: symbol.toUpperCase() },
+    null,
+    options,
+  );
 };
 
-/**
- * Atomically reserve shares for a LIMIT SELL order
- * Guarantees (qty - reservedQty) >= requestedQty
- */
-export const reserveHoldingQtyAtomic = async (userId, symbol, qty, session = null) => {
+export const reserveHoldingQtyAtomic = async (
+  userId,
+  symbol,
+  qty,
+  session = null,
+) => {
   const cleanSymbol = symbol.trim().toUpperCase();
   const options = { new: true };
   if (session) options.session = session;
@@ -30,21 +29,20 @@ export const reserveHoldingQtyAtomic = async (userId, symbol, qty, session = nul
       userId,
       name: cleanSymbol,
       $expr: {
-        $gte: [
-          { $subtract: ["$qty", { $ifNull: ["$reservedQty", 0] }] },
-          qty,
-        ],
+        $gte: [{ $subtract: ["$qty", { $ifNull: ["$reservedQty", 0] }] }, qty],
       },
     },
     { $inc: { reservedQty: qty } },
-    options
+    options,
   );
 };
 
-/**
- * Atomically release reserved shares on LIMIT SELL order cancellation
- */
-export const releaseReservedHoldingQtyAtomic = async (userId, symbol, qty, session = null) => {
+export const releaseReservedHoldingQtyAtomic = async (
+  userId,
+  symbol,
+  qty,
+  session = null,
+) => {
   const cleanSymbol = symbol.trim().toUpperCase();
   const options = { new: true };
   if (session) options.session = session;
@@ -52,19 +50,26 @@ export const releaseReservedHoldingQtyAtomic = async (userId, symbol, qty, sessi
   return HoldingsModel.findOneAndUpdate(
     { userId, name: cleanSymbol },
     { $inc: { reservedQty: -qty } },
-    options
+    options,
   );
 };
 
-/**
- * Consume reserved shares upon LIMIT SELL execution
- */
-export const consumeReservedHoldingQty = async (userId, symbol, qty, executionPrice, session = null) => {
+export const consumeReservedHoldingQty = async (
+  userId,
+  symbol,
+  qty,
+  executionPrice,
+  session = null,
+) => {
   const cleanSymbol = symbol.trim().toUpperCase();
   const options = {};
   if (session) options.session = session;
 
-  const holding = await HoldingsModel.findOne({ userId, name: cleanSymbol }, null, options);
+  const holding = await HoldingsModel.findOne(
+    { userId, name: cleanSymbol },
+    null,
+    options,
+  );
   if (!holding) return null;
 
   const remainingQty = holding.qty - qty;
@@ -86,36 +91,33 @@ export const consumeReservedHoldingQty = async (userId, symbol, qty, executionPr
   return holding;
 };
 
-/**
- * Deduct shares for MARKET SELL order
- * Atomically ensures availableQty (qty - reservedQty) >= requestedQty
- */
-export const deductMarketSellHolding = async (userId, symbol, qty, executionPrice, session = null) => {
+export const deductMarketSellHolding = async (
+  userId,
+  symbol,
+  qty,
+  executionPrice,
+  session = null,
+) => {
   const cleanSymbol = symbol.trim().toUpperCase();
   const options = { new: true };
   if (session) options.session = session;
 
-  // Atomically decrement qty only if availableQty >= requestedQty
   const holding = await HoldingsModel.findOneAndUpdate(
     {
       userId,
       name: cleanSymbol,
       $expr: {
-        $gte: [
-          { $subtract: ["$qty", { $ifNull: ["$reservedQty", 0] }] },
-          qty,
-        ],
+        $gte: [{ $subtract: ["$qty", { $ifNull: ["$reservedQty", 0] }] }, qty],
       },
     },
     { $inc: { qty: -qty } },
-    options
+    options,
   );
 
   if (!holding) {
-    return null; // Insufficient available shares or not owned
+    return null;
   }
 
-  // If holding now has 0 qty and 0 reservedQty, delete it
   if (holding.qty <= 0 && (holding.reservedQty || 0) <= 0) {
     await HoldingsModel.deleteOne({ _id: holding._id }, options);
     return null;
@@ -130,21 +132,27 @@ export const deductMarketSellHolding = async (userId, symbol, qty, executionPric
   return holding;
 };
 
-/**
- * Apply a BUY order to a user's holdings (update existing or create new)
- */
-export const applyBuyToHolding = async (userId, symbol, qty, price, session = null) => {
+export const applyBuyToHolding = async (
+  userId,
+  symbol,
+  qty,
+  price,
+  session = null,
+) => {
   const cleanSymbol = symbol.trim().toUpperCase();
   const options = {};
   if (session) options.session = session;
 
-  let holding = await HoldingsModel.findOne({ userId, name: cleanSymbol }, null, options);
+  let holding = await HoldingsModel.findOne(
+    { userId, name: cleanSymbol },
+    null,
+    options,
+  );
 
   if (holding) {
     const existingQty = holding.qty;
     const existingAvg = holding.avg;
     const newQty = existingQty + qty;
-    // Weighted average formula: (Q1*A1 + Q2*P2) / (Q1 + Q2)
     const newAvg = (existingQty * existingAvg + qty * price) / newQty;
 
     holding.qty = newQty;
@@ -156,7 +164,6 @@ export const applyBuyToHolding = async (userId, symbol, qty, price, session = nu
     return holding;
   }
 
-  // Create new holding for this user
   const created = await HoldingsModel.create(
     [
       {
@@ -170,7 +177,7 @@ export const applyBuyToHolding = async (userId, symbol, qty, price, session = nu
         day: "+0.00%",
       },
     ],
-    options
+    options,
   );
   return created[0];
 };

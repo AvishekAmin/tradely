@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 import apiClient from "../config/api";
 import { useGeneralContext } from "../components/GeneralContext";
 import { useToast } from "../components/ui/ToastContainer";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -71,11 +77,9 @@ const WithdrawPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  // Recent withdrawals in-page audit
   const [recentWithdrawals, setRecentWithdrawals] = useState([]);
   const [loadingRecent, setLoadingRecent] = useState(true);
 
-  // Cancellation modal
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedTxToCancel, setSelectedTxToCancel] = useState(null);
   const [cancelling, setCancelling] = useState(false);
@@ -162,8 +166,8 @@ const WithdrawPage = () => {
       setError(
         `Insufficient withdrawable cash. You have ₹${funds.withdrawableBalance.toLocaleString(
           "en-IN",
-          { minimumFractionDigits: 2 }
-        )} available for withdrawal.`
+          { minimumFractionDigits: 2 },
+        )} available for withdrawal.`,
       );
       return;
     }
@@ -193,7 +197,7 @@ const WithdrawPage = () => {
       if (res.data?.success) {
         addToast(
           "Withdrawal requested. Amount reserved as PENDING.",
-          "success"
+          "success",
         );
         triggerRefresh();
       } else {
@@ -202,13 +206,14 @@ const WithdrawPage = () => {
     } catch (err) {
       setSubmitting(false);
       const msg =
-        err.response?.data?.message || err.message || "Failed to process withdrawal.";
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to process withdrawal.";
       setError(msg);
       addToast(msg, "error");
     }
   };
 
-  // Open cancellation confirmation
   const handleCancelClick = (tx) => {
     setSelectedTxToCancel(tx);
     setCancelModalOpen(true);
@@ -219,7 +224,9 @@ const WithdrawPage = () => {
     setCancelling(true);
 
     try {
-      const res = await apiClient.post(`/withdrawals/${selectedTxToCancel._id}/cancel`);
+      const res = await apiClient.post(
+        `/withdrawals/${selectedTxToCancel._id}/cancel`,
+      );
       setCancelling(false);
       setCancelModalOpen(false);
 
@@ -236,12 +243,14 @@ const WithdrawPage = () => {
     }
   };
 
-  const remainingWithdrawable = Math.max(0, funds.withdrawableBalance - (amount > 0 ? amount : 0));
+  const remainingWithdrawable = Math.max(
+    0,
+    funds.withdrawableBalance - (amount > 0 ? amount : 0),
+  );
   const maskedPreview = maskDestinationPreview(method, destination);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-12">
-      {/* Back Link */}
       <div className="flex items-center justify-between">
         <Link
           to="/funds"
@@ -252,7 +261,6 @@ const WithdrawPage = () => {
         </Link>
       </div>
 
-      {/* 4 KPI Strip: Available, Reserved Trading, Pending Withdrawal, Withdrawable */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card className="border-white/10 bg-[#141414]">
           <CardContent className="p-4">
@@ -261,7 +269,12 @@ const WithdrawPage = () => {
               <Wallet className="size-3.5 text-cyan-400" />
             </div>
             <div className="text-lg font-bold text-white font-mono tabular-nums">
-              ₹{loadingFunds ? "..." : funds.balance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              ₹
+              {loadingFunds
+                ? "..."
+                : funds.balance.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
             </div>
           </CardContent>
         </Card>
@@ -273,7 +286,12 @@ const WithdrawPage = () => {
               <Lock className="size-3.5 text-amber-400" />
             </div>
             <div className="text-lg font-bold text-amber-400 font-mono tabular-nums">
-              ₹{loadingFunds ? "..." : funds.reservedBalance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              ₹
+              {loadingFunds
+                ? "..."
+                : funds.reservedBalance.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
             </div>
           </CardContent>
         </Card>
@@ -285,7 +303,12 @@ const WithdrawPage = () => {
               <Clock className="size-3.5 text-orange-400" />
             </div>
             <div className="text-lg font-bold text-orange-400 font-mono tabular-nums">
-              ₹{loadingFunds ? "..." : funds.pendingWithdrawalAmount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              ₹
+              {loadingFunds
+                ? "..."
+                : funds.pendingWithdrawalAmount.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
             </div>
           </CardContent>
         </Card>
@@ -298,13 +321,17 @@ const WithdrawPage = () => {
               <CheckCircle2 className="size-3.5 text-emerald-400" />
             </div>
             <div className="text-lg font-bold text-emerald-400 font-mono tabular-nums">
-              ₹{loadingFunds ? "..." : funds.withdrawableBalance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              ₹
+              {loadingFunds
+                ? "..."
+                : funds.withdrawableBalance.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Withdrawal Form Card */}
       <Card className="border-white/10 bg-[#141414] shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500" />
 
@@ -320,12 +347,17 @@ const WithdrawPage = () => {
 
         <CardContent className="space-y-6">
           <form onSubmit={handleOpenConfirm} className="space-y-5">
-            {/* Amount Input */}
             <div className="space-y-2">
-              <label htmlFor="withdraw-amount-input" className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+              <label
+                htmlFor="withdraw-amount-input"
+                className="text-xs font-semibold text-slate-300 flex items-center justify-between"
+              >
                 <span>Withdrawal Amount (INR)</span>
                 <span className="text-[11px] text-slate-400 font-normal">
-                  Available: ₹{funds.withdrawableBalance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  Available: ₹
+                  {funds.withdrawableBalance.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
                 </span>
               </label>
               <div className="relative">
@@ -344,9 +376,10 @@ const WithdrawPage = () => {
               </div>
             </div>
 
-            {/* Quick Amount Pills */}
             <div className="space-y-1.5">
-              <span className="text-[11px] font-medium text-slate-400">Quick Select:</span>
+              <span className="text-[11px] font-medium text-slate-400">
+                Quick Select:
+              </span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {QUICK_AMOUNTS.map((val) => {
                   const isSelected = amount === val;
@@ -369,9 +402,10 @@ const WithdrawPage = () => {
               </div>
             </div>
 
-            {/* Method Selection */}
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-300">Withdrawal Method:</span>
+              <span className="text-xs font-semibold text-slate-300">
+                Withdrawal Method:
+              </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -386,12 +420,18 @@ const WithdrawPage = () => {
                       : "bg-white/[0.02] border-white/10 text-slate-400 hover:border-white/20"
                   }`}
                 >
-                  <div className={`size-8 rounded-lg flex items-center justify-center ${method === "UPI_SIMULATED" ? "bg-cyan-500/20 text-cyan-400" : "bg-white/5 text-slate-400"}`}>
+                  <div
+                    className={`size-8 rounded-lg flex items-center justify-center ${method === "UPI_SIMULATED" ? "bg-cyan-500/20 text-cyan-400" : "bg-white/5 text-slate-400"}`}
+                  >
                     <QrCode className="size-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-white">UPI Transfer</div>
-                    <div className="text-[11px] text-slate-400">Instant VPA transfer</div>
+                    <div className="text-xs font-semibold text-white">
+                      UPI Transfer
+                    </div>
+                    <div className="text-[11px] text-slate-400">
+                      Instant VPA transfer
+                    </div>
                   </div>
                 </button>
 
@@ -408,24 +448,39 @@ const WithdrawPage = () => {
                       : "bg-white/[0.02] border-white/10 text-slate-400 hover:border-white/20"
                   }`}
                 >
-                  <div className={`size-8 rounded-lg flex items-center justify-center ${method === "BANK_SIMULATED" ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-slate-400"}`}>
+                  <div
+                    className={`size-8 rounded-lg flex items-center justify-center ${method === "BANK_SIMULATED" ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-slate-400"}`}
+                  >
                     <Building2 className="size-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-white">Bank Account</div>
-                    <div className="text-[11px] text-slate-400">Direct NEFT / IMPS transfer</div>
+                    <div className="text-xs font-semibold text-white">
+                      Bank Account
+                    </div>
+                    <div className="text-[11px] text-slate-400">
+                      Direct NEFT / IMPS transfer
+                    </div>
                   </div>
                 </button>
               </div>
             </div>
 
-            {/* Destination Input & Masked Preview */}
             <div className="space-y-2">
-              <label htmlFor="destination-input" className="text-xs font-semibold text-slate-300 flex items-center justify-between">
-                <span>{method === "UPI_SIMULATED" ? "UPI ID / VPA" : "Bank Account Number"}</span>
+              <label
+                htmlFor="destination-input"
+                className="text-xs font-semibold text-slate-300 flex items-center justify-between"
+              >
+                <span>
+                  {method === "UPI_SIMULATED"
+                    ? "UPI ID / VPA"
+                    : "Bank Account Number"}
+                </span>
                 {maskedPreview && (
                   <span className="text-[11px] text-slate-400 font-mono">
-                    Masked: <span className="text-cyan-400 font-semibold">{maskedPreview}</span>
+                    Masked:{" "}
+                    <span className="text-cyan-400 font-semibold">
+                      {maskedPreview}
+                    </span>
                   </span>
                 )}
               </label>
@@ -435,13 +490,16 @@ const WithdrawPage = () => {
                 value={destination}
                 onChange={handleDestinationChange}
                 maxLength={method === "BANK_SIMULATED" ? 10 : undefined}
-                placeholder={method === "UPI_SIMULATED" ? "e.g. user@upi" : "e.g. 8234567890"}
+                placeholder={
+                  method === "UPI_SIMULATED"
+                    ? "e.g. user@upi"
+                    : "e.g. 8234567890"
+                }
                 disabled={submitting}
                 className="text-xs font-mono text-white bg-[#0E0E0E] border-white/10 focus:border-emerald-500 focus:ring-emerald-500/20"
               />
             </div>
 
-            {/* Review Summary Box */}
             <div className="rounded-lg border border-white/10 bg-[#0A0A0A] p-4 space-y-2.5 text-xs">
               <div className="font-semibold text-slate-300 uppercase tracking-wider text-[10px] pb-1 border-b border-white/5">
                 Review Withdrawal
@@ -449,7 +507,12 @@ const WithdrawPage = () => {
               <div className="flex items-center justify-between text-slate-400">
                 <span>Withdrawal Amount:</span>
                 <span className="font-mono font-bold text-white tabular-nums">
-                  ₹{amount > 0 ? amount.toLocaleString("en-IN", { minimumFractionDigits: 2 }) : "0.00"}
+                  ₹
+                  {amount > 0
+                    ? amount.toLocaleString("en-IN", {
+                        minimumFractionDigits: 2,
+                      })
+                    : "0.00"}
                 </span>
               </div>
               <div className="flex items-center justify-between text-slate-400">
@@ -460,17 +523,23 @@ const WithdrawPage = () => {
               </div>
               <div className="flex items-center justify-between text-slate-400">
                 <span>Destination:</span>
-                <span className="font-mono text-cyan-400">{maskedPreview || "****"}</span>
+                <span className="font-mono text-cyan-400">
+                  {maskedPreview || "****"}
+                </span>
               </div>
               <div className="flex items-center justify-between text-slate-400 pt-1.5 border-t border-white/5">
-                <span className="text-slate-200 font-medium">Est. Remaining Withdrawable:</span>
+                <span className="text-slate-200 font-medium">
+                  Est. Remaining Withdrawable:
+                </span>
                 <span className="font-mono font-bold text-emerald-400 text-sm tabular-nums">
-                  ₹{remainingWithdrawable.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                  ₹
+                  {remainingWithdrawable.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
                 </span>
               </div>
             </div>
 
-            {/* Error Banner */}
             {error && (
               <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300 flex items-start gap-2">
                 <AlertCircle className="size-4 shrink-0 mt-0.5" />
@@ -478,11 +547,12 @@ const WithdrawPage = () => {
               </div>
             )}
 
-            {/* Submit Button */}
             <Button
               type="submit"
               variant="default"
-              disabled={submitting || amount <= 0 || amount > funds.withdrawableBalance}
+              disabled={
+                submitting || amount <= 0 || amount > funds.withdrawableBalance
+              }
               className="w-full py-6 text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black shadow-lg shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-40"
             >
               {submitting ? (
@@ -501,7 +571,6 @@ const WithdrawPage = () => {
         </CardContent>
       </Card>
 
-      {/* In-Page Recent Withdrawals Audit */}
       <Card className="border-white/10 bg-[#141414]">
         <CardHeader className="pb-3 border-b border-white/5">
           <div className="flex items-center justify-between">
@@ -555,11 +624,22 @@ const WithdrawPage = () => {
                 }
 
                 return (
-                  <div key={tx._id} className="p-3.5 flex items-center justify-between hover:bg-white/[0.02]">
+                  <div
+                    key={tx._id}
+                    className="p-3.5 flex items-center justify-between hover:bg-white/[0.02]"
+                  >
                     <div className="space-y-0.5">
                       <div className="font-sans text-xs text-white font-medium flex items-center gap-2">
-                        <span>₹{tx.amount?.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
-                        <Badge variant={badgeVariant} className="text-[10px] font-bold">
+                        <span>
+                          ₹
+                          {tx.amount?.toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                          })}
+                        </span>
+                        <Badge
+                          variant={badgeVariant}
+                          className="text-[10px] font-bold"
+                        >
                           {badgeLabel}
                         </Badge>
                       </div>
@@ -598,7 +678,6 @@ const WithdrawPage = () => {
         </CardContent>
       </Card>
 
-      {/* Confirmation Dialog */}
       <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <DialogContent className="sm:max-w-md bg-[#141414] border-white/10 text-white">
           <DialogHeader>
@@ -631,13 +710,19 @@ const WithdrawPage = () => {
             <div className="flex items-center justify-between text-slate-400 pt-2 border-t border-white/5">
               <span>Current Withdrawable Cash:</span>
               <span className="font-mono font-bold text-white tabular-nums">
-                ₹{funds.withdrawableBalance.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                ₹
+                {funds.withdrawableBalance.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                })}
               </span>
             </div>
             <div className="flex items-center justify-between text-slate-400">
               <span className="text-slate-300">Est. Cash Remaining:</span>
               <span className="font-mono font-bold text-emerald-400 tabular-nums">
-                ₹{remainingWithdrawable.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                ₹
+                {remainingWithdrawable.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                })}
               </span>
             </div>
           </div>
@@ -663,7 +748,6 @@ const WithdrawPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Cancellation Dialog in Withdraw Page */}
       <Dialog open={cancelModalOpen} onOpenChange={setCancelModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -674,7 +758,10 @@ const WithdrawPage = () => {
             <DialogDescription className="text-xs text-slate-400 pt-1">
               Cancel this withdrawal of{" "}
               <span className="text-white font-mono font-bold">
-                ₹{selectedTxToCancel?.amount?.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                ₹
+                {selectedTxToCancel?.amount?.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                })}
               </span>
               ?
             </DialogDescription>
@@ -682,7 +769,9 @@ const WithdrawPage = () => {
 
           <div className="p-3 rounded-xl border border-white/5 bg-black/40 text-xs space-y-1.5 text-slate-300">
             <p className="text-[11px] text-slate-400">
-              No real money movement occurs. The pending withdrawal reservation will be released and withdrawable cash will become available again.
+              No real money movement occurs. The pending withdrawal reservation
+              will be released and withdrawable cash will become available
+              again.
             </p>
           </div>
 

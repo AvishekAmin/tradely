@@ -6,9 +6,6 @@ import { JWT_SECRET, JWT_EXPIRES_IN } from "../config/env.js";
 
 const SALT_ROUNDS = 10;
 
-/**
- * Generate a signed JWT token with minimal identity payload
- */
 export const generateToken = (user) => {
   const payload = {
     id: user._id.toString(),
@@ -21,27 +18,21 @@ export const generateToken = (user) => {
   });
 };
 
-/**
- * Register a new user with initial simulated balance of ₹100,000
- */
 export const signupUser = async ({ username, email, password }) => {
   const normalizedEmail = email.toLowerCase().trim();
   const normalizedUsername = username.trim();
 
-  // 1. Check if email already registered
   const existingUser = await UserModel.findOne({ email: normalizedEmail });
   if (existingUser) {
     throw new AppError(
       "An account with this email already exists.",
       409,
-      "EMAIL_EXISTS"
+      "EMAIL_EXISTS",
     );
   }
 
-  // 2. Hash password
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  // 3. Create user
   const newUser = await UserModel.create({
     username: normalizedUsername,
     email: normalizedEmail,
@@ -50,10 +41,8 @@ export const signupUser = async ({ username, email, password }) => {
     initialBalance: 100000,
   });
 
-  // 4. Generate JWT
   const token = generateToken(newUser);
 
-  // 5. Return safe user object (no passwordHash)
   return {
     user: {
       id: newUser._id.toString(),
@@ -67,35 +56,41 @@ export const signupUser = async ({ username, email, password }) => {
   };
 };
 
-/**
- * Authenticate user credentials and return safe user with JWT
- */
 export const loginUser = async ({ username, email, identifier, password }) => {
   const id = (username || email || identifier || "").trim();
 
-  // 1. Find user by username OR email
   const user = await UserModel.findOne({
     $or: [
       { username: id },
       { email: id.toLowerCase() },
-      { username: new RegExp(`^${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i") },
+      {
+        username: new RegExp(
+          `^${id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+          "i",
+        ),
+      },
     ],
   }).select("+passwordHash");
 
   if (!user) {
-    throw new AppError("Invalid username or password", 401, "INVALID_CREDENTIALS");
+    throw new AppError(
+      "Invalid username or password",
+      401,
+      "INVALID_CREDENTIALS",
+    );
   }
 
-  // 2. Compare password
   const isMatch = await bcrypt.compare(password, user.passwordHash);
   if (!isMatch) {
-    throw new AppError("Invalid username or password", 401, "INVALID_CREDENTIALS");
+    throw new AppError(
+      "Invalid username or password",
+      401,
+      "INVALID_CREDENTIALS",
+    );
   }
 
-  // 3. Generate JWT
   const token = generateToken(user);
 
-  // 4. Return safe user object
   return {
     user: {
       id: user._id.toString(),

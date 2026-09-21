@@ -24,9 +24,15 @@ const defaultOptions = {
   cutout: "55%",
 };
 
-export function DoughnutChart({ data, options = defaultOptions, className = "" }) {
+export function DoughnutChart({
+  data,
+  options = defaultOptions,
+  className = "",
+}) {
   return (
-    <div className={`w-full h-full flex items-center justify-center relative ${className}`}>
+    <div
+      className={`w-full h-full flex items-center justify-center relative ${className}`}
+    >
       <Doughnut data={data} options={options} />
     </div>
   );

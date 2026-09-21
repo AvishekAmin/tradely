@@ -2,12 +2,8 @@ import jwt from "jsonwebtoken";
 import { UserModel } from "../models/UserModel.js";
 import { JWT_SECRET } from "../config/env.js";
 
-/**
- * Authentication middleware to verify JWT from HttpOnly cookie or Bearer header
- */
 export const authenticate = async (req, res, next) => {
   try {
-    // 1. Extract token from cookie (primary) or Bearer header (fallback)
     const token =
       req.cookies?.token ||
       (req.headers.authorization?.startsWith("Bearer ")
@@ -22,7 +18,6 @@ export const authenticate = async (req, res, next) => {
       });
     }
 
-    // 2. Verify JWT signature and expiration
     let decoded;
     try {
       decoded = jwt.verify(token, JWT_SECRET);
@@ -34,7 +29,6 @@ export const authenticate = async (req, res, next) => {
       });
     }
 
-    // 3. Verify user exists in database
     const user = await UserModel.findById(decoded.id);
     if (!user) {
       return res.status(401).json({
@@ -44,7 +38,6 @@ export const authenticate = async (req, res, next) => {
       });
     }
 
-    // 4. Attach authenticated user to request
     req.user = user;
     next();
   } catch (err) {

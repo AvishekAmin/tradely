@@ -11,5 +11,4 @@ router.post("/auth/login", authRateLimiter, validateLogin, login);
 router.get("/auth/me", authenticate, getMe);
 router.post("/auth/logout", logout);
 
-
 export default router;

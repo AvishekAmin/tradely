@@ -25,7 +25,6 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // If already authenticated, redirect to dashboard
   React.useEffect(() => {
     if (isAuthenticated) {
       window.location.href = DASHBOARD_URL;
@@ -60,11 +59,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-between p-4 sm:p-6 lg:p-8 relative overflow-hidden">
-      {/* Background ambient lighting */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[350px] bg-blue-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
       <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[300px] bg-indigo-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
-      {/* Top Bar: Back to Home */}
       <div className="w-full max-w-5xl mx-auto flex items-center justify-between">
         <Link
           to="/"
@@ -82,7 +79,6 @@ export default function LoginPage() {
         </Link>
       </div>
 
-      {/* Center Auth Card */}
       <div className="w-full max-w-md mx-auto my-auto py-8">
         <div className="rounded-3xl border border-white/10 bg-[#121212]/95 backdrop-blur-2xl p-6 sm:p-10 shadow-2xl shadow-black/80 space-y-6">
           <div className="text-center space-y-1 mb-6">
@@ -97,7 +93,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Error Message Banner */}
           {error && (
             <div className="flex items-start gap-3 p-3.5 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-xs">
               <AlertCircle className="size-4 shrink-0 mt-0.5" />
@@ -105,7 +100,6 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-300">
@@ -179,7 +173,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* Footer Link */}
           <div className="text-center pt-2 border-t border-white/10 text-xs text-slate-400">
             Don't have an account?{" "}
             <Link

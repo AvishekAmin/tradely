@@ -43,7 +43,14 @@ const OrdersSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["PENDING", "PENDING_STOP", "PENDING_LIMIT", "EXECUTED", "CANCELLED", "REJECTED"],
+      enum: [
+        "PENDING",
+        "PENDING_STOP",
+        "PENDING_LIMIT",
+        "EXECUTED",
+        "CANCELLED",
+        "REJECTED",
+      ],
       required: true,
     },
     stopPrice: {
@@ -93,7 +100,7 @@ const OrdersSchema = new Schema(
       default: null,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 OrdersSchema.index({ userId: 1, createdAt: -1 });

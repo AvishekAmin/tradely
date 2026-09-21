@@ -12,7 +12,6 @@ import {
 
 const router = Router();
 
-// Protected Withdrawal Endpoints
 router.post("/withdrawals", validateCreateWithdrawal, createWithdrawal);
 router.get("/withdrawals", getWithdrawals);
 router.get("/withdrawals/:id", validateWithdrawalId, getWithdrawalById);

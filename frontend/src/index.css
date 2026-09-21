@@ -4,49 +4,49 @@
 
 :root,
 .dark {
-  --background: #0F0F0F;
-  --foreground: #EDEDED;
+  --background: #0f0f0f;
+  --foreground: #ededed;
 
   --card: #171717;
-  --card-foreground: #EDEDED;
+  --card-foreground: #ededed;
 
-  --surface: #1A1A1A;
+  --surface: #1a1a1a;
   --surface-hover: #222222;
-  --surface-active: #2A2A2A;
+  --surface-active: #2a2a2a;
 
   --popover: #171717;
-  --popover-foreground: #EDEDED;
+  --popover-foreground: #ededed;
 
-  --primary: #3B82F6;
-  --primary-foreground: #FFFFFF;
-  --primary-hover: #2563EB;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --primary-hover: #2563eb;
 
-  --secondary: #1E1E1E;
-  --secondary-foreground: #EDEDED;
+  --secondary: #1e1e1e;
+  --secondary-foreground: #ededed;
 
-  --muted: #1F1F1F;
-  --muted-foreground: #A1A1AA;
+  --muted: #1f1f1f;
+  --muted-foreground: #a1a1aa;
 
   --accent: #262626;
-  --accent-foreground: #EDEDED;
+  --accent-foreground: #ededed;
 
-  --destructive: #EF4444;
-  --destructive-foreground: #FFFFFF;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
 
-  --profit: #10B981;
-  --profit-foreground: #052E16;
+  --profit: #10b981;
+  --profit-foreground: #052e16;
 
-  --warning: #F59E0B;
-  --warning-foreground: #451A03;
+  --warning: #f59e0b;
+  --warning-foreground: #451a03;
 
-  --loss: #EF4444;
-  --loss-foreground: #450A0A;
+  --loss: #ef4444;
+  --loss-foreground: #450a0a;
 
   --border: rgba(255, 255, 255, 0.08);
   --border-medium: rgba(255, 255, 255, 0.14);
   --border-focus: rgba(255, 255, 255, 0.28);
-  --input: #1A1A1A;
-  --ring: #3B82F6;
+  --input: #1a1a1a;
+  --ring: #3b82f6;
 
   --radius: 0.75rem;
 }
@@ -56,8 +56,8 @@ html {
 }
 
 body {
-  background-color: #0F0F0F;
-  color: #EDEDED;
+  background-color: #0f0f0f;
+  color: #ededed;
   font-family:
     "Poppins",
     "Inter",
@@ -126,48 +126,49 @@ textarea {
   --radius-full: 9999px;
 }
 
-/* Base Body Styles */
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
   margin: 0;
   padding: 0;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
-/* Tabular Numerals for Numerical & Financial Data */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
 
-/* Connekt-Inspired Glowing Gradient CTA Button */
 .btn-tradely-gradient {
-  background: linear-gradient(90deg, #00D8F6 0%, #7B61FF 100%);
+  background: linear-gradient(90deg, #00d8f6 0%, #7b61ff 100%);
   color: #000000 !important;
   font-weight: 700;
-  box-shadow: 0 20px 25px -5px rgba(0, 216, 246, 0.25), 0 8px 10px -6px rgba(0, 216, 246, 0.25);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 216, 246, 0.25),
+    0 8px 10px -6px rgba(0, 216, 246, 0.25);
   transition: all 0.2s ease;
 }
 
 .btn-tradely-gradient:hover {
   filter: brightness(1.1);
-  box-shadow: 0 25px 30px -5px rgba(0, 216, 246, 0.35), 0 0 24px -2px rgba(0, 216, 246, 0.4);
+  box-shadow:
+    0 25px 30px -5px rgba(0, 216, 246, 0.35),
+    0 0 24px -2px rgba(0, 216, 246, 0.4);
 }
 
 .btn-tradely-gradient:active {
   transform: scale(0.98);
 }
 
-/* Text Gradient */
 .text-tradely-gradient {
-  background: linear-gradient(90deg, #00D8F6 0%, #6366F1 50%, #EC4899 100%);
+  background: linear-gradient(90deg, #00d8f6 0%, #6366f1 50%, #ec4899 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -183,7 +184,6 @@ body {
   background: rgba(255, 255, 255, 0.28);
 }
 
-/* Groww-Inspired Horizontally Moving Market Ticker */
 @keyframes ticker-marquee {
   0% {
     transform: translateX(0%);
@@ -202,7 +202,6 @@ body {
   animation-play-state: paused;
 }
 
-/* Reduced Motion Override */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

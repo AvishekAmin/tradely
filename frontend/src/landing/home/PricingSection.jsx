@@ -48,22 +48,24 @@ export default function PricingSection() {
   ];
 
   return (
-    <section id="pricing" className="pt-8 pb-16 lg:pt-10 lg:pb-24 border-t border-white/[0.08] bg-[#0A0A0A] relative scroll-mt-16">
-      {/* Background ambient lighting */}
+    <section
+      id="pricing"
+      className="pt-8 pb-16 lg:pt-10 lg:pb-24 border-t border-white/[0.08] bg-[#0A0A0A] relative scroll-mt-16"
+    >
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[550px] h-[350px] bg-blue-600/5 rounded-full blur-3xl pointer-events-none -z-10" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-        {/* Section Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
             Zero Fees. Unlimited Strategy Testing.
           </h2>
           <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-            Tradely is completely free to use. We provide open, barrier-free access to realistic financial market mechanics so you can master order types and portfolio risk without financial exposure.
+            Tradely is completely free to use. We provide open, barrier-free
+            access to realistic financial market mechanics so you can master
+            order types and portfolio risk without financial exposure.
           </p>
         </div>
 
-        {/* 3 Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {tiers.map((tier) => (
             <div
@@ -88,7 +90,10 @@ export default function PricingSection() {
 
                 <div className="space-y-2.5 pt-4 border-t border-white/10">
                   {tier.features.map((feat) => (
-                    <div key={feat} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-300">
+                    <div
+                      key={feat}
+                      className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-300"
+                    >
                       <CheckCircle2 className="size-4 text-emerald-400 shrink-0 mt-0.5" />
                       <span>{feat}</span>
                     </div>
@@ -105,7 +110,10 @@ export default function PricingSection() {
                       : "border border-white/10 bg-[#1E1E1E] text-white hover:bg-white/10"
                   }`}
                 >
-                  <Link to="/signup" className="flex items-center justify-center gap-1.5">
+                  <Link
+                    to="/signup"
+                    className="flex items-center justify-center gap-1.5"
+                  >
                     <span>{tier.buttonText}</span>
                     <ArrowRight className="size-3.5 text-current stroke-[2.5]" />
                   </Link>

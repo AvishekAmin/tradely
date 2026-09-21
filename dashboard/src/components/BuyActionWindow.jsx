@@ -24,9 +24,11 @@ const BuyActionWindow = ({ uid }) => {
 
   const [orderType, setOrderType] = useState("MARKET");
   const [stockQuantity, setStockQuantity] = useState(1);
-  const [limitPrice, setLimitPrice] = useState(() => (livePrice ? livePrice.toFixed(2) : ""));
+  const [limitPrice, setLimitPrice] = useState(() =>
+    livePrice ? livePrice.toFixed(2) : "",
+  );
   const [stopPrice, setStopPrice] = useState(() =>
-    livePrice ? (Math.round(livePrice * 1.02 * 100) / 100).toFixed(2) : ""
+    livePrice ? (Math.round(livePrice * 1.02 * 100) / 100).toFixed(2) : "",
   );
   const [availableBalance, setAvailableBalance] = useState(null);
   const [loadingFunds, setLoadingFunds] = useState(true);
@@ -34,7 +36,6 @@ const BuyActionWindow = ({ uid }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Fetch current available balance from backend
   useEffect(() => {
     apiClient
       .get("/funds")
@@ -50,7 +51,6 @@ const BuyActionWindow = ({ uid }) => {
       });
   }, []);
 
-  // Keyboard escape listener to close modal
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && !isSubmitting) {
@@ -94,9 +94,10 @@ const BuyActionWindow = ({ uid }) => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    // Client-side validations
     if (isMarketPriceUnavailable) {
-      setErrorMessage("Live market price is currently unavailable for this instrument.");
+      setErrorMessage(
+        "Live market price is currently unavailable for this instrument.",
+      );
       return;
     }
     if (isLimitInvalid) {
@@ -109,13 +110,13 @@ const BuyActionWindow = ({ uid }) => {
     }
     if (isStopDirectionInvalid) {
       setErrorMessage(
-        `BUY Stop price (₹${parsedStop.toFixed(2)}) must be strictly above current market price (₹${livePrice.toFixed(2)}).`
+        `BUY Stop price (₹${parsedStop.toFixed(2)}) must be strictly above current market price (₹${livePrice.toFixed(2)}).`,
       );
       return;
     }
     if (isStopLimitRelationInvalid) {
       setErrorMessage(
-        `BUY Stop-Limit requires limit price (₹${parsedLimit.toFixed(2)}) to be greater than or equal to stop price (₹${parsedStop.toFixed(2)}).`
+        `BUY Stop-Limit requires limit price (₹${parsedLimit.toFixed(2)}) to be greater than or equal to stop price (₹${parsedStop.toFixed(2)}).`,
       );
       return;
     }
@@ -125,7 +126,7 @@ const BuyActionWindow = ({ uid }) => {
     }
     if (hasInsufficientFunds) {
       setErrorMessage(
-        `Insufficient available funds. Order requires ₹${totalCost.toFixed(2)} but only ₹${availableBalance.toFixed(2)} is available.`
+        `Insufficient available funds. Order requires ₹${totalCost.toFixed(2)} but only ₹${availableBalance.toFixed(2)} is available.`,
       );
       return;
     }
@@ -152,7 +153,7 @@ const BuyActionWindow = ({ uid }) => {
       if (res.data?.success) {
         setSuccessMessage(
           res.data.message ||
-            `Successfully placed ${orderType} BUY order for ${parsedQty} share(s) of ${uid}!`
+            `Successfully placed ${orderType} BUY order for ${parsedQty} share(s) of ${uid}!`,
         );
         triggerRefresh();
 
@@ -165,7 +166,8 @@ const BuyActionWindow = ({ uid }) => {
       }
     } catch (err) {
       const serverMessage =
-        err.response?.data?.message || "Failed to place buy order. Please try again.";
+        err.response?.data?.message ||
+        "Failed to place buy order. Please try again.";
       setErrorMessage(serverMessage);
       setIsSubmitting(false);
     }
@@ -182,13 +184,11 @@ const BuyActionWindow = ({ uid }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
-      {/* Modal Dialog Card */}
       <div
         className="bg-[#141414] border border-white/10 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden text-white animate-in zoom-in-95 duration-200"
         role="dialog"
         aria-modal="true"
       >
-        {/* Top Header */}
         <div className="p-5 border-b border-white/10 bg-[#171717] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="size-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
@@ -200,9 +200,13 @@ const BuyActionWindow = ({ uid }) => {
                   BUY ORDER
                 </span>
                 <span className="text-slate-400 text-xs">•</span>
-                <span className="text-xs text-slate-400 font-medium">NSE/BSE</span>
+                <span className="text-xs text-slate-400 font-medium">
+                  NSE/BSE
+                </span>
               </div>
-              <h3 className="text-lg font-bold text-white tracking-tight">{uid}</h3>
+              <h3 className="text-lg font-bold text-white tracking-tight">
+                {uid}
+              </h3>
             </div>
           </div>
 
@@ -229,7 +233,6 @@ const BuyActionWindow = ({ uid }) => {
           </div>
         </div>
 
-        {/* Order Type Tabs */}
         <div className="p-4 border-b border-white/5 bg-[#141414]">
           <div className="grid grid-cols-3 gap-2 bg-[#1A1A1A] p-1 rounded-xl border border-white/5">
             {[
@@ -249,10 +252,14 @@ const BuyActionWindow = ({ uid }) => {
                     }
                     if (tab.id === "STOP_LIMIT") {
                       if (!stopPrice && livePrice) {
-                        setStopPrice((Math.round(livePrice * 1.02 * 100) / 100).toFixed(2));
+                        setStopPrice(
+                          (Math.round(livePrice * 1.02 * 100) / 100).toFixed(2),
+                        );
                       }
                       if (!limitPrice && livePrice) {
-                        setLimitPrice((Math.round(livePrice * 1.03 * 100) / 100).toFixed(2));
+                        setLimitPrice(
+                          (Math.round(livePrice * 1.03 * 100) / 100).toFixed(2),
+                        );
                       }
                     }
                   }}
@@ -269,9 +276,7 @@ const BuyActionWindow = ({ uid }) => {
           </div>
         </div>
 
-        {/* Form Body */}
         <div className="p-5 space-y-4">
-          {/* Status Alerts */}
           {errorMessage && (
             <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2.5">
               <AlertCircle className="size-4 shrink-0 mt-0.5 text-rose-400" />
@@ -286,11 +291,11 @@ const BuyActionWindow = ({ uid }) => {
             </div>
           )}
 
-          {/* Inputs Grid */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Quantity */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Quantity (Shares)</label>
+              <label className="text-xs font-semibold text-slate-300">
+                Quantity (Shares)
+              </label>
               <Input
                 type="number"
                 min="1"
@@ -303,12 +308,17 @@ const BuyActionWindow = ({ uid }) => {
               />
             </div>
 
-            {/* Price fields */}
             {orderType === "MARKET" && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Market Price</label>
+                <label className="text-xs font-semibold text-slate-300">
+                  Market Price
+                </label>
                 <div className="h-10 px-3 py-2 rounded-xl bg-[#1A1A1A] border border-white/10 flex items-center justify-between text-sm font-mono text-emerald-400 font-bold">
-                  <span>{livePrice !== null ? `₹${livePrice.toFixed(2)}` : "Unavailable"}</span>
+                  <span>
+                    {livePrice !== null
+                      ? `₹${livePrice.toFixed(2)}`
+                      : "Unavailable"}
+                  </span>
                   <Badge variant="live" className="text-[10px] py-0 px-1.5 h-4">
                     LTP
                   </Badge>
@@ -318,7 +328,9 @@ const BuyActionWindow = ({ uid }) => {
 
             {orderType === "LIMIT" && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Limit Price (₹)</label>
+                <label className="text-xs font-semibold text-slate-300">
+                  Limit Price (₹)
+                </label>
                 <Input
                   type="number"
                   step="0.05"
@@ -334,7 +346,9 @@ const BuyActionWindow = ({ uid }) => {
 
             {orderType === "STOP_LIMIT" && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Stop Trigger (₹)</label>
+                <label className="text-xs font-semibold text-slate-300">
+                  Stop Trigger (₹)
+                </label>
                 <Input
                   type="number"
                   step="0.05"
@@ -351,7 +365,9 @@ const BuyActionWindow = ({ uid }) => {
 
           {orderType === "STOP_LIMIT" && (
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Limit Price (₹)</label>
+              <label className="text-xs font-semibold text-slate-300">
+                Limit Price (₹)
+              </label>
               <Input
                 type="number"
                 step="0.05"
@@ -365,7 +381,6 @@ const BuyActionWindow = ({ uid }) => {
             </div>
           )}
 
-          {/* Condition Helper Card */}
           {orderType === "LIMIT" && (
             <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-slate-300 flex items-start gap-2">
               <Info className="size-4 shrink-0 text-cyan-400 mt-0.5" />
@@ -374,7 +389,8 @@ const BuyActionWindow = ({ uid }) => {
                 <strong className="text-white font-mono">
                   ₹{parsedLimit ? parsedLimit.toFixed(2) : "..."}
                 </strong>{" "}
-                or below. Funds (₹{totalCost.toFixed(2)}) will be reserved upfront until filled or cancelled.
+                or below. Funds (₹{totalCost.toFixed(2)}) will be reserved
+                upfront until filled or cancelled.
               </span>
             </div>
           )}
@@ -396,7 +412,6 @@ const BuyActionWindow = ({ uid }) => {
             </div>
           )}
 
-          {/* Ledger Financial Summary Card */}
           <div className="bg-[#171717] rounded-xl p-3.5 border border-white/5 space-y-2 text-xs font-mono">
             <div className="flex justify-between items-center text-slate-400 font-sans">
               <span>Available Cash:</span>
@@ -421,22 +436,24 @@ const BuyActionWindow = ({ uid }) => {
               </span>
             </div>
 
-            {availableBalance !== null && (orderType !== "MARKET" || livePrice !== null) && (
-              <div className="flex justify-between items-center text-slate-400 font-sans pt-1 border-t border-white/5">
-                <span>Remaining Cash:</span>
-                <span
-                  className={`font-mono font-bold ${
-                    hasInsufficientFunds ? "text-rose-400" : "text-emerald-400"
-                  }`}
-                >
-                  ₹{remainingBalance.toFixed(2)}
-                </span>
-              </div>
-            )}
+            {availableBalance !== null &&
+              (orderType !== "MARKET" || livePrice !== null) && (
+                <div className="flex justify-between items-center text-slate-400 font-sans pt-1 border-t border-white/5">
+                  <span>Remaining Cash:</span>
+                  <span
+                    className={`font-mono font-bold ${
+                      hasInsufficientFunds
+                        ? "text-rose-400"
+                        : "text-emerald-400"
+                    }`}
+                  >
+                    ₹{remainingBalance.toFixed(2)}
+                  </span>
+                </div>
+              )}
           </div>
         </div>
 
-        {/* Footer Actions */}
         <div className="p-5 border-t border-white/10 bg-[#171717] flex items-center justify-between">
           <div className="text-xs text-slate-400">
             <span>Order Value: </span>
@@ -474,8 +491,8 @@ const BuyActionWindow = ({ uid }) => {
                   {orderType === "STOP_LIMIT"
                     ? "Place Stop-Limit Buy"
                     : orderType === "LIMIT"
-                    ? "Place Limit Buy"
-                    : "Buy Now"}
+                      ? "Place Limit Buy"
+                      : "Buy Now"}
                 </>
               )}
             </Button>

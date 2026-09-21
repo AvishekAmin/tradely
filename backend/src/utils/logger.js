@@ -1,10 +1,5 @@
 import { NODE_ENV } from "../config/env.js";
 
-/**
- * Lightweight Zero-Dependency Structured Logger
- * Produces structured JSON output with automatic sensitive field redaction.
- */
-
 const SENSITIVE_KEY_PATTERNS = [
   /password/i,
   /passwordhash/i,
@@ -17,15 +12,14 @@ const SENSITIVE_KEY_PATTERNS = [
   /mongodb_uri/i,
 ];
 
-/**
- * Recursively deep-sanitize an object or value, replacing sensitive keys with "[REDACTED]"
- */
 export const sanitizeData = (data) => {
   if (!data) return data;
 
   if (typeof data === "string") {
-    // Redact Bearer tokens in strings
-    return data.replace(/(Bearer\s+)[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*/gi, "$1[REDACTED]");
+    return data.replace(
+      /(Bearer\s+)[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.?[A-Za-z0-9-_.+/=]*/gi,
+      "$1[REDACTED]",
+    );
   }
 
   if (Array.isArray(data)) {
@@ -35,7 +29,9 @@ export const sanitizeData = (data) => {
   if (typeof data === "object") {
     const cleaned = {};
     for (const [key, value] of Object.entries(data)) {
-      const isSensitive = SENSITIVE_KEY_PATTERNS.some((pattern) => pattern.test(key));
+      const isSensitive = SENSITIVE_KEY_PATTERNS.some((pattern) =>
+        pattern.test(key),
+      );
       if (isSensitive) {
         cleaned[key] = "[REDACTED]";
       } else if (value && typeof value === "object") {

@@ -1,13 +1,10 @@
 import * as paymentService from "../services/paymentService.js";
 
-/**
- * Initiate Razorpay test mode order creation
- * POST /payments/create-order
- */
 export const createPaymentOrder = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const amount = req.validatedAmount !== undefined ? req.validatedAmount : req.body.amount;
+    const amount =
+      req.validatedAmount !== undefined ? req.validatedAmount : req.body.amount;
 
     const orderData = await paymentService.createDepositOrder(userId, amount);
 
@@ -27,14 +24,11 @@ export const createPaymentOrder = async (req, res, next) => {
   }
 };
 
-/**
- * Verify Razorpay payment signature and execute idempotent balance credit
- * POST /payments/verify
- */
 export const verifyPayment = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+      req.body;
 
     const result = await paymentService.verifyDepositPayment(userId, {
       razorpay_order_id,
@@ -63,10 +57,6 @@ export const verifyPayment = async (req, res, next) => {
   }
 };
 
-/**
- * Get authenticated user's wallet transactions
- * GET /payments/history
- */
 export const getPaymentHistory = async (req, res, next) => {
   try {
     const userId = req.user._id;
@@ -85,10 +75,6 @@ export const getPaymentHistory = async (req, res, next) => {
   }
 };
 
-/**
- * Handle incoming Razorpay webhooks
- * POST /webhooks/razorpay
- */
 export const handleRazorpayWebhook = async (req, res, next) => {
   try {
     const signature = req.headers["x-razorpay-signature"];
@@ -102,7 +88,11 @@ export const handleRazorpayWebhook = async (req, res, next) => {
       });
     }
 
-    const result = await paymentService.processPaymentWebhook(rawBody, signature, req.body);
+    const result = await paymentService.processPaymentWebhook(
+      rawBody,
+      signature,
+      req.body,
+    );
 
     return res.status(200).json(result);
   } catch (err) {

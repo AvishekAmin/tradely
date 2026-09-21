@@ -45,7 +45,6 @@ const Menu = () => {
 
   return (
     <div className="flex items-center gap-4 lg:gap-6">
-      {/* Nav Link Items */}
       <nav className="hidden md:flex items-center gap-1">
         {NAV_ITEMS.map((item) => {
           const active = isCurrent(item.path);
@@ -57,7 +56,7 @@ const Menu = () => {
                 "relative px-3 py-1.5 text-xs font-semibold rounded-lg transition-all",
                 active
                   ? "bg-white/10 text-white shadow-sm"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
+                  : "text-slate-400 hover:text-white hover:bg-white/5",
               )}
             >
               {item.label}
@@ -69,7 +68,6 @@ const Menu = () => {
         })}
       </nav>
 
-      {/* User Profile Avatar with ShadCN Dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button

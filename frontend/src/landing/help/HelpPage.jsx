@@ -102,19 +102,20 @@ export default function HelpPage() {
     },
   ];
 
-  const filteredTopics = helpTopics.map((group) => ({
-    ...group,
-    items: group.items.filter(
-      (item) =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.desc.toLowerCase().includes(searchQuery.toLowerCase())
-    ),
-  })).filter((group) => group.items.length > 0);
+  const filteredTopics = helpTopics
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) =>
+          item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.desc.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-between pt-4 pb-20">
       <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        {/* Back Link */}
         <div>
           <Link
             to="/"
@@ -125,16 +126,15 @@ export default function HelpPage() {
           </Link>
         </div>
 
-        {/* Page Header */}
         <div className="text-center space-y-4 py-4">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
             How can we help your strategy?
           </h1>
           <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Explore comprehensive guides and documentation for Tradely's market engine, advanced bracket orders, and portfolio tracking.
+            Explore comprehensive guides and documentation for Tradely's market
+            engine, advanced bracket orders, and portfolio tracking.
           </p>
 
-          {/* Search Bar */}
           <div className="relative max-w-xl mx-auto pt-2">
             <Search className="size-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
             <Input
@@ -147,14 +147,15 @@ export default function HelpPage() {
           </div>
         </div>
 
-        {/* Topics Grid */}
         <div className="space-y-10">
           {filteredTopics.map((group) => {
             const Icon = group.icon;
             return (
               <div key={group.category} className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className={`size-8 rounded-lg border flex items-center justify-center ${group.accent}`}>
+                  <div
+                    className={`size-8 rounded-lg border flex items-center justify-center ${group.accent}`}
+                  >
                     <Icon className="size-4" />
                   </div>
                   <h2 className="text-lg font-bold text-white tracking-wide">
@@ -182,19 +183,26 @@ export default function HelpPage() {
           })}
         </div>
 
-        {/* Support & Contact Action Strip */}
         <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#181818] to-[#101010] p-8 sm:p-10 text-center space-y-4 shadow-2xl shadow-black/80">
           <h3 className="text-xl sm:text-2xl font-bold text-white">
             Still have questions or need support?
           </h3>
           <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto leading-relaxed">
-            Visit our FAQs, contact our team directly, or report platform bugs to help improve Tradely for the community.
+            Visit our FAQs, contact our team directly, or report platform bugs
+            to help improve Tradely for the community.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <Button asChild className="rounded-full bg-gradient-to-r from-[#00D8F6] to-[#7B61FF] text-black font-bold px-6 h-10 text-xs sm:text-sm hover:brightness-110 transition-all">
+            <Button
+              asChild
+              className="rounded-full bg-gradient-to-r from-[#00D8F6] to-[#7B61FF] text-black font-bold px-6 h-10 text-xs sm:text-sm hover:brightness-110 transition-all"
+            >
               <Link to="/support">View Support & FAQs</Link>
             </Button>
-            <Button asChild variant="outline" className="rounded-full border-white/15 bg-white/5 hover:bg-white/10 text-white font-medium px-6 h-10 text-xs sm:text-sm">
+            <Button
+              asChild
+              variant="outline"
+              className="rounded-full border-white/15 bg-white/5 hover:bg-white/10 text-white font-medium px-6 h-10 text-xs sm:text-sm"
+            >
               <Link to="/contact">Contact Team</Link>
             </Button>
           </div>

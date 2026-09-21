@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import apiClient, { LANDING_URL } from "../config/api";
 
@@ -13,7 +12,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Authenticate on start using HttpOnly cookie
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -39,7 +37,9 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.warn("Logout error:", err);
     } finally {
-      const destination = LANDING_URL.endsWith("/") ? LANDING_URL : `${LANDING_URL}/`;
+      const destination = LANDING_URL.endsWith("/")
+        ? LANDING_URL
+        : `${LANDING_URL}/`;
       window.location.href = destination;
     }
   };

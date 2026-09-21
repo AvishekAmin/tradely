@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useLocation,
+  Navigate,
+} from "react-router-dom";
 import "./index.css";
 
 import HomePage from "./landing/home/HomePage";
@@ -47,16 +53,34 @@ function AppLayout() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/product" element={<Navigate to="/#terminal" replace />} />
-          <Route path="/products" element={<Navigate to="/#terminal" replace />} />
-          <Route path="/pricing" element={<Navigate to="/#pricing" replace />} />
-          <Route path="/order-management" element={<Navigate to="/#order-management" replace />} />
-          <Route path="/risk-management" element={<Navigate to="/#order-management" replace />} />
+          <Route
+            path="/product"
+            element={<Navigate to="/#terminal" replace />}
+          />
+          <Route
+            path="/products"
+            element={<Navigate to="/#terminal" replace />}
+          />
+          <Route
+            path="/pricing"
+            element={<Navigate to="/#pricing" replace />}
+          />
+          <Route
+            path="/order-management"
+            element={<Navigate to="/#order-management" replace />}
+          />
+          <Route
+            path="/risk-management"
+            element={<Navigate to="/#order-management" replace />}
+          />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsOfServicePage />} />
-          <Route path="/terms-of-service" element={<Navigate to="/terms" replace />} />
+          <Route
+            path="/terms-of-service"
+            element={<Navigate to="/terms" replace />}
+          />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/report" element={<ReportIssuePage />} />
           <Route path="*" element={<NotFound />} />

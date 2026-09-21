@@ -1,9 +1,6 @@
 import mongoose from "mongoose";
 import { MONGO_URI } from "./env.js";
 
-/**
- * Connect to MongoDB database
- */
 export const connectDB = async () => {
   if (!MONGO_URI) {
     throw new Error("MONGO_URI environment variable is missing");
@@ -19,9 +16,6 @@ export const connectDB = async () => {
   }
 };
 
-/**
- * Disconnect from MongoDB database
- */
 export const disconnectDB = async () => {
   try {
     await mongoose.disconnect();

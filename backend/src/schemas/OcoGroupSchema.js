@@ -57,7 +57,7 @@ const OcoGroupSchema = new Schema(
       },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 OcoGroupSchema.index({ userId: 1, status: 1 });

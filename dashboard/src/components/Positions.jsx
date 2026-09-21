@@ -21,7 +21,7 @@ const Positions = () => {
   const { getQuote, lastOrderUpdate } = useMarketData();
   const [allPositions, setAllPositions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("ALL"); // ALL | OPEN | CLOSED
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
   const fetchPositions = useCallback(() => {
     setLoading(true);
@@ -63,7 +63,6 @@ const Positions = () => {
     };
   }, [refreshKey, lastOrderUpdate]);
 
-  // Compute live portfolio metrics for positions
   let totalInvestment = 0;
   let currentTotalValue = 0;
   let totalPnL = 0;
@@ -77,8 +76,8 @@ const Positions = () => {
     currentTotalValue += curVal;
     const rowPnL =
       pos.qty === 0
-        ? (pos.realizedPnL || 0)
-        : (curVal - inv + (pos.realizedPnL || 0));
+        ? pos.realizedPnL || 0
+        : curVal - inv + (pos.realizedPnL || 0);
     totalPnL += rowPnL;
   });
 
@@ -104,7 +103,6 @@ const Positions = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header & Metrics Overview */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2.5">
@@ -120,12 +118,15 @@ const Positions = () => {
               className="h-6 px-2 text-[11px] text-slate-400 hover:text-white hover:bg-white/10 border border-white/10 rounded-lg gap-1.5 cursor-pointer transition-colors"
               title="Refresh positions"
             >
-              <RefreshCw className={`size-3 ${loading ? "animate-spin text-cyan-400" : ""}`} />
+              <RefreshCw
+                className={`size-3 ${loading ? "animate-spin text-cyan-400" : ""}`}
+              />
               <span className="text-[11px] font-medium">Refresh</span>
             </Button>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Real-time active positions and executions from today's trading session.
+            Real-time active positions and executions from today's trading
+            session.
           </p>
         </div>
 
@@ -133,21 +134,27 @@ const Positions = () => {
           {allPositions.length > 0 && (
             <>
               <div className="bg-[#171717] px-3.5 py-1.5 rounded-xl border border-white/10 flex items-center gap-2">
-                <span className="text-xs text-slate-400 font-medium">Invested:</span>
+                <span className="text-xs text-slate-400 font-medium">
+                  Invested:
+                </span>
                 <span className="font-mono text-sm font-semibold text-white">
                   ₹{totalInvestment.toFixed(2)}
                 </span>
               </div>
 
               <div className="bg-[#171717] px-3.5 py-1.5 rounded-xl border border-white/10 flex items-center gap-2">
-                <span className="text-xs text-slate-400 font-medium">Current:</span>
+                <span className="text-xs text-slate-400 font-medium">
+                  Current:
+                </span>
                 <span className="font-mono text-sm font-semibold text-white">
                   ₹{currentTotalValue.toFixed(2)}
                 </span>
               </div>
 
               <div className="bg-[#171717] px-3.5 py-1.5 rounded-xl border border-white/10 flex items-center gap-2">
-                <span className="text-xs text-slate-400 font-medium">Total P&L:</span>
+                <span className="text-xs text-slate-400 font-medium">
+                  Total P&L:
+                </span>
                 <span
                   className={`font-mono text-sm font-bold flex items-center gap-1 ${
                     isOverallProfit ? "text-emerald-400" : "text-rose-400"
@@ -166,7 +173,6 @@ const Positions = () => {
         </div>
       </div>
 
-      {/* Filter Tabs when positions exist */}
       {allPositions.length > 0 && (
         <div className="flex items-center gap-2 bg-[#171717] p-1 rounded-xl border border-white/5 text-xs font-semibold w-fit">
           {[
@@ -189,7 +195,9 @@ const Positions = () => {
                 <span>{tab.label}</span>
                 <span
                   className={`px-1.5 py-0.2 rounded-full text-[10px] tabular-nums ${
-                    active ? "bg-cyan-500/20 text-cyan-300" : "bg-white/5 text-slate-500"
+                    active
+                      ? "bg-cyan-500/20 text-cyan-300"
+                      : "bg-white/5 text-slate-500"
                   }`}
                 >
                   {tab.count}
@@ -206,9 +214,12 @@ const Positions = () => {
             <div className="size-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 mb-4">
               <Briefcase className="size-8 text-slate-500" />
             </div>
-            <h3 className="text-base font-semibold text-white mb-1">No open positions</h3>
+            <h3 className="text-base font-semibold text-white mb-1">
+              No open positions
+            </h3>
             <p className="text-sm text-slate-400 max-w-sm mb-6">
-              You currently have no open intraday or derivative positions in this trading account.
+              You currently have no open intraday or derivative positions in
+              this trading account.
             </p>
             <Link to="/">
               <Button variant="gradient" className="gap-2">
@@ -235,7 +246,10 @@ const Positions = () => {
               <tbody className="divide-y divide-white/5 font-mono text-xs">
                 {filteredPositions.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="py-12 text-center text-slate-500 font-sans">
+                    <td
+                      colSpan="7"
+                      className="py-12 text-center text-slate-500 font-sans"
+                    >
                       No positions match the selected filter.
                     </td>
                   </tr>
@@ -251,18 +265,22 @@ const Positions = () => {
                         ? curValue - (stock.avg || 0) * (stock.qty || 0)
                         : null;
                     const pnl = isClosed
-                      ? (stock.realizedPnL || 0)
-                      : (unrealizedPnL !== null ? unrealizedPnL + (stock.realizedPnL || 0) : null);
+                      ? stock.realizedPnL || 0
+                      : unrealizedPnL !== null
+                        ? unrealizedPnL + (stock.realizedPnL || 0)
+                        : null;
                     const isProfit = (pnl || 0) >= 0.0;
                     const dayChangePercent = quote?.changePercent;
-                    const isDayPositive = dayChangePercent !== undefined ? dayChangePercent >= 0 : true;
+                    const isDayPositive =
+                      dayChangePercent !== undefined
+                        ? dayChangePercent >= 0
+                        : true;
 
                     return (
                       <tr
                         key={stock._id || index}
                         className="hover:bg-white/[0.02] transition-colors group"
                       >
-                        {/* Product */}
                         <td className="py-3.5 px-4 whitespace-nowrap font-sans">
                           <Badge
                             variant="secondary"
@@ -272,14 +290,12 @@ const Positions = () => {
                           </Badge>
                         </td>
 
-                        {/* Instrument */}
                         <td className="py-3.5 px-4 font-sans font-semibold text-white whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             <span>{stock.name}</span>
                           </div>
                         </td>
 
-                        {/* Qty */}
                         <td className="py-3.5 px-4 text-right text-slate-200 tabular-nums">
                           {stock.qty}
                           {isClosed && (
@@ -289,44 +305,50 @@ const Positions = () => {
                           )}
                         </td>
 
-                        {/* Avg Price */}
                         <td className="py-3.5 px-4 text-right text-slate-300 tabular-nums">
                           ₹{(stock.avg || 0).toFixed(2)}
                         </td>
 
-                        {/* LTP */}
                         <td className="py-3.5 px-4 text-right text-white font-bold tabular-nums">
-                          {livePrice !== null ? `₹${livePrice.toFixed(2)}` : "—"}
+                          {livePrice !== null
+                            ? `₹${livePrice.toFixed(2)}`
+                            : "—"}
                         </td>
 
-                        {/* P&L */}
                         <td className="py-3.5 px-4 text-right tabular-nums">
                           {pnl !== null ? (
                             <div className="flex flex-col items-end">
                               <span
                                 className={`font-bold inline-flex items-center gap-0.5 ${
-                                  isProfit ? "text-emerald-400" : "text-rose-400"
+                                  isProfit
+                                    ? "text-emerald-400"
+                                    : "text-rose-400"
                                 }`}
                               >
                                 {isProfit ? "+" : ""}₹{pnl.toFixed(2)}
                               </span>
-                              {!isClosed && stock.realizedPnL !== undefined && stock.realizedPnL !== 0 && (
-                                <span className="text-[10px] text-slate-500 font-sans">
-                                  Realized: {stock.realizedPnL >= 0 ? "+" : ""}₹{stock.realizedPnL.toFixed(2)}
-                                </span>
-                              )}
+                              {!isClosed &&
+                                stock.realizedPnL !== undefined &&
+                                stock.realizedPnL !== 0 && (
+                                  <span className="text-[10px] text-slate-500 font-sans">
+                                    Realized:{" "}
+                                    {stock.realizedPnL >= 0 ? "+" : ""}₹
+                                    {stock.realizedPnL.toFixed(2)}
+                                  </span>
+                                )}
                             </div>
                           ) : (
                             <span className="text-slate-500">—</span>
                           )}
                         </td>
 
-                        {/* Day Chg */}
                         <td className="py-3.5 px-4 text-right tabular-nums">
                           {dayChangePercent !== undefined ? (
                             <span
                               className={`inline-flex items-center gap-1 font-semibold ${
-                                isDayPositive ? "text-emerald-400" : "text-rose-400"
+                                isDayPositive
+                                  ? "text-emerald-400"
+                                  : "text-rose-400"
                               }`}
                             >
                               {isDayPositive ? (

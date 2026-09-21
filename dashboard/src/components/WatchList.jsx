@@ -157,7 +157,6 @@ const WatchList = () => {
   const [feedback, setFeedback] = useState("");
   const watchlistRef = useRef(null);
 
-  // Clear search and dismiss search list on click outside the watchlist sidebar
   useEffect(() => {
     if (!search) return;
 
@@ -173,7 +172,6 @@ const WatchList = () => {
     };
   }, [search]);
 
-  // 1. Fetch user's persistent watchlist on mount / refresh
   useEffect(() => {
     let ignore = false;
     apiClient
@@ -202,7 +200,6 @@ const WatchList = () => {
     setTimeout(() => setFeedback(""), 2500);
   };
 
-  // Add symbol to persistent watchlist
   const handleAddSymbol = async (symbol) => {
     if (actionInProgress) return;
     setActionInProgress(`add-${symbol}`);
@@ -220,7 +217,6 @@ const WatchList = () => {
     }
   };
 
-  // Remove symbol from persistent watchlist
   const handleRemoveSymbol = async (symbol) => {
     if (actionInProgress) return;
     setActionInProgress(`rem-${symbol}`);
@@ -238,7 +234,6 @@ const WatchList = () => {
     }
   };
 
-  // Reorder symbol up or down
   const handleMoveSymbol = async (index, direction) => {
     const targetIndex = direction === "up" ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= watchlistSymbols.length) return;
@@ -247,42 +242,39 @@ const WatchList = () => {
     const [moved] = newSymbols.splice(index, 1);
     newSymbols.splice(targetIndex, 0, moved);
 
-    // Optimistic UI update
     setWatchlistSymbols(newSymbols);
 
     try {
-      const res = await apiClient.put("/watchlist/reorder", { symbols: newSymbols });
+      const res = await apiClient.put("/watchlist/reorder", {
+        symbols: newSymbols,
+      });
       if (res.data?.success && res.data?.data) {
         setWatchlistSymbols(res.data.data.symbols || []);
       }
     } catch (err) {
       console.error("Error reordering watchlist:", err);
-      setWatchlistSymbols(watchlistSymbols); // Revert on failure
+      setWatchlistSymbols(watchlistSymbols);
       showFeedback("Failed to save reordered watchlist");
     }
   };
 
-  // Filter existing watchlist symbols matching search
   const cleanSearch = search.toLowerCase().trim();
   const filteredSymbols = useMemo(
     () =>
-      watchlistSymbols.filter((sym) =>
-        sym.toLowerCase().includes(cleanSearch)
-      ),
-    [watchlistSymbols, cleanSearch]
+      watchlistSymbols.filter((sym) => sym.toLowerCase().includes(cleanSearch)),
+    [watchlistSymbols, cleanSearch],
   );
 
-  // Discover unadded supported instruments matching search query
   const unaddedMatches = useMemo(
     () =>
       cleanSearch
         ? ALL_SUPPORTED_STOCKS.filter(
             (stock) =>
               !watchlistSymbols.includes(stock.name) &&
-              stock.name.toLowerCase().includes(cleanSearch)
+              stock.name.toLowerCase().includes(cleanSearch),
           )
         : [],
-    [cleanSearch, watchlistSymbols]
+    [cleanSearch, watchlistSymbols],
   );
 
   const watchlistStockStats = useMemo(() => {
@@ -329,7 +321,6 @@ const WatchList = () => {
   return (
     <TooltipProvider delayDuration={200}>
       <div ref={watchlistRef} className="flex flex-col h-full select-none">
-        {/* Search Header */}
         <div className="p-3 border-b border-white/10 bg-[#111111]/80 backdrop-blur sticky top-0 z-10">
           <div className="relative flex items-center">
             <Search className="absolute left-3 size-4 text-slate-500 pointer-events-none" />
@@ -365,14 +356,12 @@ const WatchList = () => {
           </div>
         </div>
 
-        {/* Feedback Alert Banner */}
         {feedback && (
           <div className="px-3 py-1.5 text-xs font-semibold bg-cyan-500/10 text-cyan-300 border-b border-cyan-500/20 animate-in fade-in-0 duration-200">
             {feedback}
           </div>
         )}
 
-        {/* Available to Add Search Results */}
         {cleanSearch && unaddedMatches.length > 0 && (
           <div className="p-3 border-b border-white/10 bg-white/[0.02]">
             <div className="text-[11px] font-bold tracking-wider uppercase text-slate-400 mb-2">
@@ -392,7 +381,9 @@ const WatchList = () => {
                         {stock.name}
                       </span>
                       <span className="ml-2 text-xs text-slate-400 tabular-nums">
-                        {quote?.price !== undefined ? `₹${quote.price.toFixed(2)}` : "—"}
+                        {quote?.price !== undefined
+                          ? `₹${quote.price.toFixed(2)}`
+                          : "—"}
                       </span>
                     </div>
                     <button
@@ -415,7 +406,6 @@ const WatchList = () => {
           </div>
         )}
 
-        {/* Active Watchlist Items & Price Distribution */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center p-8 text-xs text-slate-400 gap-2">
@@ -446,14 +436,12 @@ const WatchList = () => {
                 })}
               </div>
 
-              {/* Watchlist Price Distribution Chart & Breakdown */}
               {!cleanSearch && (
                 <div className="p-4 border-t border-white/10 bg-[#0C0C0C]/50 flex flex-col items-center">
                   <div className="text-[11px] font-semibold text-slate-400 mb-2 text-center uppercase tracking-wider">
                     Watchlist Price Distribution
                   </div>
 
-                  {/* Circular Chart */}
                   <div className="w-64 h-64 flex items-center justify-center relative">
                     <DoughnutChart data={chartData} />
                     {totalPrice > 0 && (
@@ -462,7 +450,11 @@ const WatchList = () => {
                           Watchlist Total
                         </span>
                         <span className="text-base font-black text-white font-mono tabular-nums leading-tight mt-0.5">
-                          ₹{totalPrice.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ₹
+                          {totalPrice.toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </span>
                         <span className="text-[10px] text-cyan-400 font-semibold mt-0.5">
                           {watchlistStockStats.length} Stocks
@@ -471,7 +463,6 @@ const WatchList = () => {
                     )}
                   </div>
 
-                  {/* Stock Companies List with Share Percentage & Name */}
                   <div className="w-full mt-4 space-y-1.5 pt-3 border-t border-white/5">
                     <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 px-1 pb-1">
                       <span>Company</span>
@@ -556,17 +547,13 @@ const WatchListItem = ({
       onMouseLeave={() => setIsHovered(false)}
       className={cn(
         "relative flex items-center justify-between px-3.5 py-2.5 transition-all group",
-        isHovered
-          ? "bg-[#181818]"
-          : "hover:bg-white/[0.02]"
+        isHovered ? "bg-[#181818]" : "hover:bg-white/[0.02]",
       )}
     >
-      {/* Left side blue/cyan accent line only */}
       {isHovered && (
         <span className="absolute left-0 top-0 bottom-0 w-0.5 bg-cyan-400 pointer-events-none" />
       )}
 
-      {/* Symbol & Name - always visible, highlighted on hover */}
       <div className="flex flex-col min-w-0 pr-2">
         <span
           className={cn(
@@ -574,8 +561,8 @@ const WatchListItem = ({
             isHovered
               ? "text-cyan-300 font-black tracking-wide drop-shadow-[0_0_8px_rgba(0,216,246,0.6)]"
               : isDown
-              ? "text-rose-400"
-              : "text-emerald-400"
+                ? "text-rose-400"
+                : "text-emerald-400",
           )}
         >
           {symbol}
@@ -583,14 +570,13 @@ const WatchListItem = ({
         <span
           className={cn(
             "text-[10px] font-medium transition-colors",
-            isHovered ? "text-cyan-400/80 font-semibold" : "text-slate-500"
+            isHovered ? "text-cyan-400/80 font-semibold" : "text-slate-500",
           )}
         >
           NSE EQ
         </span>
       </div>
 
-      {/* Right Side: Actions when hovered, Quotes when not hovered */}
       <div className="flex items-center shrink-0">
         {isHovered ? (
           <WatchListActions
@@ -608,7 +594,7 @@ const WatchListItem = ({
                 "flex items-center text-[11px] font-bold tabular-nums px-1.5 py-0.5 rounded",
                 isDown
                   ? "bg-rose-500/10 text-rose-400"
-                  : "bg-emerald-500/10 text-emerald-400"
+                  : "bg-emerald-500/10 text-emerald-400",
               )}
             >
               {isDown ? (
@@ -666,7 +652,6 @@ const WatchListActions = ({
 
   return (
     <div className="flex items-center gap-1.5 z-10 animate-in fade-in-0 duration-150">
-      {/* Buy Button */}
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -680,7 +665,6 @@ const WatchListActions = ({
         <TooltipContent>Buy {uid}</TooltipContent>
       </Tooltip>
 
-      {/* Sell Button */}
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -694,7 +678,6 @@ const WatchListActions = ({
         <TooltipContent>Sell {uid}</TooltipContent>
       </Tooltip>
 
-      {/* Move Up */}
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -709,7 +692,6 @@ const WatchListActions = ({
         <TooltipContent>Move Up</TooltipContent>
       </Tooltip>
 
-      {/* Move Down */}
       <Tooltip>
         <TooltipTrigger asChild>
           <button
@@ -724,7 +706,6 @@ const WatchListActions = ({
         <TooltipContent>Move Down</TooltipContent>
       </Tooltip>
 
-      {/* Delete Symbol */}
       <Tooltip>
         <TooltipTrigger asChild>
           <button

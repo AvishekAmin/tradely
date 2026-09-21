@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ArrowUp } from "lucide-react";
 
-/**
- * BackToTop - Floating upward arrow button that appears after scrolling down.
- * Smoothly scrolls the window back to the top when clicked.
- * Replicates the design and interaction from Havenly.
- */
 export default function BackToTop() {
   const [visible, setVisible] = useState(false);
 

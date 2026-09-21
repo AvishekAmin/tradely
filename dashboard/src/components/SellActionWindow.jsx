@@ -26,20 +26,22 @@ const SellActionWindow = ({ uid }) => {
 
   const [orderType, setOrderType] = useState("MARKET");
   const [stockQuantity, setStockQuantity] = useState(1);
-  const [limitPrice, setLimitPrice] = useState(() => (livePrice ? livePrice.toFixed(2) : ""));
-  const [stopPrice, setStopPrice] = useState(() =>
-    livePrice ? (Math.round(livePrice * 0.95 * 100) / 100).toFixed(2) : ""
+  const [limitPrice, setLimitPrice] = useState(() =>
+    livePrice ? livePrice.toFixed(2) : "",
   );
-  const [trailType, setTrailType] = useState("PERCENT"); // "PERCENT" | "AMOUNT"
+  const [stopPrice, setStopPrice] = useState(() =>
+    livePrice ? (Math.round(livePrice * 0.95 * 100) / 100).toFixed(2) : "",
+  );
+  const [trailType, setTrailType] = useState("PERCENT");
   const [trailPercent, setTrailPercent] = useState("5.0");
   const [trailAmount, setTrailAmount] = useState(() =>
-    livePrice ? (Math.round(livePrice * 0.05 * 100) / 100).toFixed(2) : "10.00"
+    livePrice ? (Math.round(livePrice * 0.05 * 100) / 100).toFixed(2) : "10.00",
   );
   const [takeProfitPrice, setTakeProfitPrice] = useState(() =>
-    livePrice ? (Math.round(livePrice * 1.05 * 100) / 100).toFixed(2) : ""
+    livePrice ? (Math.round(livePrice * 1.05 * 100) / 100).toFixed(2) : "",
   );
   const [stopLossPrice, setStopLossPrice] = useState(() =>
-    livePrice ? (Math.round(livePrice * 0.95 * 100) / 100).toFixed(2) : ""
+    livePrice ? (Math.round(livePrice * 0.95 * 100) / 100).toFixed(2) : "",
   );
 
   const [holdingData, setHoldingData] = useState(null);
@@ -49,13 +51,12 @@ const SellActionWindow = ({ uid }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Fetch holding and funds on mount
   useEffect(() => {
     Promise.all([apiClient.get("/allHoldings"), apiClient.get("/funds")])
       .then(([holdingsRes, fundsRes]) => {
         const holdingsList = holdingsRes.data || [];
         const found = holdingsList.find(
-          (h) => h.name.toUpperCase() === uid.toUpperCase()
+          (h) => h.name.toUpperCase() === uid.toUpperCase(),
         );
         if (found) {
           setHoldingData(found);
@@ -76,7 +77,6 @@ const SellActionWindow = ({ uid }) => {
       });
   }, [uid]);
 
-  // Keyboard escape listener to close modal
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && !isSubmitting) {
@@ -100,17 +100,17 @@ const SellActionWindow = ({ uid }) => {
   const parsedTakeProfit = parseFloat(takeProfitPrice) || 0;
   const parsedStopLoss = parseFloat(stopLossPrice) || 0;
 
-  // Calculate trailing stop initial trigger
   let calculatedTrailingStop = 0;
   if (livePrice !== null) {
     if (trailType === "PERCENT" && parsedTrailPct > 0) {
-      calculatedTrailingStop = Math.round(livePrice * (1 - parsedTrailPct / 100) * 100) / 100;
+      calculatedTrailingStop =
+        Math.round(livePrice * (1 - parsedTrailPct / 100) * 100) / 100;
     } else if (trailType === "AMOUNT" && parsedTrailAmt > 0) {
-      calculatedTrailingStop = Math.round((livePrice - parsedTrailAmt) * 100) / 100;
+      calculatedTrailingStop =
+        Math.round((livePrice - parsedTrailAmt) * 100) / 100;
     }
   }
 
-  // Determine estimated execution price for proceeds calculation
   let executionPrice = livePrice ?? 0;
   if (orderType === "LIMIT") {
     executionPrice = parsedLimit;
@@ -131,14 +131,14 @@ const SellActionWindow = ({ uid }) => {
       : 0;
   const isProfit = estimatedPnL >= 0;
 
-  // Validation flags
   const isMarketPriceUnavailable =
     (orderType === "MARKET" || orderType === "TRAILING_STOP") &&
     (livePrice === null || livePrice <= 0);
   const isLimitInvalid =
     (orderType === "LIMIT" || orderType === "STOP_LIMIT") && parsedLimit <= 0;
   const isStopInvalid =
-    (orderType === "STOP_MARKET" || orderType === "STOP_LIMIT") && parsedStop <= 0;
+    (orderType === "STOP_MARKET" || orderType === "STOP_LIMIT") &&
+    parsedStop <= 0;
   const isStopDirectionInvalid =
     (orderType === "STOP_MARKET" || orderType === "STOP_LIMIT") &&
     livePrice !== null &&
@@ -153,7 +153,8 @@ const SellActionWindow = ({ uid }) => {
     orderType === "TRAILING_STOP" &&
     (trailType === "PERCENT"
       ? parsedTrailPct <= 0 || parsedTrailPct >= 100
-      : parsedTrailAmt <= 0 || (livePrice !== null && parsedTrailAmt >= livePrice));
+      : parsedTrailAmt <= 0 ||
+        (livePrice !== null && parsedTrailAmt >= livePrice));
 
   const isOcoInvalid =
     orderType === "OCO" &&
@@ -173,10 +174,9 @@ const SellActionWindow = ({ uid }) => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    // General validations
     if (availableShares <= 0) {
       setErrorMessage(
-        `Cannot sell ${uid}: you do not have any unreserved shares of this instrument available to sell.`
+        `Cannot sell ${uid}: you do not have any unreserved shares of this instrument available to sell.`,
       );
       return;
     }
@@ -186,13 +186,15 @@ const SellActionWindow = ({ uid }) => {
     }
     if (parsedQty > availableShares) {
       setErrorMessage(
-        `Cannot sell ${parsedQty} shares. You only have ${availableShares} available share(s) (${reservedQty} reserved in pending orders).`
+        `Cannot sell ${parsedQty} shares. You only have ${availableShares} available share(s) (${reservedQty} reserved in pending orders).`,
       );
       return;
     }
 
     if (isMarketPriceUnavailable) {
-      setErrorMessage("Live market price is currently unavailable for this instrument.");
+      setErrorMessage(
+        "Live market price is currently unavailable for this instrument.",
+      );
       return;
     }
     if (isLimitInvalid) {
@@ -205,13 +207,13 @@ const SellActionWindow = ({ uid }) => {
     }
     if (isStopDirectionInvalid) {
       setErrorMessage(
-        `SELL Stop price (₹${parsedStop.toFixed(2)}) must be strictly below current market price (₹${livePrice.toFixed(2)}).`
+        `SELL Stop price (₹${parsedStop.toFixed(2)}) must be strictly below current market price (₹${livePrice.toFixed(2)}).`,
       );
       return;
     }
     if (isStopLimitRelationInvalid) {
       setErrorMessage(
-        `SELL Stop-Limit requires limit price (₹${parsedLimit.toFixed(2)}) to be less than or equal to stop price (₹${parsedStop.toFixed(2)}).`
+        `SELL Stop-Limit requires limit price (₹${parsedLimit.toFixed(2)}) to be less than or equal to stop price (₹${parsedStop.toFixed(2)}).`,
       );
       return;
     }
@@ -219,13 +221,13 @@ const SellActionWindow = ({ uid }) => {
       setErrorMessage(
         trailType === "PERCENT"
           ? "Trail percent must be between 0 and 100%."
-          : `Trail amount must be less than current market price (₹${livePrice?.toFixed(2)}).`
+          : `Trail amount must be less than current market price (₹${livePrice?.toFixed(2)}).`,
       );
       return;
     }
     if (isOcoInvalid) {
       setErrorMessage(
-        `OCO requires Take-Profit (₹${parsedTakeProfit.toFixed(2)}) > market price (₹${livePrice?.toFixed(2)}) and Stop-Loss (₹${parsedStopLoss.toFixed(2)}) < market price.`
+        `OCO requires Take-Profit (₹${parsedTakeProfit.toFixed(2)}) > market price (₹${livePrice?.toFixed(2)}) and Stop-Loss (₹${parsedStopLoss.toFixed(2)}) < market price.`,
       );
       return;
     }
@@ -245,7 +247,7 @@ const SellActionWindow = ({ uid }) => {
         if (res.data?.success) {
           setSuccessMessage(
             res.data.message ||
-              `Successfully created OCO bracket for ${parsedQty} share(s) of ${uid}!`
+              `Successfully created OCO bracket for ${parsedQty} share(s) of ${uid}!`,
           );
           triggerRefresh();
           setTimeout(() => {
@@ -258,7 +260,6 @@ const SellActionWindow = ({ uid }) => {
         return;
       }
 
-      // Single order types
       const payload = {
         name: uid,
         qty: parsedQty,
@@ -286,7 +287,7 @@ const SellActionWindow = ({ uid }) => {
       if (res.data?.success) {
         setSuccessMessage(
           res.data.message ||
-            `Successfully placed ${orderType} SELL order for ${parsedQty} share(s) of ${uid}!`
+            `Successfully placed ${orderType} SELL order for ${parsedQty} share(s) of ${uid}!`,
         );
         triggerRefresh();
 
@@ -299,7 +300,8 @@ const SellActionWindow = ({ uid }) => {
       }
     } catch (err) {
       const serverMessage =
-        err.response?.data?.message || "Failed to place sell order. Please try again.";
+        err.response?.data?.message ||
+        "Failed to place sell order. Please try again.";
       setErrorMessage(serverMessage);
       setIsSubmitting(false);
     }
@@ -319,13 +321,11 @@ const SellActionWindow = ({ uid }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in-0 duration-200">
-      {/* Modal Dialog Card */}
       <div
         className="bg-[#141414] border border-white/10 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden text-white animate-in zoom-in-95 duration-200"
         role="dialog"
         aria-modal="true"
       >
-        {/* Top Header */}
         <div className="p-5 border-b border-white/10 bg-[#171717] flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="size-9 rounded-xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400">
@@ -337,9 +337,13 @@ const SellActionWindow = ({ uid }) => {
                   SELL ORDER
                 </span>
                 <span className="text-slate-400 text-xs">•</span>
-                <span className="text-xs text-slate-400 font-medium">NSE/BSE</span>
+                <span className="text-xs text-slate-400 font-medium">
+                  NSE/BSE
+                </span>
               </div>
-              <h3 className="text-lg font-bold text-white tracking-tight">{uid}</h3>
+              <h3 className="text-lg font-bold text-white tracking-tight">
+                {uid}
+              </h3>
             </div>
           </div>
 
@@ -366,7 +370,6 @@ const SellActionWindow = ({ uid }) => {
           </div>
         </div>
 
-        {/* Order Type Tabs */}
         <div className="p-4 border-b border-white/5 bg-[#141414]">
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 bg-[#1A1A1A] p-1 rounded-xl border border-white/5 text-center">
             {[
@@ -388,15 +391,25 @@ const SellActionWindow = ({ uid }) => {
                       setLimitPrice(livePrice.toFixed(2));
                     }
                     if (tab.id === "STOP_MARKET" && livePrice) {
-                      setStopPrice((Math.round(livePrice * 0.95 * 100) / 100).toFixed(2));
+                      setStopPrice(
+                        (Math.round(livePrice * 0.95 * 100) / 100).toFixed(2),
+                      );
                     }
                     if (tab.id === "STOP_LIMIT" && livePrice) {
-                      setStopPrice((Math.round(livePrice * 0.95 * 100) / 100).toFixed(2));
-                      setLimitPrice((Math.round(livePrice * 0.94 * 100) / 100).toFixed(2));
+                      setStopPrice(
+                        (Math.round(livePrice * 0.95 * 100) / 100).toFixed(2),
+                      );
+                      setLimitPrice(
+                        (Math.round(livePrice * 0.94 * 100) / 100).toFixed(2),
+                      );
                     }
                     if (tab.id === "OCO" && livePrice) {
-                      setTakeProfitPrice((Math.round(livePrice * 1.05 * 100) / 100).toFixed(2));
-                      setStopLossPrice((Math.round(livePrice * 0.95 * 100) / 100).toFixed(2));
+                      setTakeProfitPrice(
+                        (Math.round(livePrice * 1.05 * 100) / 100).toFixed(2),
+                      );
+                      setStopLossPrice(
+                        (Math.round(livePrice * 0.95 * 100) / 100).toFixed(2),
+                      );
                     }
                   }}
                   className={`py-1.5 text-xs font-semibold rounded-lg transition-all ${
@@ -412,9 +425,7 @@ const SellActionWindow = ({ uid }) => {
           </div>
         </div>
 
-        {/* Form Body */}
         <div className="p-5 space-y-4 max-h-[60vh] overflow-y-auto">
-          {/* Status Alerts */}
           {errorMessage && (
             <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2.5">
               <AlertCircle className="size-4 shrink-0 mt-0.5 text-rose-400" />
@@ -429,7 +440,6 @@ const SellActionWindow = ({ uid }) => {
             </div>
           )}
 
-          {/* Holdings Status Warning if zero shares available */}
           {!loadingHolding && availableShares === 0 && (
             <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs flex items-start gap-2.5">
               <AlertCircle className="size-4 shrink-0 mt-0.5 text-amber-400" />
@@ -442,12 +452,12 @@ const SellActionWindow = ({ uid }) => {
             </div>
           )}
 
-          {/* Inputs Grid */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Quantity with MAX button */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-300">Quantity</label>
+                <label className="text-xs font-semibold text-slate-300">
+                  Quantity
+                </label>
                 {availableShares > 0 && (
                   <button
                     type="button"
@@ -471,12 +481,17 @@ const SellActionWindow = ({ uid }) => {
               />
             </div>
 
-            {/* Dynamic Price fields based on Order Type */}
             {orderType === "MARKET" && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Market Price</label>
+                <label className="text-xs font-semibold text-slate-300">
+                  Market Price
+                </label>
                 <div className="h-10 px-3 py-2 rounded-xl bg-[#1A1A1A] border border-white/10 flex items-center justify-between text-sm font-mono text-rose-400 font-bold">
-                  <span>{livePrice !== null ? `₹${livePrice.toFixed(2)}` : "Unavailable"}</span>
+                  <span>
+                    {livePrice !== null
+                      ? `₹${livePrice.toFixed(2)}`
+                      : "Unavailable"}
+                  </span>
                   <Badge variant="loss" className="text-[10px] py-0 px-1.5 h-4">
                     LTP
                   </Badge>
@@ -486,7 +501,9 @@ const SellActionWindow = ({ uid }) => {
 
             {orderType === "LIMIT" && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Limit Price (₹)</label>
+                <label className="text-xs font-semibold text-slate-300">
+                  Limit Price (₹)
+                </label>
                 <Input
                   type="number"
                   step="0.05"
@@ -502,7 +519,9 @@ const SellActionWindow = ({ uid }) => {
 
             {orderType === "STOP_MARKET" && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Stop Trigger (₹)</label>
+                <label className="text-xs font-semibold text-slate-300">
+                  Stop Trigger (₹)
+                </label>
                 <Input
                   type="number"
                   step="0.05"
@@ -518,7 +537,9 @@ const SellActionWindow = ({ uid }) => {
 
             {orderType === "STOP_LIMIT" && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Stop Trigger (₹)</label>
+                <label className="text-xs font-semibold text-slate-300">
+                  Stop Trigger (₹)
+                </label>
                 <Input
                   type="number"
                   step="0.05"
@@ -534,7 +555,9 @@ const SellActionWindow = ({ uid }) => {
 
             {orderType === "TRAILING_STOP" && (
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Trail Mechanism</label>
+                <label className="text-xs font-semibold text-slate-300">
+                  Trail Mechanism
+                </label>
                 <select
                   value={trailType}
                   onChange={(e) => setTrailType(e.target.value)}
@@ -565,10 +588,11 @@ const SellActionWindow = ({ uid }) => {
             )}
           </div>
 
-          {/* Secondary inputs for compound types */}
           {orderType === "STOP_LIMIT" && (
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">Limit Price Floor (₹)</label>
+              <label className="text-xs font-semibold text-slate-300">
+                Limit Price Floor (₹)
+              </label>
               <Input
                 type="number"
                 step="0.05"
@@ -585,7 +609,9 @@ const SellActionWindow = ({ uid }) => {
           {orderType === "TRAILING_STOP" && (
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-300">
-                {trailType === "PERCENT" ? "Trail Percentage (%)" : "Trail Distance (₹)"}
+                {trailType === "PERCENT"
+                  ? "Trail Percentage (%)"
+                  : "Trail Distance (₹)"}
               </label>
               <Input
                 type="number"
@@ -606,7 +632,9 @@ const SellActionWindow = ({ uid }) => {
 
           {orderType === "OCO" && (
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-rose-400">Stop-Loss Trigger (₹)</label>
+              <label className="text-xs font-semibold text-rose-400">
+                Stop-Loss Trigger (₹)
+              </label>
               <Input
                 type="number"
                 step="0.05"
@@ -620,7 +648,6 @@ const SellActionWindow = ({ uid }) => {
             </div>
           )}
 
-          {/* Explanatory notes */}
           {orderType === "LIMIT" && (
             <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-slate-300 flex items-start gap-2">
               <Info className="size-4 shrink-0 text-rose-400 mt-0.5" />
@@ -629,7 +656,8 @@ const SellActionWindow = ({ uid }) => {
                 <strong className="text-white font-mono">
                   ₹{parsedLimit ? parsedLimit.toFixed(2) : "..."}
                 </strong>{" "}
-                or higher. Shares ({parsedQty}) locked in reserve until triggered.
+                or higher. Shares ({parsedQty}) locked in reserve until
+                triggered.
               </span>
             </div>
           )}
@@ -638,7 +666,8 @@ const SellActionWindow = ({ uid }) => {
             <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-slate-300 flex items-start gap-2">
               <Info className="size-4 shrink-0 text-rose-400 mt-0.5" />
               <span>
-                Protects downside: Triggers an instant market sell if price drops to{" "}
+                Protects downside: Triggers an instant market sell if price
+                drops to{" "}
                 <strong className="text-white font-mono">
                   ₹{parsedStop ? parsedStop.toFixed(2) : "..."}
                 </strong>{" "}
@@ -653,9 +682,13 @@ const SellActionWindow = ({ uid }) => {
               <span>
                 Initial stop triggers @{" "}
                 <strong className="text-white font-mono">
-                  ₹{calculatedTrailingStop > 0 ? calculatedTrailingStop.toFixed(2) : "..."}
+                  ₹
+                  {calculatedTrailingStop > 0
+                    ? calculatedTrailingStop.toFixed(2)
+                    : "..."}
                 </strong>
-                . Automatically ratchets upwards as market climbs, locking in profits.
+                . Automatically ratchets upwards as market climbs, locking in
+                profits.
               </span>
             </div>
           )}
@@ -677,7 +710,6 @@ const SellActionWindow = ({ uid }) => {
             </div>
           )}
 
-          {/* Ledger Financial Summary Card */}
           <div className="bg-[#171717] rounded-xl p-3.5 border border-white/5 space-y-2 text-xs font-mono">
             <div className="flex justify-between items-center text-slate-400 font-sans">
               <span>Available Shares:</span>
@@ -693,7 +725,9 @@ const SellActionWindow = ({ uid }) => {
             {ownedQty > 0 && (
               <div className="flex justify-between items-center text-slate-400 font-sans">
                 <span>Avg Buy Price:</span>
-                <span className="font-mono text-slate-300">₹{avgBuyPrice.toFixed(2)}</span>
+                <span className="font-mono text-slate-300">
+                  ₹{avgBuyPrice.toFixed(2)}
+                </span>
               </div>
             )}
 
@@ -728,7 +762,6 @@ const SellActionWindow = ({ uid }) => {
           </div>
         </div>
 
-        {/* Footer Actions */}
         <div className="p-5 border-t border-white/10 bg-[#171717] flex items-center justify-between">
           <div className="text-xs text-slate-400">
             <span>Est. Credit: </span>
@@ -766,14 +799,14 @@ const SellActionWindow = ({ uid }) => {
                   {orderType === "OCO"
                     ? "Place OCO Bracket"
                     : orderType === "TRAILING_STOP"
-                    ? "Place Trailing Stop"
-                    : orderType === "STOP_LIMIT"
-                    ? "Place Stop-Limit Sell"
-                    : orderType === "STOP_MARKET"
-                    ? "Place Stop-Loss"
-                    : orderType === "LIMIT"
-                    ? "Place Limit Sell"
-                    : "Sell Now"}
+                      ? "Place Trailing Stop"
+                      : orderType === "STOP_LIMIT"
+                        ? "Place Stop-Limit Sell"
+                        : orderType === "STOP_MARKET"
+                          ? "Place Stop-Loss"
+                          : orderType === "LIMIT"
+                            ? "Place Limit Sell"
+                            : "Sell Now"}
                 </>
               )}
             </Button>

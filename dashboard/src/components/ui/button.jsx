@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import * as React from "react";
 import { cva } from "class-variance-authority";
 import { Slot } from "@radix-ui/react-slot";
@@ -13,20 +12,16 @@ const buttonVariants = cva(
           "bg-gradient-to-r from-[#00D8F6] to-[#7B61FF] text-black font-bold shadow-lg shadow-cyan-500/20 hover:brightness-110 active:scale-[0.98]",
         gradient:
           "bg-gradient-to-r from-[#00D8F6] to-[#7B61FF] text-black font-bold shadow-xl shadow-cyan-500/25 hover:brightness-110 active:scale-[0.98]",
-        buy:
-          "bg-emerald-500 text-black font-bold shadow-md shadow-emerald-500/20 hover:bg-emerald-400 active:scale-[0.98]",
-        sell:
-          "bg-rose-500 text-black font-bold shadow-md shadow-rose-500/20 hover:bg-rose-400 active:scale-[0.98]",
+        buy: "bg-emerald-500 text-black font-bold shadow-md shadow-emerald-500/20 hover:bg-emerald-400 active:scale-[0.98]",
+        sell: "bg-rose-500 text-black font-bold shadow-md shadow-rose-500/20 hover:bg-rose-400 active:scale-[0.98]",
         secondary:
           "bg-[#1A1A1A] text-white border border-white/10 hover:bg-[#242424] hover:border-white/20 active:scale-[0.98]",
         outline:
           "border border-white/10 bg-transparent text-slate-200 hover:bg-white/5 hover:text-white hover:border-white/20",
-        ghost:
-          "text-slate-300 hover:bg-white/5 hover:text-white",
+        ghost: "text-slate-300 hover:bg-white/5 hover:text-white",
         destructive:
           "bg-red-600 text-white hover:bg-red-500 shadow-md shadow-red-600/20 active:scale-[0.98]",
-        link:
-          "text-cyan-400 underline-offset-4 hover:underline",
+        link: "text-cyan-400 underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2 rounded-xl",
@@ -42,7 +37,7 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 function Button({

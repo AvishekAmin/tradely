@@ -1,22 +1,3 @@
-/**
- * Tradely Cash Ledger Filtering & Payment Semantics Automated Test Suite
- * 
- * Validates:
- * 1. Unauthenticated /payments/history -> 401
- * 2. Unfiltered /payments/history returns user's full transaction history
- * 3. Filter by type=DEPOSIT returns only deposits
- * 4. Filter by type=WITHDRAWAL returns only withdrawals
- * 5. Filter by status=SUCCESS returns only SUCCESS transactions
- * 6. Filter by status=PENDING (semantic group) returns PENDING, CREATED, and PAYMENT_PENDING
- * 7. Filter by status=PROCESSING returns only PROCESSING transactions
- * 8. Filter by status=FAILED returns only FAILED transactions
- * 9. Filter by status=CANCELLED returns only CANCELLED transactions
- * 10. Combined type + status filtering (e.g. type=WITHDRAWAL&status=CANCELLED)
- * 11. Invalid filter parameters gracefully ignored without error
- * 12. User isolation under filtering: User A's filtered queries never return User B's transactions
- * 13. Payment semantics verification (non-terminal failure, retry, idempotent replay)
- */
-
 import http from "http";
 import crypto from "crypto";
 
@@ -25,8 +6,10 @@ process.env.PAYMENT_PROVIDER = process.env.PAYMENT_PROVIDER || "mock";
 const { default: app } = await import("../src/app.js");
 const { connectDB, disconnectDB } = await import("../src/config/db.js");
 const { UserModel } = await import("../src/models/UserModel.js");
-const { WalletTransactionModel } = await import("../src/models/WalletTransactionModel.js");
-const { RAZORPAY_KEY_SECRET, RAZORPAY_WEBHOOK_SECRET } = await import("../src/config/env.js");
+const { WalletTransactionModel } =
+  await import("../src/models/WalletTransactionModel.js");
+const { RAZORPAY_KEY_SECRET, RAZORPAY_WEBHOOK_SECRET } =
+  await import("../src/config/env.js");
 
 let passed = 0;
 let failed = 0;
@@ -57,10 +40,10 @@ const runAllTests = async () => {
     const port = server.address().port;
     baseUrl = `http://127.0.0.1:${port}`;
 
-    // Clean up any test users
-    await UserModel.deleteMany({ email: { $in: ["phase10c_a@tradely.test", "phase10c_b@tradely.test"] } });
+    await UserModel.deleteMany({
+      email: { $in: ["phase10c_a@tradely.test", "phase10c_b@tradely.test"] },
+    });
 
-    // 1. Setup User A
     const resA = await fetch(`${baseUrl}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -74,7 +57,6 @@ const runAllTests = async () => {
     const userAData = (await resA.json()).data;
     const userAId = userAData.user?.id || userAData.user?._id;
 
-    // 2. Setup User B
     const resB = await fetch(`${baseUrl}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -88,11 +70,10 @@ const runAllTests = async () => {
     const userBData = (await resB.json()).data;
     const userBId = userBData.user?.id || userBData.user?._id;
 
-    // Clean any residual transactions for these users
-    await WalletTransactionModel.deleteMany({ userId: { $in: [userAId, userBId] } });
+    await WalletTransactionModel.deleteMany({
+      userId: { $in: [userAId, userBId] },
+    });
 
-    // Seed diverse transaction set for User A:
-    // 1. Deposit - SUCCESS
     await WalletTransactionModel.create({
       userId: userAId,
       type: "DEPOSIT",
@@ -103,7 +84,6 @@ const runAllTests = async () => {
       providerOrderId: `order_10c_dep_succ_${Date.now()}`,
     });
 
-    // 2. Deposit - PAYMENT_PENDING (grouped pending)
     await WalletTransactionModel.create({
       userId: userAId,
       type: "DEPOSIT",
@@ -114,7 +94,6 @@ const runAllTests = async () => {
       providerOrderId: `order_10c_dep_pend_${Date.now()}`,
     });
 
-    // 3. Deposit - FAILED
     await WalletTransactionModel.create({
       userId: userAId,
       type: "DEPOSIT",
@@ -125,7 +104,6 @@ const runAllTests = async () => {
       providerOrderId: `order_10c_dep_fail_${Date.now()}`,
     });
 
-    // 4. Withdrawal - PENDING
     await WalletTransactionModel.create({
       userId: userAId,
       type: "WITHDRAWAL",
@@ -137,7 +115,6 @@ const runAllTests = async () => {
       destination: "usera@okhdfcbank",
     });
 
-    // 5. Withdrawal - PROCESSING
     await WalletTransactionModel.create({
       userId: userAId,
       type: "WITHDRAWAL",
@@ -149,7 +126,6 @@ const runAllTests = async () => {
       destination: "****9901",
     });
 
-    // 6. Withdrawal - CANCELLED
     await WalletTransactionModel.create({
       userId: userAId,
       type: "WITHDRAWAL",
@@ -161,7 +137,6 @@ const runAllTests = async () => {
       destination: "usera@okhdfcbank",
     });
 
-    // 7. Withdrawal - SUCCESS
     await WalletTransactionModel.create({
       userId: userAId,
       type: "WITHDRAWAL",
@@ -173,7 +148,6 @@ const runAllTests = async () => {
       destination: "****9901",
     });
 
-    // Seed transaction for User B (Withdrawal - PENDING)
     await WalletTransactionModel.create({
       userId: userBId,
       type: "WITHDRAWAL",
@@ -185,99 +159,117 @@ const runAllTests = async () => {
       destination: "userb@okaxis",
     });
 
-    // -------------------------------------------------------------
-    // Test Group 1: Authentication & Protection
-    // -------------------------------------------------------------
     console.log("\n--- 1. Authentication & Route Protection ---");
     {
       const resUnauth = await fetch(`${baseUrl}/payments/history`);
-      assert(resUnauth.status === 401, "Unauthenticated GET /payments/history returns 401");
+      assert(
+        resUnauth.status === 401,
+        "Unauthenticated GET /payments/history returns 401",
+      );
     }
 
-    // -------------------------------------------------------------
-    // Test Group 2: Unfiltered History
-    // -------------------------------------------------------------
     console.log("\n--- 2. Unfiltered History ---");
     {
       const resAll = await fetch(`${baseUrl}/payments/history`, {
         headers: { Cookie: userACookie },
       });
-      assert(resAll.status === 200, "Authenticated GET /payments/history returns 200");
+      assert(
+        resAll.status === 200,
+        "Authenticated GET /payments/history returns 200",
+      );
       const data = (await resAll.json()).data;
       assert(Array.isArray(data), "History is returned as an array");
-      assert(data.length === 7, `User A has exactly 7 transactions (got ${data.length})`);
+      assert(
+        data.length === 7,
+        `User A has exactly 7 transactions (got ${data.length})`,
+      );
     }
 
-    // -------------------------------------------------------------
-    // Test Group 3: Type Filtering
-    // -------------------------------------------------------------
     console.log("\n--- 3. Type Filtering (type=DEPOSIT / type=WITHDRAWAL) ---");
     {
-      // 3.1 Deposits only
       const resDep = await fetch(`${baseUrl}/payments/history?type=DEPOSIT`, {
         headers: { Cookie: userACookie },
       });
       assert(resDep.status === 200, "type=DEPOSIT query returns 200");
       const deps = (await resDep.json()).data;
-      assert(deps.length === 3, `Returns exactly 3 deposits (got ${deps.length})`);
+      assert(
+        deps.length === 3,
+        `Returns exactly 3 deposits (got ${deps.length})`,
+      );
       assert(
         deps.every((tx) => tx.type === "DEPOSIT"),
-        "Every transaction in type=DEPOSIT is a DEPOSIT"
+        "Every transaction in type=DEPOSIT is a DEPOSIT",
       );
 
-      // 3.2 Withdrawals only (case insensitive check: 'withdrawal')
       const resWd = await fetch(`${baseUrl}/payments/history?type=withdrawal`, {
         headers: { Cookie: userACookie },
       });
-      assert(resWd.status === 200, "type=withdrawal (lowercase) query returns 200");
+      assert(
+        resWd.status === 200,
+        "type=withdrawal (lowercase) query returns 200",
+      );
       const wds = (await resWd.json()).data;
-      assert(wds.length === 4, `Returns exactly 4 withdrawals (got ${wds.length})`);
+      assert(
+        wds.length === 4,
+        `Returns exactly 4 withdrawals (got ${wds.length})`,
+      );
       assert(
         wds.every((tx) => tx.type === "WITHDRAWAL"),
-        "Every transaction in type=withdrawal is a WITHDRAWAL"
+        "Every transaction in type=withdrawal is a WITHDRAWAL",
       );
     }
 
-    // -------------------------------------------------------------
-    // Test Group 4: Status Filtering
-    // -------------------------------------------------------------
     console.log("\n--- 4. Semantic Status Filtering ---");
     {
-      // 4.1 Success status
-      const resSucc = await fetch(`${baseUrl}/payments/history?status=SUCCESS`, {
-        headers: { Cookie: userACookie },
-      });
+      const resSucc = await fetch(
+        `${baseUrl}/payments/history?status=SUCCESS`,
+        {
+          headers: { Cookie: userACookie },
+        },
+      );
       const succList = (await resSucc.json()).data;
-      assert(succList.length === 2, `status=SUCCESS returns exactly 2 records (got ${succList.length})`);
+      assert(
+        succList.length === 2,
+        `status=SUCCESS returns exactly 2 records (got ${succList.length})`,
+      );
       assert(
         succList.every((tx) => tx.status === "SUCCESS"),
-        "All transactions have status SUCCESS"
+        "All transactions have status SUCCESS",
       );
 
-      // 4.2 Grouped Pending status (matches PENDING, CREATED, PAYMENT_PENDING)
-      const resPend = await fetch(`${baseUrl}/payments/history?status=PENDING`, {
-        headers: { Cookie: userACookie },
-      });
+      const resPend = await fetch(
+        `${baseUrl}/payments/history?status=PENDING`,
+        {
+          headers: { Cookie: userACookie },
+        },
+      );
       const pendList = (await resPend.json()).data;
       assert(
         pendList.length === 2,
-        `status=PENDING grouped filter returns 2 records (1 DEPOSIT payment_pending + 1 WITHDRAWAL pending)`
+        `status=PENDING grouped filter returns 2 records (1 DEPOSIT payment_pending + 1 WITHDRAWAL pending)`,
       );
       assert(
         pendList.some((tx) => tx.status === "PAYMENT_PENDING") &&
-        pendList.some((tx) => tx.status === "PENDING"),
-        "Grouped pending filter matches both PAYMENT_PENDING and PENDING statuses"
+          pendList.some((tx) => tx.status === "PENDING"),
+        "Grouped pending filter matches both PAYMENT_PENDING and PENDING statuses",
       );
 
-      // 4.3 Processing status
-      const resProc = await fetch(`${baseUrl}/payments/history?status=PROCESSING`, {
-        headers: { Cookie: userACookie },
-      });
+      const resProc = await fetch(
+        `${baseUrl}/payments/history?status=PROCESSING`,
+        {
+          headers: { Cookie: userACookie },
+        },
+      );
       const procList = (await resProc.json()).data;
-      assert(procList.length === 1, "status=PROCESSING returns exactly 1 record");
-      assert(procList[0].status === "PROCESSING", "Transaction has status PROCESSING");
+      assert(
+        procList.length === 1,
+        "status=PROCESSING returns exactly 1 record",
+      );
+      assert(
+        procList[0].status === "PROCESSING",
+        "Transaction has status PROCESSING",
+      );
 
-      // 4.4 Failed status
       const resFail = await fetch(`${baseUrl}/payments/history?status=FAILED`, {
         headers: { Cookie: userACookie },
       });
@@ -285,104 +277,135 @@ const runAllTests = async () => {
       assert(failList.length === 1, "status=FAILED returns exactly 1 record");
       assert(failList[0].status === "FAILED", "Transaction has status FAILED");
 
-      // 4.5 Cancelled status
-      const resCanc = await fetch(`${baseUrl}/payments/history?status=CANCELLED`, {
-        headers: { Cookie: userACookie },
-      });
+      const resCanc = await fetch(
+        `${baseUrl}/payments/history?status=CANCELLED`,
+        {
+          headers: { Cookie: userACookie },
+        },
+      );
       const cancList = (await resCanc.json()).data;
-      assert(cancList.length === 1, "status=CANCELLED returns exactly 1 record");
-      assert(cancList[0].status === "CANCELLED", "Transaction has status CANCELLED");
+      assert(
+        cancList.length === 1,
+        "status=CANCELLED returns exactly 1 record",
+      );
+      assert(
+        cancList[0].status === "CANCELLED",
+        "Transaction has status CANCELLED",
+      );
     }
 
-    // -------------------------------------------------------------
-    // Test Group 5: Combined Type + Status Filtering
-    // -------------------------------------------------------------
     console.log("\n--- 5. Combined Type & Status Filtering ---");
     {
-      // WITHDRAWAL + CANCELLED
-      const resComb = await fetch(`${baseUrl}/payments/history?type=WITHDRAWAL&status=CANCELLED`, {
-        headers: { Cookie: userACookie },
-      });
+      const resComb = await fetch(
+        `${baseUrl}/payments/history?type=WITHDRAWAL&status=CANCELLED`,
+        {
+          headers: { Cookie: userACookie },
+        },
+      );
       const combList = (await resComb.json()).data;
-      assert(combList.length === 1, "type=WITHDRAWAL&status=CANCELLED returns exactly 1 record");
+      assert(
+        combList.length === 1,
+        "type=WITHDRAWAL&status=CANCELLED returns exactly 1 record",
+      );
       assert(
         combList[0].type === "WITHDRAWAL" && combList[0].status === "CANCELLED",
-        "Record matches both WITHDRAWAL and CANCELLED"
+        "Record matches both WITHDRAWAL and CANCELLED",
       );
 
-      // DEPOSIT + SUCCESS
-      const resDepSucc = await fetch(`${baseUrl}/payments/history?type=DEPOSIT&status=SUCCESS`, {
-        headers: { Cookie: userACookie },
-      });
+      const resDepSucc = await fetch(
+        `${baseUrl}/payments/history?type=DEPOSIT&status=SUCCESS`,
+        {
+          headers: { Cookie: userACookie },
+        },
+      );
       const depSuccList = (await resDepSucc.json()).data;
-      assert(depSuccList.length === 1, "type=DEPOSIT&status=SUCCESS returns exactly 1 record");
       assert(
-        depSuccList[0].type === "DEPOSIT" && depSuccList[0].status === "SUCCESS",
-        "Record matches both DEPOSIT and SUCCESS"
+        depSuccList.length === 1,
+        "type=DEPOSIT&status=SUCCESS returns exactly 1 record",
+      );
+      assert(
+        depSuccList[0].type === "DEPOSIT" &&
+          depSuccList[0].status === "SUCCESS",
+        "Record matches both DEPOSIT and SUCCESS",
       );
     }
 
-    // -------------------------------------------------------------
-    // Test Group 6: Graceful Handling of Invalid Filters
-    // -------------------------------------------------------------
     console.log("\n--- 6. Invalid Filter Handling ---");
     {
-      const resInv = await fetch(`${baseUrl}/payments/history?type=CRYPTO&status=UNSUPPORTED`, {
-        headers: { Cookie: userACookie },
-      });
-      assert(resInv.status === 200, "Invalid filters do not crash or 400; returns 200 OK");
+      const resInv = await fetch(
+        `${baseUrl}/payments/history?type=CRYPTO&status=UNSUPPORTED`,
+        {
+          headers: { Cookie: userACookie },
+        },
+      );
+      assert(
+        resInv.status === 200,
+        "Invalid filters do not crash or 400; returns 200 OK",
+      );
       const invList = (await resInv.json()).data;
-      assert(invList.length === 7, "Invalid filter keys safely ignored; returns all 7 user transactions");
+      assert(
+        invList.length === 7,
+        "Invalid filter keys safely ignored; returns all 7 user transactions",
+      );
     }
 
-    // -------------------------------------------------------------
-    // Test Group 7: Multi-Tenant User Isolation under Filtering
-    // -------------------------------------------------------------
     console.log("\n--- 7. Multi-Tenant User Isolation under Filtering ---");
     {
-      // User A querying type=WITHDRAWAL&status=PENDING
-      const resA = await fetch(`${baseUrl}/payments/history?type=WITHDRAWAL&status=PENDING`, {
-        headers: { Cookie: userACookie },
-      });
+      const resA = await fetch(
+        `${baseUrl}/payments/history?type=WITHDRAWAL&status=PENDING`,
+        {
+          headers: { Cookie: userACookie },
+        },
+      );
       const listA = (await resA.json()).data;
       assert(listA.length === 1, "User A sees only their 1 pending withdrawal");
-      assert(listA[0].amount === 4000, "User A sees their ₹4,000 withdrawal, NOT User B's ₹9,999");
+      assert(
+        listA[0].amount === 4000,
+        "User A sees their ₹4,000 withdrawal, NOT User B's ₹9,999",
+      );
 
-      // User B querying type=WITHDRAWAL&status=PENDING
-      const resB = await fetch(`${baseUrl}/payments/history?type=WITHDRAWAL&status=PENDING`, {
-        headers: { Cookie: userBCookie },
-      });
+      const resB = await fetch(
+        `${baseUrl}/payments/history?type=WITHDRAWAL&status=PENDING`,
+        {
+          headers: { Cookie: userBCookie },
+        },
+      );
       const listB = (await resB.json()).data;
       assert(listB.length === 1, "User B sees only their 1 pending withdrawal");
-      assert(listB[0].amount === 9999, "User B sees their ₹9,999 withdrawal, NOT User A's ₹4,000");
+      assert(
+        listB[0].amount === 9999,
+        "User B sees their ₹9,999 withdrawal, NOT User A's ₹4,000",
+      );
 
-      // User B querying type=DEPOSIT
       const resBDep = await fetch(`${baseUrl}/payments/history?type=DEPOSIT`, {
         headers: { Cookie: userBCookie },
       });
       const listBDep = (await resBDep.json()).data;
-      assert(listBDep.length === 0, "User B sees 0 deposits (User A's deposits strictly shielded)");
+      assert(
+        listBDep.length === 0,
+        "User B sees 0 deposits (User A's deposits strictly shielded)",
+      );
     }
 
-    // =========================================================================
-    // 8. Payment Semantics & Signature Verification Regression Suite
-    // =========================================================================
-    console.log("\n--- 8. Payment Semantics & Signature Verification Regression ---");
+    console.log(
+      "\n--- 8. Payment Semantics & Signature Verification Regression ---",
+    );
     {
       const initialUserA = await UserModel.findById(userAId);
       const initialBal = initialUserA.balance;
 
-      // Create a new deposit order for User A (₹1,500)
       const resOrder = await fetch(`${baseUrl}/payments/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Cookie: userACookie },
         body: JSON.stringify({ amount: 1500 }),
       });
-      assert(resOrder.status === 201, "Created test order for semantics verification (201 Created)");
+      assert(
+        resOrder.status === 201,
+        "Created test order for semantics verification (201 Created)",
+      );
       const orderData = (await resOrder.json()).data;
       const paymentId = `pay_reg_${Date.now()}`;
 
-      // 1 & 2. Invalid signature does not credit balance & does not prematurely transition to FAILED
       const resBadSig = await fetch(`${baseUrl}/payments/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Cookie: userACookie },
@@ -393,20 +416,30 @@ const runAllTests = async () => {
         }),
       });
 
-      assert(resBadSig.status === 400, "Invalid signature returns 400 Bad Request");
-      const badSigBody = await resBadSig.json();
-      assert(badSigBody.code === "INVALID_PAYMENT_SIGNATURE", "Returns code INVALID_PAYMENT_SIGNATURE");
-
-      const userAfterBadSig = await UserModel.findById(userAId);
-      assert(userAfterBadSig.balance === initialBal, "PROVE 1: Invalid signature does not credit balance");
-
-      const txAfterBadSig = await WalletTransactionModel.findOne({ providerOrderId: orderData.orderId });
       assert(
-        txAfterBadSig?.status === "PAYMENT_PENDING",
-        "PROVE 2: Invalid signature does not prematurely transition PAYMENT_PENDING to FAILED"
+        resBadSig.status === 400,
+        "Invalid signature returns 400 Bad Request",
+      );
+      const badSigBody = await resBadSig.json();
+      assert(
+        badSigBody.code === "INVALID_PAYMENT_SIGNATURE",
+        "Returns code INVALID_PAYMENT_SIGNATURE",
       );
 
-      // 3. A later valid verification can still complete the same transaction
+      const userAfterBadSig = await UserModel.findById(userAId);
+      assert(
+        userAfterBadSig.balance === initialBal,
+        "PROVE 1: Invalid signature does not credit balance",
+      );
+
+      const txAfterBadSig = await WalletTransactionModel.findOne({
+        providerOrderId: orderData.orderId,
+      });
+      assert(
+        txAfterBadSig?.status === "PAYMENT_PENDING",
+        "PROVE 2: Invalid signature does not prematurely transition PAYMENT_PENDING to FAILED",
+      );
+
       const secret = RAZORPAY_KEY_SECRET || "mock_secret_key_1234567890";
       const validSig = crypto
         .createHmac("sha256", secret)
@@ -424,16 +457,20 @@ const runAllTests = async () => {
       });
 
       assert(resValidSig.status === 200, "Valid verification returns 200 OK");
-      const txAfterValid = await WalletTransactionModel.findOne({ providerOrderId: orderData.orderId });
-      assert(txAfterValid?.status === "SUCCESS", "Transaction transitioned to SUCCESS");
+      const txAfterValid = await WalletTransactionModel.findOne({
+        providerOrderId: orderData.orderId,
+      });
+      assert(
+        txAfterValid?.status === "SUCCESS",
+        "Transaction transitioned to SUCCESS",
+      );
 
       const userAfterValid = await UserModel.findById(userAId);
       assert(
         userAfterValid.balance === initialBal + 1500,
-        "PROVE 3: A later valid verification can still complete the same transaction"
+        "PROVE 3: A later valid verification can still complete the same transaction",
       );
 
-      // 4. Repeated valid verification remains idempotent
       const resRepeat = await fetch(`${baseUrl}/payments/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Cookie: userACookie },
@@ -446,15 +483,17 @@ const runAllTests = async () => {
 
       assert(resRepeat.status === 200, "Repeated verification returns 200 OK");
       const repeatBody = await resRepeat.json();
-      assert(repeatBody.data?.idempotent === true, "Repeated verification reports idempotent: true");
+      assert(
+        repeatBody.data?.idempotent === true,
+        "Repeated verification reports idempotent: true",
+      );
 
       const userAfterRepeat = await UserModel.findById(userAId);
       assert(
         userAfterRepeat.balance === initialBal + 1500,
-        "PROVE 4: Repeated valid verification remains idempotent (no double credit)"
+        "PROVE 4: Repeated valid verification remains idempotent (no double credit)",
       );
 
-      // 5. Provider-confirmed failure still transitions to FAILED correctly
       const resOrderFail = await fetch(`${baseUrl}/payments/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Cookie: userACookie },
@@ -498,19 +537,24 @@ const runAllTests = async () => {
         body: failWebhookPayload,
       });
 
-      assert(resHookFail.status === 200, "Webhook payment.failed processed with 200 OK");
+      assert(
+        resHookFail.status === 200,
+        "Webhook payment.failed processed with 200 OK",
+      );
 
-      const txAfterFail = await WalletTransactionModel.findOne({ providerOrderId: orderFailData.orderId });
+      const txAfterFail = await WalletTransactionModel.findOne({
+        providerOrderId: orderFailData.orderId,
+      });
       assert(
         txAfterFail?.status === "FAILED",
-        "PROVE 5: Provider-confirmed failure still transitions to FAILED correctly"
+        "PROVE 5: Provider-confirmed failure still transitions to FAILED correctly",
       );
       assert(
-        txAfterFail?.metadata?.failureReason === "Payment failed at issuing bank",
-        "Records authoritative failureReason from provider"
+        txAfterFail?.metadata?.failureReason ===
+          "Payment failed at issuing bank",
+        "Records authoritative failureReason from provider",
       );
 
-      // Attempting to verify a FAILED transaction returns 400
       const resVerifyFailed = await fetch(`${baseUrl}/payments/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Cookie: userACookie },
@@ -520,7 +564,10 @@ const runAllTests = async () => {
           razorpay_signature: validSig,
         }),
       });
-      assert(resVerifyFailed.status === 400, "Cannot verify already FAILED transaction (400)");
+      assert(
+        resVerifyFailed.status === 400,
+        "Cannot verify already FAILED transaction (400)",
+      );
     }
 
     console.log("\n==================================================");

@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useCallback } from "react";
 import BuyActionWindow from "./BuyActionWindow";
 import SellActionWindow from "./SellActionWindow";
@@ -63,10 +62,16 @@ export const GeneralContextProvider = ({ children }) => {
     >
       {children}
       {isBuyWindowOpen && (
-        <BuyActionWindow key={`buy-${selectedStockUID}`} uid={selectedStockUID} />
+        <BuyActionWindow
+          key={`buy-${selectedStockUID}`}
+          uid={selectedStockUID}
+        />
       )}
       {isSellWindowOpen && (
-        <SellActionWindow key={`sell-${selectedStockUID}`} uid={selectedStockUID} />
+        <SellActionWindow
+          key={`sell-${selectedStockUID}`}
+          uid={selectedStockUID}
+        />
       )}
     </GeneralContext.Provider>
   );

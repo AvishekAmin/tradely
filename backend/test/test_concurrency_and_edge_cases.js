@@ -1,13 +1,3 @@
-/**
- * Tradely Concurrency & Edge-Case Verification Test Suite
- * 
- * 1. PROCESSING withdrawals cannot be cancelled
- * 2. FAILED withdrawals release pending reservation
- * 3. Cancel-vs-processing race is reflected correctly in the UI
- * 4. Failed payment verification does not increase balance
- * 5. No false balance increase occurs after reload
- */
-
 import http from "http";
 import crypto from "crypto";
 
@@ -16,7 +6,8 @@ process.env.PAYMENT_PROVIDER = process.env.PAYMENT_PROVIDER || "mock";
 const { default: app } = await import("../src/app.js");
 const { connectDB, disconnectDB } = await import("../src/config/db.js");
 const { UserModel } = await import("../src/models/UserModel.js");
-const { WalletTransactionModel } = await import("../src/models/WalletTransactionModel.js");
+const { WalletTransactionModel } =
+  await import("../src/models/WalletTransactionModel.js");
 const withdrawalService = await import("../src/services/withdrawalService.js");
 const { RAZORPAY_KEY_SECRET } = await import("../src/config/env.js");
 
@@ -51,7 +42,6 @@ const runManualFlows = async () => {
 
     await UserModel.deleteMany({ email: "flow_user@tradely.test" });
 
-    // Setup Test User
     const resAuth = await fetch(`${baseUrl}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -65,10 +55,9 @@ const runManualFlows = async () => {
     const userData = (await resAuth.json()).data;
     const userId = userData.user?.id || userData.user?._id;
 
-    // -------------------------------------------------------------
-    // Scenario 1: PROCESSING withdrawals cannot be cancelled
-    // -------------------------------------------------------------
-    console.log("\n--- Scenario 1: PROCESSING withdrawals cannot be cancelled ---");
+    console.log(
+      "\n--- Scenario 1: PROCESSING withdrawals cannot be cancelled ---",
+    );
     {
       const resCreate = await fetch(`${baseUrl}/withdrawals`, {
         method: "POST",
@@ -79,33 +68,41 @@ const runManualFlows = async () => {
           destination: "flow@okhdfcbank",
         }),
       });
-      assert(resCreate.status === 201, "Created withdrawal for processing test");
+      assert(
+        resCreate.status === 201,
+        "Created withdrawal for processing test",
+      );
       const tx = (await resCreate.json()).data.transaction;
 
-      // Transition to PROCESSING
-      await WalletTransactionModel.findByIdAndUpdate(tx._id, { status: "PROCESSING" });
+      await WalletTransactionModel.findByIdAndUpdate(tx._id, {
+        status: "PROCESSING",
+      });
 
-      // Attempt to cancel
       const resCancel = await fetch(`${baseUrl}/withdrawals/${tx._id}/cancel`, {
         method: "POST",
         headers: { Cookie: cookie },
       });
-      assert(resCancel.status === 400, "Attempt to cancel PROCESSING withdrawal returns 400");
+      assert(
+        resCancel.status === 400,
+        "Attempt to cancel PROCESSING withdrawal returns 400",
+      );
       const cancelBody = await resCancel.json();
       assert(
         cancelBody.code === "CANNOT_CANCEL_WITHDRAWAL",
-        "Returns CANNOT_CANCEL_WITHDRAWAL error code"
+        "Returns CANNOT_CANCEL_WITHDRAWAL error code",
       );
 
-      // Clean up tx
-      await WalletTransactionModel.findByIdAndUpdate(tx._id, { status: "SUCCESS" });
-      await UserModel.findByIdAndUpdate(userId, { $inc: { pendingWithdrawalAmount: -5000, balance: -5000 } });
+      await WalletTransactionModel.findByIdAndUpdate(tx._id, {
+        status: "SUCCESS",
+      });
+      await UserModel.findByIdAndUpdate(userId, {
+        $inc: { pendingWithdrawalAmount: -5000, balance: -5000 },
+      });
     }
 
-    // -------------------------------------------------------------
-    // Scenario 2: FAILED withdrawals release pending reservation
-    // -------------------------------------------------------------
-    console.log("\n--- Scenario 2: FAILED withdrawals release pending reservation ---");
+    console.log(
+      "\n--- Scenario 2: FAILED withdrawals release pending reservation ---",
+    );
     {
       const userBefore = await UserModel.findById(userId);
       const balanceBefore = userBefore.balance;
@@ -123,22 +120,32 @@ const runManualFlows = async () => {
       const tx = (await resCreate.json()).data.transaction;
 
       const userMid = await UserModel.findById(userId);
-      assert(userMid.pendingWithdrawalAmount === 12000, "pendingWithdrawalAmount reserved to 12,000");
+      assert(
+        userMid.pendingWithdrawalAmount === 12000,
+        "pendingWithdrawalAmount reserved to 12,000",
+      );
 
-      // Trigger supported FAILED processing path
-      const failResult = await withdrawalService.processSimulatedWithdrawal(tx._id, "FAILED");
+      const failResult = await withdrawalService.processSimulatedWithdrawal(
+        tx._id,
+        "FAILED",
+      );
       assert(failResult.success === true, "Processing to FAILED completed");
       assert(failResult.transaction.status === "FAILED", "Status is FAILED");
 
       const userAfter = await UserModel.findById(userId);
-      assert(userAfter.pendingWithdrawalAmount === 0, "pendingWithdrawalAmount released back to 0");
-      assert(userAfter.balance === balanceBefore, "balance remains unchanged after FAILED withdrawal");
+      assert(
+        userAfter.pendingWithdrawalAmount === 0,
+        "pendingWithdrawalAmount released back to 0",
+      );
+      assert(
+        userAfter.balance === balanceBefore,
+        "balance remains unchanged after FAILED withdrawal",
+      );
     }
 
-    // -------------------------------------------------------------
-    // Scenario 3: Cancel-vs-processing race is reflected correctly
-    // -------------------------------------------------------------
-    console.log("\n--- Scenario 3: Cancel-vs-processing race is reflected correctly ---");
+    console.log(
+      "\n--- Scenario 3: Cancel-vs-processing race is reflected correctly ---",
+    );
     {
       const resCreate = await fetch(`${baseUrl}/withdrawals`, {
         method: "POST",
@@ -151,28 +158,30 @@ const runManualFlows = async () => {
       });
       const tx = (await resCreate.json()).data.transaction;
 
-      // Simulate race condition: background scheduler moves to PROCESSING right as cancel arrives
-      await WalletTransactionModel.findByIdAndUpdate(tx._id, { status: "PROCESSING" });
+      await WalletTransactionModel.findByIdAndUpdate(tx._id, {
+        status: "PROCESSING",
+      });
 
       const resCancel = await fetch(`${baseUrl}/withdrawals/${tx._id}/cancel`, {
         method: "POST",
         headers: { Cookie: cookie },
       });
-      assert(resCancel.status === 400, "Race condition: Cancel loses to PROCESSING cleanly with 400");
+      assert(
+        resCancel.status === 400,
+        "Race condition: Cancel loses to PROCESSING cleanly with 400",
+      );
       const errBody = await resCancel.json();
       assert(
         errBody.message.includes("PROCESSING"),
-        `Error message accurately explains current state (${errBody.message})`
+        `Error message accurately explains current state (${errBody.message})`,
       );
 
-      // Finalize tx to avoid dangling
       await withdrawalService.processSimulatedWithdrawal(tx._id, "SUCCESS");
     }
 
-    // -------------------------------------------------------------
-    // Scenario 4: Failed payment verification does not increase balance
-    // -------------------------------------------------------------
-    console.log("\n--- Scenario 4: Failed payment verification does not increase balance ---");
+    console.log(
+      "\n--- Scenario 4: Failed payment verification does not increase balance ---",
+    );
     {
       const userBefore = await UserModel.findById(userId);
       const balanceBefore = userBefore.balance;
@@ -184,7 +193,6 @@ const runManualFlows = async () => {
       });
       const order = (await resOrder.json()).data;
 
-      // Submit invalid signature
       const resBadSig = await fetch(`${baseUrl}/payments/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Cookie: cookie },
@@ -194,21 +202,30 @@ const runManualFlows = async () => {
           razorpay_signature: "forged_cryptographic_signature_value",
         }),
       });
-      assert(resBadSig.status === 400, "Verification with invalid signature fails with 400");
+      assert(
+        resBadSig.status === 400,
+        "Verification with invalid signature fails with 400",
+      );
 
       const userAfter = await UserModel.findById(userId);
-      assert(userAfter.balance === balanceBefore, "Balance did NOT increase after failed verification");
+      assert(
+        userAfter.balance === balanceBefore,
+        "Balance did NOT increase after failed verification",
+      );
 
-      const pendingTx = await WalletTransactionModel.findOne({ providerOrderId: order.orderId });
-      assert(pendingTx?.status === "PAYMENT_PENDING", "Transaction remains in PAYMENT_PENDING (not marked FAILED)");
+      const pendingTx = await WalletTransactionModel.findOne({
+        providerOrderId: order.orderId,
+      });
+      assert(
+        pendingTx?.status === "PAYMENT_PENDING",
+        "Transaction remains in PAYMENT_PENDING (not marked FAILED)",
+      );
     }
 
-    // -------------------------------------------------------------
-    // Scenario 5: No false balance increase occurs after reload
-    // -------------------------------------------------------------
-    console.log("\n--- Scenario 5: No false balance increase occurs after reload ---");
+    console.log(
+      "\n--- Scenario 5: No false balance increase occurs after reload ---",
+    );
     {
-      // 5.1 Perform 1 genuine successful deposit
       const resOrder = await fetch(`${baseUrl}/payments/create-order`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Cookie: cookie },
@@ -236,7 +253,6 @@ const runManualFlows = async () => {
       const userAfterDeposit = await UserModel.findById(userId);
       const verifiedBalance = userAfterDeposit.balance;
 
-      // 5.2 Simulate 5 consecutive page reloads calling GET /funds
       for (let i = 1; i <= 5; i++) {
         const resReload = await fetch(`${baseUrl}/funds`, {
           headers: { Cookie: cookie },
@@ -244,11 +260,10 @@ const runManualFlows = async () => {
         const fundsData = (await resReload.json()).data;
         assert(
           fundsData.balance === verifiedBalance,
-          `Page reload ${i}: Authoritative balance remains stable (₹${fundsData.balance})`
+          `Page reload ${i}: Authoritative balance remains stable (₹${fundsData.balance})`,
         );
       }
 
-      // 5.3 Replay the verification request (simulating browser reload on verification URL)
       const resReplay = await fetch(`${baseUrl}/payments/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Cookie: cookie },
@@ -260,12 +275,15 @@ const runManualFlows = async () => {
       });
       assert(resReplay.status === 200, "Idempotent replay returns 200 OK");
       const replayData = await resReplay.json();
-      assert(replayData.data.idempotent === true, "Indicates idempotent replay");
+      assert(
+        replayData.data.idempotent === true,
+        "Indicates idempotent replay",
+      );
 
       const userAfterReplay = await UserModel.findById(userId);
       assert(
         userAfterReplay.balance === verifiedBalance,
-        "No false balance increase on duplicate verification replay"
+        "No false balance increase on duplicate verification replay",
       );
     }
 

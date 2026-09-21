@@ -13,10 +13,9 @@ const WatchlistSchema = new Schema(
       default: [],
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-// Ensure exactly one watchlist document exists per user
 WatchlistSchema.index({ userId: 1 }, { unique: true });
 
 export { WatchlistSchema };

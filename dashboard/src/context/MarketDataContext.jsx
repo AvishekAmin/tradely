@@ -1,5 +1,11 @@
-/* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { io } from "socket.io-client";
 import apiClient, { API_BASE_URL, SOCKET_URL } from "../config/api";
 
@@ -20,26 +26,23 @@ export const MarketDataProvider = ({ children }) => {
   const [lastOrderUpdate, setLastOrderUpdate] = useState(null);
   const [error, setError] = useState(null);
 
-  // Normalize symbol lookup
   const normalizeSymbol = useCallback((symbol) => {
     if (!symbol || typeof symbol !== "string") return "";
     const clean = symbol.trim().toUpperCase();
     return SYMBOL_ALIASES[clean] || clean;
   }, []);
 
-  // Fast quote lookup
   const getQuote = useCallback(
     (symbol) => {
       const normalized = normalizeSymbol(symbol);
       return quotes[normalized] || null;
     },
-    [quotes, normalizeSymbol]
+    [quotes, normalizeSymbol],
   );
 
   useEffect(() => {
     let isMounted = true;
 
-    // 1. Initial snapshot fetch via public REST endpoint
     const fetchInitialQuotes = async () => {
       try {
         const res = await apiClient.get("/market/quotes");
@@ -59,7 +62,6 @@ export const MarketDataProvider = ({ children }) => {
 
     fetchInitialQuotes();
 
-    // 2. Establish Socket.IO real-time connection
     const socket = io(SOCKET_URL, {
       withCredentials: true,
       transports: ["websocket", "polling"],
@@ -127,7 +129,7 @@ export const MarketDataProvider = ({ children }) => {
       lastOrderUpdate,
       error,
     }),
-    [quotes, connectionStatus, getQuote, lastOrderUpdate, error]
+    [quotes, connectionStatus, getQuote, lastOrderUpdate, error],
   );
 
   return (

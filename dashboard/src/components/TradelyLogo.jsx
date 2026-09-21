@@ -1,10 +1,10 @@
 import React from "react";
 
-/**
- * TradelyLogo - Vector brand mark for Tradely based on the glowing upward chart favicon.
- * Features the signature cyan gradient trending chart icon alongside the Tradely wordmark.
- */
-export default function TradelyLogo({ size = "default", showText = true, className = "" }) {
+export default function TradelyLogo({
+  size = "default",
+  showText = true,
+  className = "",
+}) {
   const dimensions = {
     small: { icon: 26, font: "1.05rem", gap: "8px" },
     default: { icon: 32, font: "1.25rem", gap: "10px" },
@@ -53,7 +53,8 @@ export default function TradelyLogo({ size = "default", showText = true, classNa
         <span
           className="font-extrabold tracking-tight text-white transition-colors duration-200 group-hover:text-cyan-300"
           style={{
-            fontFamily: '"Poppins", "Inter", system-ui, -apple-system, sans-serif',
+            fontFamily:
+              '"Poppins", "Inter", system-ui, -apple-system, sans-serif',
             fontSize: dimensions.font,
             letterSpacing: "-0.025em",
             textShadow: "0 0 20px rgba(0, 216, 255, 0.28)",

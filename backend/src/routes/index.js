@@ -15,13 +15,11 @@ import { authenticate } from "../middleware/auth.js";
 
 const router = Router();
 
-// 1. Public routes (Health checks, Authentication, Market Data, and Webhooks)
 router.use(healthRoutes);
 router.use(authRoutes);
 router.use(marketDataRoutes);
 router.use(webhookRoutes);
 
-// 2. Protected routes (require valid JWT session)
 router.use(authenticate, fundRoutes);
 router.use(authenticate, holdingRoutes);
 router.use(authenticate, positionRoutes);

@@ -1,15 +1,25 @@
 import { getQuote } from "../services/marketDataService.js";
 
-const VALID_ORDER_TYPES = ["MARKET", "LIMIT", "STOP_MARKET", "STOP_LIMIT", "TRAILING_STOP"];
+const VALID_ORDER_TYPES = [
+  "MARKET",
+  "LIMIT",
+  "STOP_MARKET",
+  "STOP_LIMIT",
+  "TRAILING_STOP",
+];
 
-/**
- * Validator middleware for incoming order placement requests
- */
 export const validateOrder = (req, res, next) => {
-  const { name, qty, limitPrice, stopPrice, trailPercent, trailAmount, mode, orderType } =
-    req.body || {};
+  const {
+    name,
+    qty,
+    limitPrice,
+    stopPrice,
+    trailPercent,
+    trailAmount,
+    mode,
+    orderType,
+  } = req.body || {};
 
-  // 1. Symbol Validation
   if (!name || typeof name !== "string" || !name.trim()) {
     return res.status(400).json({
       success: false,
@@ -28,7 +38,6 @@ export const validateOrder = (req, res, next) => {
     });
   }
 
-  // 2. Quantity Validation
   const parsedQty = Number(qty);
   if (!Number.isInteger(parsedQty) || parsedQty <= 0) {
     return res.status(400).json({
@@ -38,7 +47,6 @@ export const validateOrder = (req, res, next) => {
     });
   }
 
-  // 3. Order Type Validation
   const normalizedOrderType = (orderType || "MARKET").toUpperCase();
   if (!VALID_ORDER_TYPES.includes(normalizedOrderType)) {
     return res.status(400).json({
@@ -48,7 +56,6 @@ export const validateOrder = (req, res, next) => {
     });
   }
 
-  // 4. Mode Validation
   const normalizedMode = (mode || "").toUpperCase();
   if (normalizedMode !== "BUY" && normalizedMode !== "SELL") {
     return res.status(400).json({
@@ -58,13 +65,11 @@ export const validateOrder = (req, res, next) => {
     });
   }
 
-  // 5. Price & Direction Validations
   let parsedLimitPrice = null;
   let parsedStopPrice = null;
   let parsedTrailPercent = null;
   let parsedTrailAmount = null;
 
-  // LIMIT orders
   if (normalizedOrderType === "LIMIT") {
     parsedLimitPrice = Number(limitPrice);
     if (!parsedLimitPrice || isNaN(parsedLimitPrice) || parsedLimitPrice <= 0) {
@@ -77,7 +82,6 @@ export const validateOrder = (req, res, next) => {
     parsedLimitPrice = Math.round(parsedLimitPrice * 100) / 100;
   }
 
-  // STOP_MARKET orders
   if (normalizedOrderType === "STOP_MARKET") {
     parsedStopPrice = Number(stopPrice);
     if (!parsedStopPrice || isNaN(parsedStopPrice) || parsedStopPrice <= 0) {
@@ -89,7 +93,6 @@ export const validateOrder = (req, res, next) => {
     }
     parsedStopPrice = Math.round(parsedStopPrice * 100) / 100;
 
-    // Server-side market direction checks
     if (normalizedMode === "BUY" && parsedStopPrice <= quote.price) {
       return res.status(400).json({
         success: false,
@@ -106,7 +109,6 @@ export const validateOrder = (req, res, next) => {
     }
   }
 
-  // STOP_LIMIT orders
   if (normalizedOrderType === "STOP_LIMIT") {
     parsedStopPrice = Number(stopPrice);
     parsedLimitPrice = Number(limitPrice);
@@ -129,7 +131,6 @@ export const validateOrder = (req, res, next) => {
     parsedStopPrice = Math.round(parsedStopPrice * 100) / 100;
     parsedLimitPrice = Math.round(parsedLimitPrice * 100) / 100;
 
-    // Server-side market direction checks
     if (normalizedMode === "BUY") {
       if (parsedStopPrice <= quote.price) {
         return res.status(400).json({
@@ -163,9 +164,7 @@ export const validateOrder = (req, res, next) => {
     }
   }
 
-  // TRAILING_STOP orders
   if (normalizedOrderType === "TRAILING_STOP") {
-    // Phase 7 supports SELL trailing stop protection
     if (normalizedMode !== "SELL") {
       return res.status(400).json({
         success: false,
@@ -174,9 +173,17 @@ export const validateOrder = (req, res, next) => {
       });
     }
 
-    if (trailPercent !== undefined && trailPercent !== null && trailPercent !== "") {
+    if (
+      trailPercent !== undefined &&
+      trailPercent !== null &&
+      trailPercent !== ""
+    ) {
       parsedTrailPercent = Number(trailPercent);
-      if (isNaN(parsedTrailPercent) || parsedTrailPercent <= 0 || parsedTrailPercent >= 100) {
+      if (
+        isNaN(parsedTrailPercent) ||
+        parsedTrailPercent <= 0 ||
+        parsedTrailPercent >= 100
+      ) {
         return res.status(400).json({
           success: false,
           code: "INVALID_TRAIL_PERCENT",
@@ -184,9 +191,17 @@ export const validateOrder = (req, res, next) => {
         });
       }
       parsedTrailPercent = Math.round(parsedTrailPercent * 100) / 100;
-    } else if (trailAmount !== undefined && trailAmount !== null && trailAmount !== "") {
+    } else if (
+      trailAmount !== undefined &&
+      trailAmount !== null &&
+      trailAmount !== ""
+    ) {
       parsedTrailAmount = Number(trailAmount);
-      if (isNaN(parsedTrailAmount) || parsedTrailAmount <= 0 || parsedTrailAmount >= quote.price) {
+      if (
+        isNaN(parsedTrailAmount) ||
+        parsedTrailAmount <= 0 ||
+        parsedTrailAmount >= quote.price
+      ) {
         return res.status(400).json({
           success: false,
           code: "INVALID_TRAIL_AMOUNT",
@@ -198,7 +213,8 @@ export const validateOrder = (req, res, next) => {
       return res.status(400).json({
         success: false,
         code: "MISSING_TRAIL_SPECIFICATION",
-        message: "Trailing stop order requires either trailPercent or trailAmount.",
+        message:
+          "Trailing stop order requires either trailPercent or trailAmount.",
       });
     }
   }
@@ -217,11 +233,9 @@ export const validateOrder = (req, res, next) => {
   next();
 };
 
-/**
- * Validator middleware for OCO (One-Cancels-the-Other) order groups
- */
 export const validateOCO = (req, res, next) => {
-  const { symbol, name, qty, takeProfitLimitPrice, stopLossPrice } = req.body || {};
+  const { symbol, name, qty, takeProfitLimitPrice, stopLossPrice } =
+    req.body || {};
   const targetSymbol = (symbol || name || "").trim().toUpperCase();
 
   if (!targetSymbol) {
@@ -251,7 +265,11 @@ export const validateOCO = (req, res, next) => {
   }
 
   const parsedTakeProfit = Number(takeProfitLimitPrice);
-  if (!parsedTakeProfit || isNaN(parsedTakeProfit) || parsedTakeProfit <= quote.price) {
+  if (
+    !parsedTakeProfit ||
+    isNaN(parsedTakeProfit) ||
+    parsedTakeProfit <= quote.price
+  ) {
     return res.status(400).json({
       success: false,
       code: "INVALID_TAKE_PROFIT",
@@ -260,7 +278,11 @@ export const validateOCO = (req, res, next) => {
   }
 
   const parsedStopLoss = Number(stopLossPrice);
-  if (!parsedStopLoss || isNaN(parsedStopLoss) || parsedStopLoss >= quote.price) {
+  if (
+    !parsedStopLoss ||
+    isNaN(parsedStopLoss) ||
+    parsedStopLoss >= quote.price
+  ) {
     return res.status(400).json({
       success: false,
       code: "INVALID_STOP_LOSS",

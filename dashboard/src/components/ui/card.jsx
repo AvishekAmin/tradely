@@ -6,7 +6,7 @@ function Card({ className, ...props }) {
     <div
       className={cn(
         "rounded-2xl border border-white/10 bg-[#141414] text-[#EDEDED] shadow-xl transition-all",
-        className
+        className,
       )}
       {...props}
     />
@@ -27,7 +27,7 @@ function CardTitle({ className, ...props }) {
     <h3
       className={cn(
         "text-lg font-bold leading-none tracking-tight text-white",
-        className
+        className,
       )}
       {...props}
     />
@@ -50,7 +50,10 @@ function CardContent({ className, ...props }) {
 function CardFooter({ className, ...props }) {
   return (
     <div
-      className={cn("flex items-center p-5 pt-0 border-t border-white/5", className)}
+      className={cn(
+        "flex items-center p-5 pt-0 border-t border-white/5",
+        className,
+      )}
       {...props}
     />
   );

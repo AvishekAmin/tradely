@@ -19,7 +19,8 @@ import {
 import { cn } from "@/lib/utils";
 
 const Holdings = () => {
-  const { refreshKey, openBuyWindow, openSellWindow } = useContext(GeneralContext);
+  const { refreshKey, openBuyWindow, openSellWindow } =
+    useContext(GeneralContext);
   const { getQuote, lastOrderUpdate } = useMarketData();
   const [allHoldings, setAllHoldings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -66,7 +67,7 @@ const Holdings = () => {
 
   const totalInvestment = allHoldings.reduce(
     (acc, stock) => acc + (stock.avg || 0) * (stock.qty || 0),
-    0
+    0,
   );
   const totalCurrentValue = allHoldings.reduce((acc, stock) => {
     const q = getQuote(stock.name);
@@ -96,7 +97,6 @@ const Holdings = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2.5">
@@ -112,70 +112,93 @@ const Holdings = () => {
               className="h-6 px-2 text-[11px] text-slate-400 hover:text-white hover:bg-white/10 border border-white/10 rounded-lg gap-1.5 cursor-pointer transition-colors"
               title="Refresh holdings"
             >
-              <RefreshCw className={`size-3 ${loading ? "animate-spin text-cyan-400" : ""}`} />
+              <RefreshCw
+                className={`size-3 ${loading ? "animate-spin text-cyan-400" : ""}`}
+              />
               <span className="text-[11px] font-medium">Refresh</span>
             </Button>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Consolidated equity holdings, live asset valuation, and unrealized portfolio returns.
+            Consolidated equity holdings, live asset valuation, and unrealized
+            portfolio returns.
           </p>
         </div>
       </div>
 
-      {/* KPI Header Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Total Investment */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 p-4">
-            <span className="text-xs font-semibold text-slate-400">Total Investment</span>
+            <span className="text-xs font-semibold text-slate-400">
+              Total Investment
+            </span>
             <Wallet className="size-4 text-cyan-400" />
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-xl font-black text-white tabular-nums">
-              ₹{totalInvestment.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₹
+              {totalInvestment.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </div>
             <p className="text-[11px] text-slate-400 mt-1">Book cost basis</p>
           </CardContent>
         </Card>
 
-        {/* Current Valuation */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 p-4">
-            <span className="text-xs font-semibold text-slate-400">Current Valuation</span>
+            <span className="text-xs font-semibold text-slate-400">
+              Current Valuation
+            </span>
             <Layers className="size-4 text-purple-400" />
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div className="text-xl font-black text-white tabular-nums">
-              ₹{totalCurrentValue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              ₹
+              {totalCurrentValue.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Real-time live quotes</p>
+            <p className="text-[11px] text-slate-400 mt-1">
+              Real-time live quotes
+            </p>
           </CardContent>
         </Card>
 
-        {/* Total P&L */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 p-4">
-            <span className="text-xs font-semibold text-slate-400">Total Holdings P&L</span>
-            <Badge variant={isOverallProfit ? "profit" : "loss"} className="text-[10px] py-0 px-1.5 tabular-nums">
-              {isOverallProfit ? "+" : ""}{totalPnlPercent.toFixed(2)}%
+            <span className="text-xs font-semibold text-slate-400">
+              Total Holdings P&L
+            </span>
+            <Badge
+              variant={isOverallProfit ? "profit" : "loss"}
+              className="text-[10px] py-0 px-1.5 tabular-nums"
+            >
+              {isOverallProfit ? "+" : ""}
+              {totalPnlPercent.toFixed(2)}%
             </Badge>
           </CardHeader>
           <CardContent className="p-4 pt-0">
             <div
               className={cn(
                 "text-xl font-black tabular-nums",
-                isOverallProfit ? "text-emerald-400" : "text-rose-400"
+                isOverallProfit ? "text-emerald-400" : "text-rose-400",
               )}
             >
               {isOverallProfit ? "+" : ""}₹
-              {totalPnl.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {totalPnl.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Unrealized position profit</p>
+            <p className="text-[11px] text-slate-400 mt-1">
+              Unrealized position profit
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Holdings Financial Table */}
       <Card>
         <CardHeader className="p-5 pb-3">
           <CardTitle className="text-base flex items-center gap-2">
@@ -210,8 +233,12 @@ const Holdings = () => {
                   ))
                 ) : allHoldings.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="py-12 text-center text-slate-500">
-                      Your portfolio is empty. Explore your watchlist on the left to place your first trade.
+                    <td
+                      colSpan="9"
+                      className="py-12 text-center text-slate-500"
+                    >
+                      Your portfolio is empty. Explore your watchlist on the
+                      left to place your first trade.
                     </td>
                   </tr>
                 ) : (
@@ -219,12 +246,11 @@ const Holdings = () => {
                     const quote = getQuote(stock.name);
                     const currentPrice = quote?.price ?? null;
                     const curValue =
-                      currentPrice !== null ? currentPrice * (stock.qty || 0) : null;
-                    const avgValue = (stock.qty || 0) * (stock.avg || 0);
-                    const pnl =
-                      curValue !== null
-                        ? curValue - avgValue
+                      currentPrice !== null
+                        ? currentPrice * (stock.qty || 0)
                         : null;
+                    const avgValue = (stock.qty || 0) * (stock.avg || 0);
+                    const pnl = curValue !== null ? curValue - avgValue : null;
                     const isProfit = (pnl || 0) >= 0;
                     const netChangePercent =
                       stock.avg && currentPrice !== null
@@ -240,7 +266,9 @@ const Holdings = () => {
                           <div className="font-bold text-white text-sm">
                             {stock.name}
                           </div>
-                          <div className="text-[10px] text-slate-500">NSE EQ</div>
+                          <div className="text-[10px] text-slate-500">
+                            NSE EQ
+                          </div>
                         </td>
                         <td className="py-3.5 px-4 font-semibold text-white tabular-nums">
                           {stock.qty}
@@ -251,7 +279,8 @@ const Holdings = () => {
                           )}
                         </td>
                         <td className="py-3.5 px-4 text-slate-300 tabular-nums">
-                          ₹{(stock.avg || 0).toLocaleString("en-IN", {
+                          ₹
+                          {(stock.avg || 0).toLocaleString("en-IN", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
@@ -265,7 +294,8 @@ const Holdings = () => {
                             : "—"}
                         </td>
                         <td className="py-3.5 px-4 font-semibold text-slate-200 tabular-nums">
-                          ₹{avgValue.toLocaleString("en-IN", {
+                          ₹
+                          {avgValue.toLocaleString("en-IN", {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
@@ -281,14 +311,17 @@ const Holdings = () => {
                         <td
                           className={cn(
                             "py-3.5 px-4 font-bold tabular-nums",
-                            isProfit ? "text-emerald-400" : "text-rose-400"
+                            isProfit ? "text-emerald-400" : "text-rose-400",
                           )}
                         >
                           {pnl !== null
-                            ? `${isProfit ? "+" : ""}₹${pnl.toLocaleString("en-IN", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}`
+                            ? `${isProfit ? "+" : ""}₹${pnl.toLocaleString(
+                                "en-IN",
+                                {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                },
+                              )}`
                             : "—"}
                         </td>
                         <td className="py-3.5 px-4 tabular-nums">
@@ -298,7 +331,7 @@ const Holdings = () => {
                                 "inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-bold",
                                 isProfit
                                   ? "bg-emerald-500/10 text-emerald-400"
-                                  : "bg-rose-500/10 text-rose-400"
+                                  : "bg-rose-500/10 text-rose-400",
                               )}
                             >
                               {isProfit ? (
@@ -345,7 +378,6 @@ const Holdings = () => {
         </CardContent>
       </Card>
 
-      {/* Holdings Price Comparison Graph */}
       {allHoldings.length > 0 && (
         <Card>
           <CardHeader className="p-5 pb-3">

@@ -1,8 +1,9 @@
-/**
- * Utility functions for formatting HTTP responses
- */
-
-export const sendSuccess = (res, statusCode = 200, message = null, data = null) => {
+export const sendSuccess = (
+  res,
+  statusCode = 200,
+  message = null,
+  data = null,
+) => {
   const response = { success: true };
   if (message !== null && message !== undefined) {
     response.message = message;
@@ -18,7 +19,7 @@ export const sendError = (
   statusCode = 500,
   code = "INTERNAL_SERVER_ERROR",
   message = "An error occurred",
-  details = null
+  details = null,
 ) => {
   const response = {
     success: false,

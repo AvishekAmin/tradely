@@ -11,8 +11,11 @@ import {
 
 const router = Router();
 
-// Protected Payment & Wallet Endpoints
-router.post("/payments/create-order", validateCreatePaymentOrder, createPaymentOrder);
+router.post(
+  "/payments/create-order",
+  validateCreatePaymentOrder,
+  createPaymentOrder,
+);
 router.post("/payments/verify", validateVerifyPayment, verifyPayment);
 router.get("/payments/history", getPaymentHistory);
 

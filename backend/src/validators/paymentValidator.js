@@ -1,15 +1,16 @@
-import { MIN_DEPOSIT_INR, MAX_DEPOSIT_INR } from "../services/paymentService.js";
+import {
+  MIN_DEPOSIT_INR,
+  MAX_DEPOSIT_INR,
+} from "../services/paymentService.js";
 
-/**
- * Validate incoming create-order request
- * Normalizes and guards amount bounds.
- * Rejects invalid client-supplied currencies (INR is server-authoritative).
- */
 export const validateCreatePaymentOrder = (req, res, next) => {
   const { amount, currency } = req.body || {};
 
-  // 1. Currency validation (Server is authoritative; INR only)
-  if (currency !== undefined && currency !== null && String(currency).toUpperCase() !== "INR") {
+  if (
+    currency !== undefined &&
+    currency !== null &&
+    String(currency).toUpperCase() !== "INR"
+  ) {
     return res.status(400).json({
       success: false,
       code: "INVALID_CURRENCY",
@@ -17,7 +18,6 @@ export const validateCreatePaymentOrder = (req, res, next) => {
     });
   }
 
-  // 2. Amount presence and type validation
   if (amount === undefined || amount === null || amount === "") {
     return res.status(400).json({
       success: false,
@@ -35,7 +35,6 @@ export const validateCreatePaymentOrder = (req, res, next) => {
     });
   }
 
-  // 3. Positive amount and bounds enforcement
   if (numericAmount <= 0) {
     return res.status(400).json({
       success: false,
@@ -56,13 +55,15 @@ export const validateCreatePaymentOrder = (req, res, next) => {
   next();
 };
 
-/**
- * Validate incoming verify payment request
- */
 export const validateVerifyPayment = (req, res, next) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body || {};
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+    req.body || {};
 
-  if (!razorpay_order_id || typeof razorpay_order_id !== "string" || !razorpay_order_id.trim()) {
+  if (
+    !razorpay_order_id ||
+    typeof razorpay_order_id !== "string" ||
+    !razorpay_order_id.trim()
+  ) {
     return res.status(400).json({
       success: false,
       code: "MISSING_ORDER_ID",
@@ -70,7 +71,11 @@ export const validateVerifyPayment = (req, res, next) => {
     });
   }
 
-  if (!razorpay_payment_id || typeof razorpay_payment_id !== "string" || !razorpay_payment_id.trim()) {
+  if (
+    !razorpay_payment_id ||
+    typeof razorpay_payment_id !== "string" ||
+    !razorpay_payment_id.trim()
+  ) {
     return res.status(400).json({
       success: false,
       code: "MISSING_PAYMENT_ID",
@@ -78,7 +83,11 @@ export const validateVerifyPayment = (req, res, next) => {
     });
   }
 
-  if (!razorpay_signature || typeof razorpay_signature !== "string" || !razorpay_signature.trim()) {
+  if (
+    !razorpay_signature ||
+    typeof razorpay_signature !== "string" ||
+    !razorpay_signature.trim()
+  ) {
     return res.status(400).json({
       success: false,
       code: "MISSING_SIGNATURE",

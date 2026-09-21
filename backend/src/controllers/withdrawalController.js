@@ -1,9 +1,5 @@
 import * as withdrawalService from "../services/withdrawalService.js";
 
-/**
- * Request a simulated virtual cash withdrawal
- * POST /withdrawals
- */
 export const createWithdrawal = async (req, res, next) => {
   try {
     const userId = req.user._id;
@@ -31,10 +27,6 @@ export const createWithdrawal = async (req, res, next) => {
   }
 };
 
-/**
- * Get user-scoped withdrawals
- * GET /withdrawals
- */
 export const getWithdrawals = async (req, res, next) => {
   try {
     const userId = req.user._id;
@@ -49,10 +41,6 @@ export const getWithdrawals = async (req, res, next) => {
   }
 };
 
-/**
- * Get specific withdrawal by ID
- * GET /withdrawals/:id
- */
 export const getWithdrawalById = async (req, res, next) => {
   try {
     const userId = req.user._id;
@@ -76,10 +64,6 @@ export const getWithdrawalById = async (req, res, next) => {
   }
 };
 
-/**
- * Cancel a PENDING withdrawal request
- * POST /withdrawals/:id/cancel
- */
 export const cancelWithdrawal = async (req, res, next) => {
   try {
     const userId = req.user._id;

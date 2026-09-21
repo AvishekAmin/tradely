@@ -17,7 +17,7 @@ const PositionsSchema = new Schema(
     day: String,
     isLoss: Boolean,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 PositionsSchema.index({ userId: 1, name: 1 });

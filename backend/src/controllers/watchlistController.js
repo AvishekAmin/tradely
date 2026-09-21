@@ -1,8 +1,5 @@
 import * as watchlistService from "../services/watchlistService.js";
 
-/**
- * GET /watchlist - Retrieve authenticated user's watchlist
- */
 export const getWatchlist = async (req, res, next) => {
   try {
     const watchlist = await watchlistService.getWatchlist(req.user._id);
@@ -15,9 +12,6 @@ export const getWatchlist = async (req, res, next) => {
   }
 };
 
-/**
- * POST /watchlist - Add a symbol to authenticated user's watchlist
- */
 export const addSymbol = async (req, res, next) => {
   try {
     const { symbol } = req.body;
@@ -32,9 +26,6 @@ export const addSymbol = async (req, res, next) => {
   }
 };
 
-/**
- * DELETE /watchlist/:symbol - Remove a symbol from authenticated user's watchlist
- */
 export const removeSymbol = async (req, res, next) => {
   try {
     const { symbol } = req.params;
@@ -49,13 +40,13 @@ export const removeSymbol = async (req, res, next) => {
   }
 };
 
-/**
- * PUT /watchlist/reorder - Reorder authenticated user's watchlist symbols
- */
 export const reorderWatchlist = async (req, res, next) => {
   try {
     const { symbols } = req.body;
-    const watchlist = await watchlistService.reorderSymbols(req.user._id, symbols);
+    const watchlist = await watchlistService.reorderSymbols(
+      req.user._id,
+      symbols,
+    );
     res.status(200).json({
       success: true,
       message: "Watchlist reordered successfully.",

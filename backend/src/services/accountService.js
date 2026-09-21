@@ -2,19 +2,21 @@ import { UserModel } from "../models/UserModel.js";
 
 const DEFAULT_INITIAL_BALANCE = 100000;
 
-/**
- * Get current user funds, margins, and withdrawable cash information
- */
 export const getFunds = async (user) => {
   const userId = user._id || user.id;
   const latestUser = await UserModel.findById(userId);
   const u = latestUser || user;
 
-  const initial = u.initialBalance !== undefined ? u.initialBalance : DEFAULT_INITIAL_BALANCE;
+  const initial =
+    u.initialBalance !== undefined ? u.initialBalance : DEFAULT_INITIAL_BALANCE;
   const available = Math.round((u.balance || 0) * 100) / 100;
   const reserved = Math.round((u.reservedBalance || 0) * 100) / 100;
-  const pendingWithdrawal = Math.round((u.pendingWithdrawalAmount || 0) * 100) / 100;
-  const withdrawable = Math.max(0, Math.round((available - reserved - pendingWithdrawal) * 100) / 100);
+  const pendingWithdrawal =
+    Math.round((u.pendingWithdrawalAmount || 0) * 100) / 100;
+  const withdrawable = Math.max(
+    0,
+    Math.round((available - reserved - pendingWithdrawal) * 100) / 100,
+  );
   const total = Math.round((available + reserved) * 100) / 100;
 
   return {
@@ -29,10 +31,10 @@ export const getFunds = async (user) => {
   };
 };
 
-/**
- * Reset user balance to default initial balance
- */
-export const resetFunds = async (user, initialAmount = DEFAULT_INITIAL_BALANCE) => {
+export const resetFunds = async (
+  user,
+  initialAmount = DEFAULT_INITIAL_BALANCE,
+) => {
   const userId = user._id || user.id;
   const updated = await UserModel.findByIdAndUpdate(
     userId,
@@ -42,14 +44,11 @@ export const resetFunds = async (user, initialAmount = DEFAULT_INITIAL_BALANCE) 
       pendingWithdrawalAmount: 0,
       initialBalance: initialAmount,
     },
-    { new: true }
+    { new: true },
   );
   return updated;
 };
 
-/**
- * Null-safe migration ensuring existing users possess pendingWithdrawalAmount: 0
- */
 export const ensurePendingWithdrawalMigration = async () => {
   try {
     await UserModel.updateMany(
@@ -59,17 +58,13 @@ export const ensurePendingWithdrawalMigration = async () => {
           { pendingWithdrawalAmount: null },
         ],
       },
-      { $set: { pendingWithdrawalAmount: 0 } }
+      { $set: { pendingWithdrawalAmount: 0 } },
     );
   } catch (err) {
     console.warn("Migration warning for pendingWithdrawalAmount:", err.message);
   }
 };
 
-/**
- * Atomically reserve funds for a LIMIT BUY order
- * Guarantees balance >= amount at execution time
- */
 export const reserveFundsAtomic = async (userId, amount, session = null) => {
   const roundedAmount = Math.round(amount * 100) / 100;
   const options = { new: true };
@@ -83,14 +78,15 @@ export const reserveFundsAtomic = async (userId, amount, session = null) => {
         reservedBalance: roundedAmount,
       },
     },
-    options
+    options,
   );
 };
 
-/**
- * Atomically release reserved funds on LIMIT BUY order cancellation
- */
-export const releaseReservedFundsAtomic = async (userId, amount, session = null) => {
+export const releaseReservedFundsAtomic = async (
+  userId,
+  amount,
+  session = null,
+) => {
   const roundedAmount = Math.round(amount * 100) / 100;
   const options = { new: true };
   if (session) options.session = session;
@@ -103,17 +99,22 @@ export const releaseReservedFundsAtomic = async (userId, amount, session = null)
         reservedBalance: -roundedAmount,
       },
     },
-    options
+    options,
   );
 };
 
-/**
- * Atomically consume reserved funds and refund surplus on LIMIT BUY execution
- */
-export const consumeReservedFundsAtomic = async (userId, reservedAmount, actualCost, session = null) => {
+export const consumeReservedFundsAtomic = async (
+  userId,
+  reservedAmount,
+  actualCost,
+  session = null,
+) => {
   const roundedReserved = Math.round(reservedAmount * 100) / 100;
   const roundedActual = Math.round(actualCost * 100) / 100;
-  const refund = Math.max(0, Math.round((roundedReserved - roundedActual) * 100) / 100);
+  const refund = Math.max(
+    0,
+    Math.round((roundedReserved - roundedActual) * 100) / 100,
+  );
 
   const options = { new: true };
   if (session) options.session = session;
@@ -126,14 +127,10 @@ export const consumeReservedFundsAtomic = async (userId, reservedAmount, actualC
         balance: refund,
       },
     },
-    options
+    options,
   );
 };
 
-/**
- * Deduct funds from user account for MARKET BUY
- * Atomically guarantees balance >= amount
- */
 export const deductFunds = async (userOrId, amount, session = null) => {
   const userId = userOrId._id || userOrId.id || userOrId;
   const roundedAmount = Math.round(amount * 100) / 100;
@@ -143,13 +140,10 @@ export const deductFunds = async (userOrId, amount, session = null) => {
   return UserModel.findOneAndUpdate(
     { _id: userId, balance: { $gte: roundedAmount } },
     { $inc: { balance: -roundedAmount } },
-    options
+    options,
   );
 };
 
-/**
- * Credit funds to user account on SELL order execution
- */
 export const creditFunds = async (userOrId, amount, session = null) => {
   const userId = userOrId._id || userOrId.id || userOrId;
   const roundedAmount = Math.round(amount * 100) / 100;
@@ -159,6 +153,6 @@ export const creditFunds = async (userOrId, amount, session = null) => {
   return UserModel.findOneAndUpdate(
     { _id: userId },
     { $inc: { balance: roundedAmount } },
-    options
+    options,
   );
 };

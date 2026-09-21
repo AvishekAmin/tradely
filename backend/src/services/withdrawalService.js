@@ -3,12 +3,6 @@ import { UserModel } from "../models/UserModel.js";
 import * as accountService from "./accountService.js";
 import { runInTransaction } from "../utils/transactionHelper.js";
 
-/**
- * Mask payment destination for privacy and audit
- * Examples:
- *   "avishek@upi" -> "av****@upi"
- *   "123456789012" -> "****9012"
- */
 export const maskDestination = (method, rawDestination) => {
   if (!rawDestination || typeof rawDestination !== "string") {
     return "****";
@@ -28,27 +22,23 @@ export const maskDestination = (method, rawDestination) => {
     return `${clean.slice(0, 2)}****`;
   }
 
-  // Default / Bank account: show only last 4 digits
   if (clean.length > 4) {
     return `****${clean.slice(-4)}`;
   }
   return "****";
 };
 
-/**
- * Atomically create a withdrawal request
- * 
- * Concurrency & Double-Spending Protection:
- * Uses an atomic MongoDB conditional update on User document:
- * ($ifNull(balance, 0) - ($ifNull(reservedBalance, 0) + $ifNull(pendingWithdrawalAmount, 0))) >= requestedAmount
- * If multiple concurrent requests arrive, only the combination fitting the available withdrawable cash succeeds.
- * 
- * @param {string|ObjectId} userId
- * @param {Object} payload - { amount, method, destination }
- */
-export const createWithdrawal = async (userId, { amount, method, destination }) => {
+export const createWithdrawal = async (
+  userId,
+  { amount, method, destination },
+) => {
   const numericAmount = Number(amount);
-  if (!numericAmount || isNaN(numericAmount) || !isFinite(numericAmount) || numericAmount <= 0) {
+  if (
+    !numericAmount ||
+    isNaN(numericAmount) ||
+    !isFinite(numericAmount) ||
+    numericAmount <= 0
+  ) {
     throw {
       status: 400,
       code: "INVALID_AMOUNT",
@@ -76,8 +66,6 @@ export const createWithdrawal = async (userId, { amount, method, destination }) 
 
   const maskedDest = maskDestination(method, destination);
 
-  // 1. Atomic reservation conditional on withdrawable balance
-  // Null-safe expression guards against missing schema fields in existing documents
   const updatedUser = await UserModel.findOneAndUpdate(
     {
       _id: userId,
@@ -101,18 +89,18 @@ export const createWithdrawal = async (userId, { amount, method, destination }) 
     {
       $inc: { pendingWithdrawalAmount: normalizedAmount },
     },
-    { returnDocument: "after" }
+    { returnDocument: "after" },
   );
 
   if (!updatedUser) {
     throw {
       status: 400,
       code: "INSUFFICIENT_WITHDRAWABLE_FUNDS",
-      message: "Requested withdrawal amount exceeds your available withdrawable cash.",
+      message:
+        "Requested withdrawal amount exceeds your available withdrawable cash.",
     };
   }
 
-  // 2. Persist WalletTransaction in PENDING state
   let transaction;
   try {
     transaction = await WalletTransactionModel.create({
@@ -131,8 +119,10 @@ export const createWithdrawal = async (userId, { amount, method, destination }) 
       },
     });
   } catch (err) {
-    // Roll back the pending reservation if transaction record creation fails
-    console.error("Failed to create WalletTransaction for withdrawal, rolling back reservation:", err);
+    console.error(
+      "Failed to create WalletTransaction for withdrawal, rolling back reservation:",
+      err,
+    );
     await UserModel.findByIdAndUpdate(userId, {
       $inc: { pendingWithdrawalAmount: -normalizedAmount },
     });
@@ -143,7 +133,6 @@ export const createWithdrawal = async (userId, { amount, method, destination }) 
     };
   }
 
-  // 3. Initiate simulated progressive processing in background
   scheduleSimulatedProcessing(transaction._id);
 
   const funds = await accountService.getFunds(updatedUser);
@@ -156,20 +145,8 @@ export const createWithdrawal = async (userId, { amount, method, destination }) 
   };
 };
 
-/**
- * Cancel a PENDING withdrawal request
- * 
- * Concurrency Rule (Cancel vs Process Race):
- * Only a withdrawal currently in PENDING state may transition to CANCELLED.
- * If background processing has already transitioned it to PROCESSING or SUCCESS,
- * cancellation is rejected without touching the reservation.
- * 
- * @param {string|ObjectId} userId
- * @param {string} withdrawalId
- */
 export const cancelWithdrawal = async (userId, withdrawalId) => {
   return runInTransaction(async (session) => {
-    // 1. Atomically transition PENDING -> CANCELLED
     const cancelledTx = await WalletTransactionModel.findOneAndUpdate(
       {
         _id: withdrawalId,
@@ -183,11 +160,10 @@ export const cancelWithdrawal = async (userId, withdrawalId) => {
           "metadata.cancelledAt": new Date(),
         },
       },
-      { returnDocument: "after", session }
+      { returnDocument: "after", session },
     );
 
     if (!cancelledTx) {
-      // Find existing to report descriptive error
       const existing = await WalletTransactionModel.findOne({
         _id: withdrawalId,
         userId,
@@ -208,13 +184,12 @@ export const cancelWithdrawal = async (userId, withdrawalId) => {
       };
     }
 
-    // 2. Atomically release pending withdrawal reservation
     const updatedUser = await UserModel.findOneAndUpdate(
       { _id: userId },
       {
         $inc: { pendingWithdrawalAmount: -cancelledTx.amount },
       },
-      { returnDocument: "after", session }
+      { returnDocument: "after", session },
     );
 
     const funds = await accountService.getFunds(updatedUser);
@@ -223,25 +198,16 @@ export const cancelWithdrawal = async (userId, withdrawalId) => {
       success: true,
       transaction: cancelledTx,
       funds,
-      message: "Virtual withdrawal cancelled successfully. Reservation released.",
+      message:
+        "Virtual withdrawal cancelled successfully. Reservation released.",
     };
   });
 };
 
-/**
- * Deterministically process a simulated withdrawal
- * Supports:
- * - targetStatus = "SUCCESS": PENDING -> PROCESSING -> SUCCESS (deducts balance and reservation)
- * - targetStatus = "FAILED": PENDING/PROCESSING -> FAILED (releases reservation, balance unchanged)
- * 
- * Terminal State Immutability:
- * Terminal states (SUCCESS, CANCELLED, FAILED) can never be processed twice.
- * 
- * @param {string|ObjectId} withdrawalId
- * @param {string} targetStatus - "SUCCESS" or "FAILED"
- */
-export const processSimulatedWithdrawal = async (withdrawalId, targetStatus = "SUCCESS") => {
-  // Step A: Atomically transition PENDING -> PROCESSING (if still in PENDING)
+export const processSimulatedWithdrawal = async (
+  withdrawalId,
+  targetStatus = "SUCCESS",
+) => {
   let tx = await WalletTransactionModel.findOneAndUpdate(
     {
       _id: withdrawalId,
@@ -254,22 +220,18 @@ export const processSimulatedWithdrawal = async (withdrawalId, targetStatus = "S
         "metadata.processingStartedAt": new Date(),
       },
     },
-    { returnDocument: "after" }
+    { returnDocument: "after" },
   );
 
-  // If not in PENDING, fetch existing to check if already PROCESSING or terminal
   if (!tx) {
     tx = await WalletTransactionModel.findById(withdrawalId);
     if (!tx || tx.status !== "PROCESSING") {
-      // Terminal state (e.g. CANCELLED, SUCCESS, FAILED) -> abort without touching balance
       return { success: false, reason: "TERMINAL_STATE", status: tx?.status };
     }
   }
 
-  // Step B: Finalize transition inside transaction
   return runInTransaction(async (session) => {
     if (targetStatus === "SUCCESS") {
-      // Atomically transition PROCESSING -> SUCCESS
       const completedTx = await WalletTransactionModel.findOneAndUpdate(
         {
           _id: withdrawalId,
@@ -282,14 +244,13 @@ export const processSimulatedWithdrawal = async (withdrawalId, targetStatus = "S
             "metadata.completedAt": new Date(),
           },
         },
-        { returnDocument: "after", session }
+        { returnDocument: "after", session },
       );
 
       if (!completedTx) {
         return { success: false, reason: "ALREADY_FINALIZED" };
       }
 
-      // Atomically decrement pending reservation AND deduct available balance
       const updatedUser = await UserModel.findOneAndUpdate(
         { _id: completedTx.userId },
         {
@@ -298,7 +259,7 @@ export const processSimulatedWithdrawal = async (withdrawalId, targetStatus = "S
             balance: -completedTx.amount,
           },
         },
-        { returnDocument: "after", session }
+        { returnDocument: "after", session },
       );
 
       const funds = await accountService.getFunds(updatedUser);
@@ -310,7 +271,6 @@ export const processSimulatedWithdrawal = async (withdrawalId, targetStatus = "S
         message: "Virtual withdrawal completed successfully.",
       };
     } else {
-      // Explicit Failure Path (Safeguard 2): PROCESSING -> FAILED
       const failedTx = await WalletTransactionModel.findOneAndUpdate(
         {
           _id: withdrawalId,
@@ -323,20 +283,19 @@ export const processSimulatedWithdrawal = async (withdrawalId, targetStatus = "S
             "metadata.failedAt": new Date(),
           },
         },
-        { returnDocument: "after", session }
+        { returnDocument: "after", session },
       );
 
       if (!failedTx) {
         return { success: false, reason: "ALREADY_FINALIZED" };
       }
 
-      // Release pending reservation; balance remains untouched
       const updatedUser = await UserModel.findOneAndUpdate(
         { _id: failedTx.userId },
         {
           $inc: { pendingWithdrawalAmount: -failedTx.amount },
         },
-        { returnDocument: "after", session }
+        { returnDocument: "after", session },
       );
 
       const funds = await accountService.getFunds(updatedUser);
@@ -351,19 +310,16 @@ export const processSimulatedWithdrawal = async (withdrawalId, targetStatus = "S
   });
 };
 
-/**
- * Schedule background progression for realistic simulated user experience
- * PENDING (1s) -> PROCESSING (2s) -> SUCCESS
- */
 export const scheduleSimulatedProcessing = (withdrawalId) => {
-  // In automated test environments, allow tests to drive transitions deterministically
-  if (process.env.NODE_ENV === "test" || process.env.PAYMENT_PROVIDER === "mock") {
+  if (
+    process.env.NODE_ENV === "test" ||
+    process.env.PAYMENT_PROVIDER === "mock"
+  ) {
     return;
   }
 
   setTimeout(async () => {
     try {
-      // 1. Move to PROCESSING
       await WalletTransactionModel.findOneAndUpdate(
         { _id: withdrawalId, status: "PENDING" },
         {
@@ -371,30 +327,31 @@ export const scheduleSimulatedProcessing = (withdrawalId) => {
             status: "PROCESSING",
             "metadata.processingStartedAt": new Date(),
           },
-        }
+        },
       );
 
-      // 2. Move to SUCCESS after short delay
       setTimeout(async () => {
         try {
           await processSimulatedWithdrawal(withdrawalId, "SUCCESS");
         } catch (err) {
-          console.error(`Simulated withdrawal ${withdrawalId} completion error:`, err);
+          console.error(
+            `Simulated withdrawal ${withdrawalId} completion error:`,
+            err,
+          );
         }
       }, 2000);
     } catch (err) {
-      console.error(`Simulated withdrawal ${withdrawalId} processing step error:`, err);
+      console.error(
+        `Simulated withdrawal ${withdrawalId} processing step error:`,
+        err,
+      );
     }
   }, 1000);
 };
 
-/**
- * Startup Crash Recovery (Safeguard 3):
- * Reconciles any stale PENDING or PROCESSING withdrawals left over from server restarts.
- */
 export const recoverPendingWithdrawals = async () => {
   try {
-    const staleThreshold = new Date(Date.now() - 30 * 1000); // 30 seconds
+    const staleThreshold = new Date(Date.now() - 30 * 1000);
     const staleWithdrawals = await WalletTransactionModel.find({
       type: "WITHDRAWAL",
       status: { $in: ["PENDING", "PROCESSING"] },
@@ -402,7 +359,9 @@ export const recoverPendingWithdrawals = async () => {
     });
 
     for (const tx of staleWithdrawals) {
-      console.log(`Reconciling orphaned withdrawal ${tx._id} (${tx.status})...`);
+      console.log(
+        `Reconciling orphaned withdrawal ${tx._id} (${tx.status})...`,
+      );
       await processSimulatedWithdrawal(tx._id, "SUCCESS");
     }
   } catch (err) {
@@ -410,9 +369,6 @@ export const recoverPendingWithdrawals = async () => {
   }
 };
 
-/**
- * Get user-scoped withdrawals
- */
 export const getWithdrawals = async (userId) => {
   return WalletTransactionModel.find({
     userId,
@@ -423,9 +379,6 @@ export const getWithdrawals = async (userId) => {
     .lean();
 };
 
-/**
- * Get specific withdrawal by ID with strict user authorization
- */
 export const getWithdrawalById = async (userId, withdrawalId) => {
   const withdrawal = await WalletTransactionModel.findOne({
     _id: withdrawalId,

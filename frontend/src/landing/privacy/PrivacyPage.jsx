@@ -23,7 +23,11 @@ export default function PrivacyPage() {
       icon: ShieldCheck,
       content: (
         <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-          Tradely is a paper trading and portfolio tracking educational platform. We do not require, collect, or process real bank account numbers, credit/debit card numbers, Aadhaar details, PAN numbers, or demat brokerage account credentials. All transactions within Tradely use virtual currency with zero monetary value.
+          Tradely is a paper trading and portfolio tracking educational
+          platform. We do not require, collect, or process real bank account
+          numbers, credit/debit card numbers, Aadhaar details, PAN numbers, or
+          demat brokerage account credentials. All transactions within Tradely
+          use virtual currency with zero monetary value.
         </p>
       ),
     },
@@ -32,11 +36,25 @@ export default function PrivacyPage() {
       icon: Database,
       content: (
         <div className="space-y-3 text-slate-300 text-xs sm:text-sm leading-relaxed">
-          <p>When you create an account on Tradely, we collect minimal information necessary to deliver the trading platform experience:</p>
+          <p>
+            When you create an account on Tradely, we collect minimal
+            information necessary to deliver the trading platform experience:
+          </p>
           <ul className="list-disc list-inside space-y-1 text-slate-400 pl-2">
-            <li><strong>Account Credentials:</strong> Username, email address, and cryptographically hashed password (using bcrypt with work factor 10).</li>
-            <li><strong>Portfolio Data:</strong> Virtual cash ledger, executed order history, open positions, and customized watchlist symbols.</li>
-            <li><strong>Technical Session Logs:</strong> Standard HTTP request metadata including IP address and user-agent string for brute-force rate-limiting and security auditing.</li>
+            <li>
+              <strong>Account Credentials:</strong> Username, email address, and
+              cryptographically hashed password (using bcrypt with work factor
+              10).
+            </li>
+            <li>
+              <strong>Portfolio Data:</strong> Virtual cash ledger, executed
+              order history, open positions, and customized watchlist symbols.
+            </li>
+            <li>
+              <strong>Technical Session Logs:</strong> Standard HTTP request
+              metadata including IP address and user-agent string for
+              brute-force rate-limiting and security auditing.
+            </li>
           </ul>
         </div>
       ),
@@ -46,7 +64,12 @@ export default function PrivacyPage() {
       icon: Cookie,
       content: (
         <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-          Tradely issues JSON Web Tokens (JWT) strictly via secure, <strong>HttpOnly, SameSite</strong> session cookies. Authentication tokens are never exposed in browser <code className="text-cyan-400 font-mono">localStorage</code> or <code className="text-cyan-400 font-mono">sessionStorage</code>, preventing token theft through Cross-Site Scripting (XSS) vectors.
+          Tradely issues JSON Web Tokens (JWT) strictly via secure,{" "}
+          <strong>HttpOnly, SameSite</strong> session cookies. Authentication
+          tokens are never exposed in browser{" "}
+          <code className="text-cyan-400 font-mono">localStorage</code> or{" "}
+          <code className="text-cyan-400 font-mono">sessionStorage</code>,
+          preventing token theft through Cross-Site Scripting (XSS) vectors.
         </p>
       ),
     },
@@ -55,7 +78,11 @@ export default function PrivacyPage() {
       icon: Lock,
       content: (
         <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-          Every database query executed by the server matching engine enforces authenticated user scoping. Users can never view, mutate, or access another user's portfolio, watchlist, pending orders, or transaction history. Multi-document MongoDB transactional boundaries safeguard ledger integrity.
+          Every database query executed by the server matching engine enforces
+          authenticated user scoping. Users can never view, mutate, or access
+          another user's portfolio, watchlist, pending orders, or transaction
+          history. Multi-document MongoDB transactional boundaries safeguard
+          ledger integrity.
         </p>
       ),
     },
@@ -64,7 +91,10 @@ export default function PrivacyPage() {
       icon: EyeOff,
       content: (
         <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-          We respect your focus. Tradely does not embed behavioral advertising scripts, commercial marketing trackers, or third-party analytical cookies. We do not sell, license, rent, or distribute user information to any third parties or brokerage services.
+          We respect your focus. Tradely does not embed behavioral advertising
+          scripts, commercial marketing trackers, or third-party analytical
+          cookies. We do not sell, license, rent, or distribute user information
+          to any third parties or brokerage services.
         </p>
       ),
     },
@@ -73,7 +103,16 @@ export default function PrivacyPage() {
       icon: UserX,
       content: (
         <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-          You retain full autonomy over your trading account. Users can trigger an instant educational portfolio reset directly from the terminal Funds page, or contact our support team at <a href="mailto:avishekamin207@gmail.com" className="text-cyan-400 hover:underline">avishekamin207@gmail.com</a> to request full account deletion and ledger erasure.
+          You retain full autonomy over your trading account. Users can trigger
+          an instant educational portfolio reset directly from the terminal
+          Funds page, or contact our support team at{" "}
+          <a
+            href="mailto:avishekamin207@gmail.com"
+            className="text-cyan-400 hover:underline"
+          >
+            avishekamin207@gmail.com
+          </a>{" "}
+          to request full account deletion and ledger erasure.
         </p>
       ),
     },
@@ -82,7 +121,6 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-between pt-4 pb-20">
       <main className="max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-        {/* Back Link */}
         <div>
           <Link
             to="/"
@@ -93,28 +131,29 @@ export default function PrivacyPage() {
           </Link>
         </div>
 
-        {/* Page Header */}
         <div className="text-center space-y-4 py-4">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
             Privacy Policy
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
-            Effective Date: September 2026. This policy outlines how Tradely collects, protects, and handles trading account data.
+            Effective Date: September 2026. This policy outlines how Tradely
+            collects, protects, and handles trading account data.
           </p>
         </div>
 
-        {/* Highlight Summary Card */}
         <div className="rounded-2xl border border-white/10 bg-[#121212] p-6 space-y-3">
           <div className="flex items-center gap-2 text-cyan-400 text-sm font-bold">
             <CheckCircle2 className="size-4" />
             <span>Key Commitment: Privacy-First & Zero Financial Risk</span>
           </div>
           <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            Tradely is designed exclusively for financial education and paper trading. We will never ask for your real banking credentials, demat account logins, or real payment details. Your portfolios remain strictly private to your authenticated session.
+            Tradely is designed exclusively for financial education and paper
+            trading. We will never ask for your real banking credentials, demat
+            account logins, or real payment details. Your portfolios remain
+            strictly private to your authenticated session.
           </p>
         </div>
 
-        {/* Policy Sections */}
         <div className="space-y-6">
           {sections.map((sec) => {
             const Icon = sec.icon;
@@ -137,7 +176,6 @@ export default function PrivacyPage() {
           })}
         </div>
 
-        {/* Privacy Contact Inquiries */}
         <div className="rounded-2xl border border-white/10 bg-[#141414] p-6 sm:p-7 text-center space-y-2">
           <h3 className="text-sm sm:text-base font-bold text-white">
             Questions regarding our privacy practices?

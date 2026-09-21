@@ -1,15 +1,18 @@
 import mongoose from "mongoose";
 
 const VALID_METHODS = ["UPI_SIMULATED", "BANK_SIMULATED"];
-const FORBIDDEN_FIELDS = ["pin", "password", "otp", "cvv", "cardNumber", "bankingPassword"];
+const FORBIDDEN_FIELDS = [
+  "pin",
+  "password",
+  "otp",
+  "cvv",
+  "cardNumber",
+  "bankingPassword",
+];
 
-/**
- * Validate incoming withdrawal request
- */
 export const validateCreateWithdrawal = (req, res, next) => {
   const { amount, method, destination } = req.body || {};
 
-  // 1. Enforce zero tolerance for sensitive banking credentials
   for (const forbidden of FORBIDDEN_FIELDS) {
     if (req.body && req.body[forbidden] !== undefined) {
       return res.status(400).json({
@@ -20,7 +23,6 @@ export const validateCreateWithdrawal = (req, res, next) => {
     }
   }
 
-  // 2. Amount validation
   if (amount === undefined || amount === null || amount === "") {
     return res.status(400).json({
       success: false,
@@ -38,7 +40,6 @@ export const validateCreateWithdrawal = (req, res, next) => {
     });
   }
 
-  // 3. Method validation
   if (!method || !VALID_METHODS.includes(method)) {
     return res.status(400).json({
       success: false,
@@ -47,12 +48,12 @@ export const validateCreateWithdrawal = (req, res, next) => {
     });
   }
 
-  // 4. Destination validation
   if (!destination || typeof destination !== "string" || !destination.trim()) {
     return res.status(400).json({
       success: false,
       code: "MISSING_DESTINATION",
-      message: "Destination identifier (UPI VPA or Bank Account Number) is required.",
+      message:
+        "Destination identifier (UPI VPA or Bank Account Number) is required.",
     });
   }
 
@@ -65,9 +66,6 @@ export const validateCreateWithdrawal = (req, res, next) => {
   next();
 };
 
-/**
- * Validate withdrawal ID param
- */
 export const validateWithdrawalId = (req, res, next) => {
   const { id } = req.params;
 

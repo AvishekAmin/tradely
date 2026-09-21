@@ -40,7 +40,6 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col justify-between pt-4 pb-20">
       <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-        {/* Back Link */}
         <div>
           <Link
             to="/"
@@ -51,20 +50,17 @@ export default function ContactPage() {
           </Link>
         </div>
 
-        {/* Page Header */}
         <div className="text-center space-y-4 py-4">
-
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
             Contact the Tradely Team
           </h1>
           <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto leading-relaxed">
-            Have questions about order execution mechanics, portfolio analytics, or architectural feedback? We'd love to hear from you.
+            Have questions about order execution mechanics, portfolio analytics,
+            or architectural feedback? We'd love to hear from you.
           </p>
         </div>
 
-        {/* 2-Column Responsive Contact Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Direct Info Cards (5 cols) */}
           <div className="lg:col-span-5 space-y-4">
             <div className="rounded-3xl border border-white/[0.08] bg-[#141414] p-6 sm:p-7 space-y-6">
               <div className="space-y-2">
@@ -72,11 +68,12 @@ export default function ContactPage() {
                   Direct Communication
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                  Tradely is an open-source educational platform engineered by Avishek Amin. We actively respond to developer feedback and platform inquiries.
+                  Tradely is an open-source educational platform engineered by
+                  Avishek Amin. We actively respond to developer feedback and
+                  platform inquiries.
                 </p>
               </div>
 
-              {/* Direct Email */}
               <div className="flex items-start gap-3.5">
                 <div className="size-10 rounded-2xl bg-blue-600/15 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0 mt-0.5">
                   <Mail className="size-4.5" />
@@ -97,7 +94,6 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Operating Hours */}
               <div className="flex items-start gap-3.5">
                 <div className="size-10 rounded-2xl bg-emerald-600/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
                   <Clock className="size-4.5" />
@@ -115,7 +111,6 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              {/* Office Location */}
               <div className="flex items-start gap-3.5">
                 <div className="size-10 rounded-2xl bg-purple-600/15 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0 mt-0.5">
                   <MapPin className="size-4.5" />
@@ -128,33 +123,43 @@ export default function ContactPage() {
                     Tradely Technologies Pvt. Ltd.
                   </p>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    123 Innovation Drive, 4th Floor<br />
-                    Koramangala, Bengaluru<br />
+                    123 Innovation Drive, 4th Floor
+                    <br />
+                    Koramangala, Bengaluru
+                    <br />
                     Karnataka 560001, India
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Quick Link to Bug Report */}
             <div className="rounded-2xl border border-white/[0.08] bg-[#141414] p-5 flex items-center justify-between gap-4">
               <div className="space-y-0.5">
-                <p className="text-xs font-bold text-white">Found a matching engine bug?</p>
-                <p className="text-[11px] text-slate-400">File a structured report on our issue tracker.</p>
+                <p className="text-xs font-bold text-white">
+                  Found a matching engine bug?
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  File a structured report on our issue tracker.
+                </p>
               </div>
-              <Button asChild variant="outline" size="sm" className="rounded-full border-white/10 text-xs shrink-0">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="rounded-full border-white/10 text-xs shrink-0"
+              >
                 <Link to="/report">Report Bug</Link>
               </Button>
             </div>
           </div>
 
-          {/* Right Column: Contact Form (7 cols) */}
           <div className="lg:col-span-7">
             <div className="rounded-3xl border border-white/10 bg-[#141414] p-6 sm:p-8 space-y-6 shadow-xl">
               <div className="space-y-1.5">
                 <h2 className="text-xl font-bold text-white">Send a Message</h2>
                 <p className="text-xs sm:text-sm text-slate-400">
-                  Fill out the form below and our team will get back to your email shortly.
+                  Fill out the form below and our team will get back to your
+                  email shortly.
                 </p>
               </div>
 
@@ -163,32 +168,43 @@ export default function ContactPage() {
                   <div className="size-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
                     <CheckCircle2 className="size-6" />
                   </div>
-                  <h3 className="text-base font-bold text-white">Message Sent Successfully!</h3>
+                  <h3 className="text-base font-bold text-white">
+                    Message Sent Successfully!
+                  </h3>
                   <p className="text-xs sm:text-sm text-slate-300 max-w-sm mx-auto">
-                    Thank you for reaching out. We have received your message and will review it promptly.
+                    Thank you for reaching out. We have received your message
+                    and will review it promptly.
                   </p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Your Name *</label>
+                      <label className="text-xs font-semibold text-slate-300">
+                        Your Name *
+                      </label>
                       <Input
                         type="text"
                         required
                         value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, name: e.target.value })
+                        }
                         placeholder="Avishek Amin"
                         className="bg-[#181818] border-white/10 text-sm text-white placeholder:text-slate-500 rounded-xl"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-slate-300">Email Address *</label>
+                      <label className="text-xs font-semibold text-slate-300">
+                        Email Address *
+                      </label>
                       <Input
                         type="email"
                         required
                         value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
                         placeholder="you@domain.com"
                         className="bg-[#181818] border-white/10 text-sm text-white placeholder:text-slate-500 rounded-xl"
                       />
@@ -196,23 +212,31 @@ export default function ContactPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Subject</label>
+                    <label className="text-xs font-semibold text-slate-300">
+                      Subject
+                    </label>
                     <Input
                       type="text"
                       value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, subject: e.target.value })
+                      }
                       placeholder="e.g. Question on OCO bracket order implementation"
                       className="bg-[#181818] border-white/10 text-sm text-white placeholder:text-slate-500 rounded-xl"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Your Message *</label>
+                    <label className="text-xs font-semibold text-slate-300">
+                      Your Message *
+                    </label>
                     <textarea
                       required
                       rows={5}
                       value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, message: e.target.value })
+                      }
                       placeholder="Write your question, suggestion, or message in detail..."
                       className="w-full rounded-xl border border-white/10 bg-[#181818] p-3 text-sm text-white placeholder:text-slate-500 outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition-all resize-none"
                     />

@@ -17,5 +17,3 @@ router.post("/orders/oco", validateOCO, createOCOOrder);
 router.post("/orders/oco/:ocoGroupId/cancel", cancelOCOGroup);
 
 export default router;
-
-

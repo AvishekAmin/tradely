@@ -7,23 +7,20 @@ export const getCookieOptions = () => ({
     process.env.COOKIE_SECURE !== undefined
       ? process.env.COOKIE_SECURE === "true"
       : NODE_ENV === "production",
-  sameSite: process.env.COOKIE_SAME_SITE || (NODE_ENV === "production" ? "none" : "lax"),
+  sameSite:
+    process.env.COOKIE_SAME_SITE ||
+    (NODE_ENV === "production" ? "none" : "lax"),
   path: "/",
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+  maxAge: 7 * 24 * 60 * 60 * 1000,
   ...(process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
 });
 
-/**
- * Handle user registration
- */
 export const signup = async (req, res, next) => {
   try {
     const payload = req.sanitizedSignup || req.body;
     const { user, token } = await authService.signupUser(payload);
 
-    // Set HttpOnly token cookie
     res.cookie("token", token, getCookieOptions());
-
 
     return res.status(201).json({
       success: true,
@@ -35,15 +32,11 @@ export const signup = async (req, res, next) => {
   }
 };
 
-/**
- * Handle user login
- */
 export const login = async (req, res, next) => {
   try {
     const payload = req.sanitizedLogin || req.body;
     const { user, token } = await authService.loginUser(payload);
 
-    // Set HttpOnly token cookie
     res.cookie("token", token, getCookieOptions());
 
     return res.status(200).json({
@@ -56,9 +49,6 @@ export const login = async (req, res, next) => {
   }
 };
 
-/**
- * Get current authenticated user profile
- */
 export const getMe = async (req, res, next) => {
   try {
     return res.status(200).json({
@@ -79,9 +69,6 @@ export const getMe = async (req, res, next) => {
   }
 };
 
-/**
- * Handle user logout and clear authentication cookie
- */
 export const logout = async (req, res, next) => {
   try {
     const opts = getCookieOptions();

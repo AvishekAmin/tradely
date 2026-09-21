@@ -106,9 +106,7 @@ export default function Footer() {
   return (
     <footer className="w-full bg-[#0C0C0C] border-t border-white/[0.08] text-slate-400 text-[0.88rem] relative mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-8">
-        {/* 5-Column Responsive Layout */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-12 gap-8 lg:gap-6">
-          {/* Brand & Social Column */}
           <div className="sm:col-span-2 md:col-span-3 lg:col-span-3 space-y-3.5">
             <Link
               to="/"
@@ -122,7 +120,6 @@ export default function Footer() {
               testing and portfolio analytics.
             </p>
 
-            {/* Social Icons row */}
             <div className="flex flex-wrap items-center gap-2.5 pt-2">
               {socialLinks.map((social) => (
                 <a
@@ -142,7 +139,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Platform Column */}
           <div className="sm:col-span-1 md:col-span-1 lg:col-span-2 space-y-3.5">
             <h4 className="text-[0.82rem] font-semibold text-white uppercase tracking-[1.3px] font-mono">
               Platform
@@ -187,7 +183,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Support Column */}
           <div className="sm:col-span-1 md:col-span-1 lg:col-span-2 space-y-3.5">
             <h4 className="text-[0.82rem] font-semibold text-white uppercase tracking-[1.3px] font-mono">
               Support
@@ -228,7 +223,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Company Column */}
           <div className="sm:col-span-1 md:col-span-1 lg:col-span-2 space-y-3.5">
             <h4 className="text-[0.82rem] font-semibold text-white uppercase tracking-[1.3px] font-mono">
               Company
@@ -270,14 +264,12 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Stay in the Loop (Newsletter) Column */}
           <div className="sm:col-span-2 md:col-span-3 lg:col-span-3 space-y-3.5">
             <h4 className="text-[0.82rem] font-semibold text-white uppercase tracking-[1.3px] font-mono">
               Stay in the loop
             </h4>
             <p className="text-[0.88rem] text-slate-400 leading-[1.68]">
-              Get market insights, platform updates, and feature
-              announcements.
+              Get market insights, platform updates, and feature announcements.
             </p>
 
             <form onSubmit={handleSubscribe} className="space-y-2 pt-1">
@@ -307,10 +299,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Footer Divider */}
         <hr className="border-t border-white/[0.08] mt-6 mb-3" />
 
-        {/* Bottom Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 text-[0.84rem] text-slate-500 mb-2">
           <p className="text-slate-400 text-[0.84rem]">
             &copy; {currentYear} Tradely. All rights reserved.
@@ -340,11 +330,10 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Educational Paper Trading Disclaimer */}
         <div className="pt-2 text-[0.82rem] text-slate-400/90 leading-[1.6] w-full border-t border-white/[0.06]">
-          <strong className="text-slate-300 font-semibold">Disclaimer:</strong> Tradely is a
-          paper trading educational platform. All market data, orders, and
-          executions are virtual and do not represent real financial
+          <strong className="text-slate-300 font-semibold">Disclaimer:</strong>{" "}
+          Tradely is a paper trading educational platform. All market data,
+          orders, and executions are virtual and do not represent real financial
           transactions. Tradely does not provide investment advice, broker
           services, or access to real stock exchanges.
         </div>

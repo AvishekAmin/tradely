@@ -45,7 +45,7 @@ const UserSchema = new Schema(
       min: [0, "Pending withdrawal amount cannot be negative"],
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export { UserSchema };

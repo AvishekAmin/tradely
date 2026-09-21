@@ -6,7 +6,7 @@ function Card({ className, ...props }) {
     <div
       className={cn(
         "rounded-2xl border border-white/[0.08] bg-[#171717] text-slate-100 shadow-xl shadow-black/40 transition-all",
-        className
+        className,
       )}
       {...props}
     />
@@ -46,11 +46,15 @@ function CardContent({ className, ...props }) {
 
 function CardFooter({ className, ...props }) {
   return (
-    <div
-      className={cn("flex items-center p-6 pt-0", className)}
-      {...props}
-    />
+    <div className={cn("flex items-center p-6 pt-0", className)} {...props} />
   );
 }
 
-export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter };
+export {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+};

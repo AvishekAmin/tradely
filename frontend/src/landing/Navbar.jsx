@@ -1,11 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import {
-  Menu,
-  LayoutDashboard,
-  LogOut,
-  ArrowRight,
-} from "lucide-react";
+import { Menu, LayoutDashboard, LogOut, ArrowRight } from "lucide-react";
 import TradelyLogo from "./TradelyLogo";
 import { useAuth } from "@/context/AuthContext";
 import { DASHBOARD_URL } from "@/config/api";
@@ -29,7 +24,11 @@ import {
 const NAV_LINKS = [
   { label: "Terminal", href: "/#terminal", id: "terminal" },
   { label: "How It Works", href: "/#how-it-works", id: "how-it-works" },
-  { label: "Order Management", href: "/#order-management", id: "order-management" },
+  {
+    label: "Order Management",
+    href: "/#order-management",
+    id: "order-management",
+  },
   { label: "Analytics", href: "/#analytics", id: "analytics" },
   { label: "Pricing", href: "/#pricing", id: "pricing" },
   { label: "Create Account", href: "/#create-account", id: "create-account" },
@@ -67,14 +66,12 @@ export default function Navbar() {
           const windowHeight = window.innerHeight;
           const documentHeight = document.documentElement.scrollHeight;
 
-          // If at or near the very bottom of the page, activate the last section
           if (scrollY + windowHeight >= documentHeight - 80) {
             setActiveSection("create-account");
             ticking = false;
             return;
           }
 
-          // A section is considered active when its top is near/past the navbar threshold
           const offsetThreshold = 140;
           let current = "";
           for (const link of NAV_LINKS) {
@@ -115,7 +112,9 @@ export default function Navbar() {
       }
     };
     window.addEventListener("wheel", handleUserInteraction, { passive: true });
-    window.addEventListener("touchmove", handleUserInteraction, { passive: true });
+    window.addEventListener("touchmove", handleUserInteraction, {
+      passive: true,
+    });
 
     return () => {
       clearTimeout(initialTimer);
@@ -150,7 +149,6 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full px-3 py-3 sm:px-6 md:px-8">
       <div className="max-w-7xl mx-auto rounded-full border border-white/10 bg-[#0F0F0F]/85 backdrop-blur-xl px-4 py-2 sm:px-6 flex items-center justify-between gap-4 shadow-2xl shadow-black/60 transition-all">
-        {/* Brand Logo */}
         <Link
           to="/"
           onClick={() => {
@@ -165,8 +163,10 @@ export default function Navbar() {
           <TradelyLogo size="default" />
         </Link>
 
-        {/* Center Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-4 xl:gap-6" aria-label="Main Navigation">
+        <nav
+          className="hidden lg:flex items-center gap-4 xl:gap-6"
+          aria-label="Main Navigation"
+        >
           {NAV_LINKS.map((link) => {
             const isActive = currentActiveSection === link.id;
             return (
@@ -186,9 +186,7 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Right Actions */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-          {/* Auth State Handling */}
           {!isAuthenticated ? (
             <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
               <Link
@@ -223,7 +221,6 @@ export default function Navbar() {
                 <ArrowRight className="size-3.5 sm:size-4 text-black stroke-[2.5]" />
               </a>
 
-              {/* User Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
@@ -268,7 +265,6 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Mobile Sheet Trigger */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <button
@@ -279,7 +275,10 @@ export default function Navbar() {
                 <Menu className="size-4" />
               </button>
             </SheetTrigger>
-            <SheetContent side="right" className="flex flex-col justify-between">
+            <SheetContent
+              side="right"
+              className="flex flex-col justify-between"
+            >
               <div>
                 <SheetHeader className="pb-4 border-b border-white/10">
                   <SheetTitle asChild>
@@ -299,14 +298,19 @@ export default function Navbar() {
                   </SheetTitle>
                 </SheetHeader>
 
-                <nav className="flex flex-col gap-2.5 pt-6" aria-label="Mobile Navigation">
+                <nav
+                  className="flex flex-col gap-2.5 pt-6"
+                  aria-label="Mobile Navigation"
+                >
                   {NAV_LINKS.map((link) => {
                     const isActive = currentActiveSection === link.id;
                     return (
                       <a
                         key={link.label}
                         href={link.href}
-                        onClick={(e) => handleAnchorClick(e, link.href, link.id)}
+                        onClick={(e) =>
+                          handleAnchorClick(e, link.href, link.id)
+                        }
                         className={`text-sm rounded-lg px-3 py-2.5 transition-all cursor-pointer flex items-center justify-between ${
                           isActive
                             ? "text-[#00D8F6] font-bold bg-[#00D8F6]/10 border border-[#00D8F6]/20"

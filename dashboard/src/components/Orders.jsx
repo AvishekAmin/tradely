@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useContext, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+  useRef,
+} from "react";
 import { Link } from "react-router-dom";
 import apiClient from "../config/api";
 import GeneralContext from "./GeneralContext";
@@ -27,8 +33,8 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [cancellingId, setCancellingId] = useState(null);
-  const [statusFilter, setStatusFilter] = useState("ALL"); // ALL | PENDING | EXECUTED | CANCELLED
-  const [pageSize, setPageSize] = useState(25); // 25 | 50 | 100 | "ALL"
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [pageSize, setPageSize] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
   const tableContainerRef = useRef(null);
 
@@ -104,7 +110,10 @@ const Orders = () => {
       );
     } else if (s === "PENDING_STOP") {
       return (
-        <Badge variant="warning" className="gap-1 text-orange-400 border-orange-500/30 bg-orange-500/15">
+        <Badge
+          variant="warning"
+          className="gap-1 text-orange-400 border-orange-500/30 bg-orange-500/15"
+        >
           <Clock className="size-3" />
           PENDING STOP
         </Badge>
@@ -157,18 +166,27 @@ const Orders = () => {
 
   const counts = {
     all: orders.length,
-    pending: orders.filter((o) => ["PENDING", "PENDING_STOP", "PENDING_LIMIT"].includes(o.status)).length,
+    pending: orders.filter((o) =>
+      ["PENDING", "PENDING_STOP", "PENDING_LIMIT"].includes(o.status),
+    ).length,
     executed: orders.filter((o) => o.status === "EXECUTED").length,
-    cancelled: orders.filter((o) => ["CANCELLED", "REJECTED"].includes(o.status)).length,
+    cancelled: orders.filter((o) =>
+      ["CANCELLED", "REJECTED"].includes(o.status),
+    ).length,
   };
 
   const totalPages =
-    pageSize === "ALL" ? 1 : Math.max(1, Math.ceil(filteredOrders.length / pageSize));
+    pageSize === "ALL"
+      ? 1
+      : Math.max(1, Math.ceil(filteredOrders.length / pageSize));
   const activePage = Math.min(Math.max(1, currentPage), totalPages);
   const paginatedOrders =
     pageSize === "ALL"
       ? filteredOrders
-      : filteredOrders.slice((activePage - 1) * pageSize, activePage * pageSize);
+      : filteredOrders.slice(
+          (activePage - 1) * pageSize,
+          activePage * pageSize,
+        );
 
   const handleFilterChange = (filterId) => {
     setStatusFilter(filterId);
@@ -199,7 +217,9 @@ const Orders = () => {
         <div className="p-8 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-center max-w-md mx-auto space-y-4">
           <AlertCircle className="size-10 text-rose-400 mx-auto" />
           <div>
-            <h3 className="text-lg font-bold text-white">Failed to load orders</h3>
+            <h3 className="text-lg font-bold text-white">
+              Failed to load orders
+            </h3>
             <p className="text-sm text-slate-400 mt-1">{error}</p>
           </div>
           <Button variant="gradient" onClick={fetchOrders} className="gap-2">
@@ -226,9 +246,12 @@ const Orders = () => {
             <div className="size-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 mb-4">
               <FileText className="size-8 text-slate-500" />
             </div>
-            <h3 className="text-base font-semibold text-white mb-1">No orders found</h3>
+            <h3 className="text-base font-semibold text-white mb-1">
+              No orders found
+            </h3>
             <p className="text-sm text-slate-400 max-w-sm mb-6">
-              You haven't placed any trades in this session yet. Explore the watchlist to execute your first market or limit order.
+              You haven't placed any trades in this session yet. Explore the
+              watchlist to execute your first market or limit order.
             </p>
             <Link to="/">
               <Button variant="gradient" className="gap-2">
@@ -243,7 +266,6 @@ const Orders = () => {
 
   return (
     <div className="p-6 space-y-5">
-      {/* Header & Filter Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2.5">
@@ -259,16 +281,18 @@ const Orders = () => {
               className="h-6 px-2 text-[11px] text-slate-400 hover:text-white hover:bg-white/10 border border-white/10 rounded-lg gap-1.5 cursor-pointer transition-colors"
               title="Refresh order book"
             >
-              <RefreshCw className={`size-3 ${loading ? "animate-spin text-cyan-400" : ""}`} />
+              <RefreshCw
+                className={`size-3 ${loading ? "animate-spin text-cyan-400" : ""}`}
+              />
               <span className="text-[11px] font-medium">Refresh</span>
             </Button>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Real-time audit log of all executed, pending, and conditional order lifecycle events.
+            Real-time audit log of all executed, pending, and conditional order
+            lifecycle events.
           </p>
         </div>
 
-        {/* Filter Pills */}
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 sm:gap-2 bg-[#171717] p-1 rounded-xl border border-white/5 text-xs font-semibold">
             {[
@@ -292,7 +316,9 @@ const Orders = () => {
                   <span>{tab.label}</span>
                   <span
                     className={`px-1.5 py-0.2 rounded-full text-[10px] tabular-nums ${
-                      active ? "bg-cyan-500/20 text-cyan-300" : "bg-white/5 text-slate-500"
+                      active
+                        ? "bg-cyan-500/20 text-cyan-300"
+                        : "bg-white/5 text-slate-500"
                     }`}
                   >
                     {tab.count}
@@ -304,16 +330,17 @@ const Orders = () => {
         </div>
       </div>
 
-      {/* Orders Table Card */}
       <Card className="overflow-hidden border border-white/10 bg-[#141414] flex flex-col shadow-xl">
-        {/* Table Sub-Header / Quick Tools */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/10 bg-[#171717]/60 text-xs">
           <div className="flex items-center gap-2 text-slate-400">
             <FileText className="size-3.5 text-cyan-400" />
-            <span className="font-semibold text-slate-300">Order History & Executions</span>
+            <span className="font-semibold text-slate-300">
+              Order History & Executions
+            </span>
             <span className="text-slate-600">•</span>
             <span className="text-[11px] text-slate-500">
-              {filteredOrders.length} {filteredOrders.length === 1 ? "record" : "records"}
+              {filteredOrders.length}{" "}
+              {filteredOrders.length === 1 ? "record" : "records"}
             </span>
           </div>
 
@@ -339,7 +366,6 @@ const Orders = () => {
           </div>
         </div>
 
-        {/* Scrollable Viewport Container */}
         <div
           ref={tableContainerRef}
           className="overflow-x-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/20 hover:[&::-webkit-scrollbar-thumb]:bg-white/30 [&::-webkit-scrollbar-track]:bg-black/30"
@@ -352,13 +378,27 @@ const Orders = () => {
                 <th className="py-3 px-4 whitespace-nowrap">Side</th>
                 <th className="py-3 px-4 whitespace-nowrap">Type</th>
                 <th className="py-3 px-4 text-right whitespace-nowrap">Qty.</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Stop Price</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Limit Price</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Exec. Price</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Total Value</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Realized P&L</th>
-                <th className="py-3 px-4 text-center whitespace-nowrap">Status</th>
-                <th className="py-3 px-4 text-center whitespace-nowrap">Action</th>
+                <th className="py-3 px-4 text-right whitespace-nowrap">
+                  Stop Price
+                </th>
+                <th className="py-3 px-4 text-right whitespace-nowrap">
+                  Limit Price
+                </th>
+                <th className="py-3 px-4 text-right whitespace-nowrap">
+                  Exec. Price
+                </th>
+                <th className="py-3 px-4 text-right whitespace-nowrap">
+                  Total Value
+                </th>
+                <th className="py-3 px-4 text-right whitespace-nowrap">
+                  Realized P&L
+                </th>
+                <th className="py-3 px-4 text-center whitespace-nowrap">
+                  Status
+                </th>
+                <th className="py-3 px-4 text-center whitespace-nowrap">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 font-mono text-xs">
@@ -374,12 +414,18 @@ const Orders = () => {
               ) : (
                 paginatedOrders.map((order, index) => {
                   const isBuy = order.mode === "BUY";
-                  const isCancellable = ["PENDING", "PENDING_STOP", "PENDING_LIMIT"].includes(
-                    order.status
-                  );
+                  const isCancellable = [
+                    "PENDING",
+                    "PENDING_STOP",
+                    "PENDING_LIMIT",
+                  ].includes(order.status);
                   const totalVal =
                     order.totalValue ??
-                    (order.qty || 0) * (order.executionPrice || order.limitPrice || order.price || 0);
+                    (order.qty || 0) *
+                      (order.executionPrice ||
+                        order.limitPrice ||
+                        order.price ||
+                        0);
 
                   const formattedTime = order.createdAt
                     ? new Date(order.createdAt).toLocaleTimeString("en-IN", {
@@ -389,13 +435,22 @@ const Orders = () => {
                       })
                     : "—";
 
-                  // Stop Price display
-                  let stopPriceDisplay = <span className="text-slate-500">—</span>;
-                  if (order.stopPrice !== null && order.stopPrice !== undefined) {
-                    if (order.orderType === "TRAILING_STOP" && order.highestPrice) {
+                  let stopPriceDisplay = (
+                    <span className="text-slate-500">—</span>
+                  );
+                  if (
+                    order.stopPrice !== null &&
+                    order.stopPrice !== undefined
+                  ) {
+                    if (
+                      order.orderType === "TRAILING_STOP" &&
+                      order.highestPrice
+                    ) {
                       stopPriceDisplay = (
                         <div className="flex flex-col items-end">
-                          <span className="text-slate-200">₹{Number(order.stopPrice).toFixed(2)}</span>
+                          <span className="text-slate-200">
+                            ₹{Number(order.stopPrice).toFixed(2)}
+                          </span>
                           <span className="text-[10px] text-slate-500">
                             Peak: ₹{Number(order.highestPrice).toFixed(2)}
                           </span>
@@ -403,25 +458,33 @@ const Orders = () => {
                       );
                     } else {
                       stopPriceDisplay = (
-                        <span className="text-slate-200">₹{Number(order.stopPrice).toFixed(2)}</span>
+                        <span className="text-slate-200">
+                          ₹{Number(order.stopPrice).toFixed(2)}
+                        </span>
                       );
                     }
                   }
 
                   const limitPriceDisplay =
-                    order.limitPrice !== null && order.limitPrice !== undefined ? (
-                      <span className="text-slate-200">₹{Number(order.limitPrice).toFixed(2)}</span>
+                    order.limitPrice !== null &&
+                    order.limitPrice !== undefined ? (
+                      <span className="text-slate-200">
+                        ₹{Number(order.limitPrice).toFixed(2)}
+                      </span>
                     ) : (
                       <span className="text-slate-500">—</span>
                     );
 
                   const execPriceDisplay =
-                    order.executionPrice !== null && order.executionPrice !== undefined ? (
+                    order.executionPrice !== null &&
+                    order.executionPrice !== undefined ? (
                       <span className="text-white font-bold">
                         ₹{Number(order.executionPrice).toFixed(2)}
                       </span>
                     ) : order.price !== null && order.price !== undefined ? (
-                      <span className="text-slate-300">₹{Number(order.price).toFixed(2)}</span>
+                      <span className="text-slate-300">
+                        ₹{Number(order.price).toFixed(2)}
+                      </span>
                     ) : (
                       <span className="text-slate-500">—</span>
                     );
@@ -431,12 +494,10 @@ const Orders = () => {
                       key={order._id || index}
                       className="hover:bg-white/[0.02] transition-colors group"
                     >
-                      {/* Time */}
                       <td className="py-3 px-4 text-slate-400 whitespace-nowrap">
                         {formattedTime}
                       </td>
 
-                      {/* Instrument */}
                       <td className="py-3 px-4 font-sans font-semibold text-white whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <span>{order.name}</span>
@@ -452,7 +513,6 @@ const Orders = () => {
                         </div>
                       </td>
 
-                      {/* Side */}
                       <td className="py-3 px-4 whitespace-nowrap">
                         <Badge
                           variant={isBuy ? "profit" : "loss"}
@@ -467,46 +527,41 @@ const Orders = () => {
                         </Badge>
                       </td>
 
-                      {/* Type */}
                       <td className="py-3 px-4 whitespace-nowrap font-sans text-xs text-slate-400">
                         <span className="px-2 py-0.5 rounded bg-white/5 border border-white/5">
                           {order.orderType || "MARKET"}
                         </span>
                       </td>
 
-                      {/* Qty */}
                       <td className="py-3 px-4 text-right text-slate-200 tabular-nums">
                         {order.qty}
                       </td>
 
-                      {/* Stop Price */}
                       <td className="py-3 px-4 text-right tabular-nums">
                         {stopPriceDisplay}
                       </td>
 
-                      {/* Limit Price */}
                       <td className="py-3 px-4 text-right tabular-nums">
                         {limitPriceDisplay}
                       </td>
 
-                      {/* Executed Price */}
                       <td className="py-3 px-4 text-right tabular-nums">
                         {execPriceDisplay}
                       </td>
 
-                      {/* Total Value */}
                       <td className="py-3 px-4 text-right text-slate-200 tabular-nums font-semibold">
                         ₹{totalVal.toFixed(2)}
                       </td>
 
-                      {/* Realized P&L */}
                       <td className="py-3 px-4 text-right tabular-nums">
                         {!isBuy &&
                         order.realizedPnL !== undefined &&
                         order.status === "EXECUTED" ? (
                           <span
                             className={`font-bold ${
-                              order.realizedPnL >= 0 ? "text-emerald-400" : "text-rose-400"
+                              order.realizedPnL >= 0
+                                ? "text-emerald-400"
+                                : "text-rose-400"
                             }`}
                           >
                             {order.realizedPnL >= 0 ? "+" : ""}₹
@@ -517,12 +572,10 @@ const Orders = () => {
                         )}
                       </td>
 
-                      {/* Status */}
                       <td className="py-3 px-4 text-center whitespace-nowrap font-sans">
                         {getStatusBadge(order.status)}
                       </td>
 
-                      {/* Action */}
                       <td className="py-3 px-4 text-center whitespace-nowrap font-sans">
                         {isCancellable ? (
                           <Button
@@ -561,7 +614,6 @@ const Orders = () => {
           </table>
         </div>
 
-        {/* Pagination & Table Footer */}
         {filteredOrders.length > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-white/10 bg-[#121212] text-xs text-slate-400">
             <div className="flex items-center gap-1.5">
@@ -571,22 +623,25 @@ const Orders = () => {
                   ? `1–${filteredOrders.length}`
                   : `${Math.min((activePage - 1) * pageSize + 1, filteredOrders.length)}–${Math.min(
                       activePage * pageSize,
-                      filteredOrders.length
+                      filteredOrders.length,
                     )}`}
               </span>
               <span>of</span>
-              <span className="font-semibold text-white">{filteredOrders.length}</span>
+              <span className="font-semibold text-white">
+                {filteredOrders.length}
+              </span>
               <span>orders</span>
             </div>
 
             <div className="flex items-center gap-4 flex-wrap justify-center">
-              {/* Rows per page selector */}
               <div className="flex items-center gap-2">
                 <span className="text-slate-500">Rows per page:</span>
                 <select
                   value={pageSize}
                   onChange={(e) => {
-                    setPageSize(e.target.value === "ALL" ? "ALL" : Number(e.target.value));
+                    setPageSize(
+                      e.target.value === "ALL" ? "ALL" : Number(e.target.value),
+                    );
                     setCurrentPage(1);
                   }}
                   className="bg-[#1a1a1a] border border-white/10 text-white rounded-md px-2 py-1 text-xs focus:outline-none focus:border-cyan-500"
@@ -598,7 +653,6 @@ const Orders = () => {
                 </select>
               </div>
 
-              {/* Page Navigation Buttons */}
               {pageSize !== "ALL" && totalPages > 1 && (
                 <div className="flex items-center gap-1">
                   <Button
@@ -627,7 +681,9 @@ const Orders = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
                     disabled={activePage === totalPages}
                     className="h-7 px-2.5 text-xs border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 disabled:opacity-30 disabled:pointer-events-none"
                   >

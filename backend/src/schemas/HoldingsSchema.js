@@ -43,7 +43,7 @@ const HoldingsSchema = new Schema(
       default: "0.00%",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 HoldingsSchema.index({ userId: 1, name: 1 });
