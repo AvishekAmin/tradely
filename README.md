@@ -286,6 +286,49 @@ Trader (Terminal)                    Tradely Order Engine                MongoDB
 
 ---
 
+## 📷 Screenshots
+
+### 1. Landing Page
+![Landing Page](./screenshots/landing.png)
+
+### 2. User Authentication (Login)
+![Login Page](./screenshots/login.png)
+
+### 3. New Account Registration (Signup)
+![Signup Page](./screenshots/signup.png)
+
+### 4. Trading Terminal Dashboard & Portfolio Summary
+![Trading Dashboard](./screenshots/dashboard.jpeg)
+
+### 5. Market Exploration & Stock Discovery
+![Market Exploration](./screenshots/explore.jpeg)
+
+### 6. Settled Equity Holdings
+![Equity Holdings](./screenshots/holdings.jpeg)
+
+### 7. Open Positions & Intraday P&L
+![Open Positions](./screenshots/positions.png)
+
+### 8. Order Book & Execution History
+![Order Book](./screenshots/orders.png)
+
+### 9. Buy Order Placement Window (Market, Limit, OCO)
+![Buy Order Window](./screenshots/buy_order.png)
+
+### 10. Sell Order Execution & Position Exit
+![Sell Order Window](./screenshots/sell_order.png)
+
+### 11. Funds Management & 4-Pillar Cash Ledger
+![Funds Ledger](./screenshots/funds.jpeg)
+
+### 12. Add Funds via Razorpay Payment Gateway
+![Razorpay Deposit Modal](./screenshots/add_funds.jpeg)
+
+### 13. Cash Withdrawal Request
+![Virtual Withdrawal Window](./screenshots/withdraw_funds.jpeg)
+
+---
+
 ## 🚀 Tech Stack
 
 ### Frontend & Dashboard Architecture
@@ -535,6 +578,7 @@ tradely/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                              # Continuous Integration pipeline (Lint & Test)
+├── screenshots/                                # Application & terminal showcase preview images
 ├── docker-compose.yml                          # Multi-container orchestration (Backend, Dashboard, Frontend, Mongo)
 ├── LICENSE                                     # ISC Open-Source License
 └── README.md                                   # Comprehensive project documentation
