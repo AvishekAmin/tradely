@@ -677,7 +677,123 @@ All protected endpoints require an active session via the `token` HttpOnly cooki
 
 ---
 
-## ⚙️ Environment Configuration
+## 🐳 Docker & DevOps Integration
+
+Tradely is engineered for reproducible local containerization and continuous integration (CI) automation. The entire multi-tier stack—MongoDB 7.0 database, Express 5 backend with Socket.IO trading engine, React 19 public frontend, and React 19 trading terminal dashboard served via Nginx Alpine—can be spun up locally with a single Docker Compose command or validated in continuous integration pipelines.
+
+### Docker Topology & Network Architecture
+
+```text
+                           ┌──────────────────────────────────────────┐
+                           │              Client Browser              │
+                           ├────────────────────┬─────────────────────┤
+                           │ Frontend (Landing) │ Dashboard (Terminal)│
+                           │ React 19 + Vite 8  │ React 19 + Vite 8   │
+                           └─────────┬──────────┴──────────┬──────────┘
+                                     │                     │
+                        HTTP (5173)  │                     │ HTTP (5174)
+                                     ▼                     ▼
+                        ┌──────────────────────┐ ┌──────────────────────┐
+                        │   tradely-frontend   │ │  tradely-dashboard   │
+                        │   Nginx Alpine       │ │  Nginx Alpine        │
+                        │   Landing & Auth SPA │ │  Terminal & DOM SPA  │
+                        └──────────┬───────────┘ └──────────┬───────────┘
+                                   │                        │
+                                   │ REST API / WebSockets  │
+                                   │ (Port 8000)            │
+                                   ▼                        ▼
+                        ┌───────────────────────────────────────────────┐
+                        │                tradely-backend                │
+                        │               Node.js 20 Alpine               │
+                        │        Express 5 + Socket.IO Engine           │
+                        └──────────────────────┬────────────────────────┘
+                                               │
+                                               │ MongoDB Wire Protocol (Port 27017)
+                                               ▼
+                        ┌───────────────────────────────────────────────┐
+                        │                 tradely-mongo                 │
+                        │                  MongoDB 7.0                  │
+                        │            Named Volume mongo_data            │
+                        └───────────────────────────────────────────────┘
+```
+
+### Containerized Service Specifications
+
+| Service | Container Name | Base Image | Internal Port | Host Port | Health Check Probe |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Database** | `tradely-mongo` | `mongo:7.0` | `27017` | `27017` | `mongosh --eval 'db.runCommand({ ping: 1 })'` |
+| **Backend** | `tradely-backend` | `node:20-alpine` | `8000` | `8000` | `wget -qO- http://localhost:8000/ready \| grep -q '"status":"ready"'` |
+| **Frontend** | `tradely-frontend` | `nginx:alpine` | `80` | `5173` | `wget -qO- http://localhost/nginx-health \| grep -q 'healthy'` |
+| **Dashboard** | `tradely-dashboard` | `nginx:alpine` | `80` | `5174` | `wget -qO- http://localhost/nginx-health \| grep -q 'healthy'` |
+
+### Quick Start with Docker Compose
+
+Ensure Docker Engine or Docker Desktop is running on your system:
+
+```bash
+# 1. Clone repository (if not already cloned)
+git clone https://github.com/AvishekAmin/tradely.git
+cd tradely
+
+# 2. Configure environment variables for Docker Compose
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+cp dashboard/.env.example dashboard/.env
+
+# 3. Build images and start all services in detached mode
+docker compose up --build -d
+
+# 4. Stream real-time logs across all services
+docker compose logs -f
+
+# 5. Check container statuses and health probes
+docker compose ps
+
+# 6. Stop all services and network
+docker compose down
+
+# 7. Stop all services and wipe persistent MongoDB volume data (optional reset)
+docker compose down -v
+```
+
+Once running, access the local containerized services:
+- 🌐 **Public Frontend (Landing & Auth):** [http://localhost:5173](http://localhost:5173)
+- 📈 **Trading Terminal Dashboard:** [http://localhost:5174](http://localhost:5174)
+- 🔌 **Backend REST & WebSocket API:** [http://localhost:8000](http://localhost:8000)
+- 🩺 **Process Liveness Probe:** [http://localhost:8000/health](http://localhost:8000/health)
+- 🗄️ **Database Readiness Probe:** [http://localhost:8000/ready](http://localhost:8000/ready)
+- 💾 **MongoDB Connection:** `mongodb://localhost:27017/tradely`
+
+### Continuous Integration (GitHub Actions)
+
+Tradely includes an enterprise GitHub Actions CI workflow (`.github/workflows/ci.yml`) triggered on every pull request and push to `main`:
+
+```text
+┌──────────────────────────────────────────────────────────────────────────┐
+│                       GitHub Actions CI Pipeline                         │
+├──────────────────────────┬────────────────────────┬──────────────────────┤
+│        backend-ci        │      frontend-ci       │     dashboard-ci     │
+│  - MongoDB 7.0 Service   │  - Node.js 20 Setup    │  - Node.js 20 Setup  │
+│  - Node.js 20 Setup      │  - npm ci Clean Install│  - npm ci Clean      │
+│  - npm ci Clean Install  │  - ESLint Validation   │  - ESLint Validation │
+│  - Node Syntax Check     │  - Vite Prod Build     │  - Vite Prod Build   │
+│  - Integration Tests     │                        │                      │
+└─────────────┬────────────┴───────────┬────────────┴──────────┬───────────┘
+              │                        │                       │
+              └────────────────────────┼───────────────────────┘
+                                       ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│                            docker-validation                             │
+│  - Docker Buildx Setup & Layer Caching                                   │
+│  - Backend Multi-Stage Alpine Build Validation (`node:20-alpine`)        │
+│  - Frontend Multi-Stage Nginx Build Validation (`nginx:alpine`)          │
+│  - Dashboard Multi-Stage Nginx Build Validation (`nginx:alpine`)         │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔑 Environment Configuration
 
 Copy the example environment files before running the application:
 
@@ -846,29 +962,6 @@ npm run test:withdrawals  # Run virtual withdrawal suite
 npm run test:ledger       # Run cash ledger & semantics suite
 npm run test:concurrency  # Run concurrency & edge-case flows
 npm run test:all          # Run all 231 tests sequentially
-```
-
----
-
-## 🐳 Running with Docker Compose
-
-Tradely provides containerized deployment configurations with multi-stage Docker builds and Alpine Nginx reverse proxies:
-
-```bash
-docker compose up --build
-```
-
-### Running Containers:
-
-- **`backend`**: Node.js 20 runtime on port `8000`
-- **`dashboard`**: Vite static build served by Nginx on port `5174`
-- **`frontend`**: Vite static build served by Nginx on port `5173`
-- **`mongo`**: MongoDB 7.0 Replica Set on port `27017`
-
-To tear down containers and network bridges:
-
-```bash
-docker compose down
 ```
 
 ---
